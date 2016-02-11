@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">News App</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="wait">Please wait…</string>
+    <string name="username">Username or Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="title_activity_news_feed">News Feed</string>
+    <string name="error_login">You are not authorised!</string>
+    <string name="error_credentials">Invalid login or password!</string>
+    <string name="msgUsername">Username: </string>
+    <string name="msgPassword">Password: </string>
+    <string name="title_activity_settings">Settings</string>
+
+    <!-- Strings related to Settings -->
+    <string name="strLanguage">Language</string>
+    <string-array name="lang_list">
+        <item>English</item>
+        <item>Hindi</item>
+    </string-array>
+    <string-array name="lang_list_values">
+        <item>en</item>
+        <item>hi</item>
+    </string-array>
+
+    <string name="strRemember">Remember me</string>
+    <string name="strRememberSummary">Remember the account you login with</string>
+</resources>

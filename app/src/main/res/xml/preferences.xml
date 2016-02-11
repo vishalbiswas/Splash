@@ -1,0 +1,18 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <ListPreference
+        android:defaultValue="0"
+        android:entries="@array/lang_list"
+        android:entryValues="@array/lang_list_values"
+        android:key="locale"
+        android:title="@string/strLanguage"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:title="@string/strRemember"
+        android:summary="@string/strRememberSummary"
+        android:key="remember" />
+
+</PreferenceScreen>
