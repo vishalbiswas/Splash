@@ -1,17 +1,20 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.view.View;
 import android.widget.EditText;
+
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
     static final String EXTRA_USERNAME = "net.ddns.vishalbiswas.splash.EXTRA_USERNAME", EXTRA_PASSWORD = "net.ddns.vishalbiswas.splash.EXTRA_PASSWORD";
@@ -21,6 +24,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Configuration config = new Configuration();
+        config.locale=new Locale(preferences.getString("locale","en"));
+        getBaseContext().getResources().updateConfiguration(config,getBaseContext().getResources().getDisplayMetrics());
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -49,8 +56,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkEmpty() {
-        if (txtUsername==null || txtUsername.getText().toString().isEmpty() || txtPassword==null || txtPassword.getText().toString().isEmpty()) return true;
-        else return false;
+        return txtUsername == null || txtUsername.getText().toString().isEmpty() || txtPassword == null || txtPassword.getText().toString().isEmpty();
     }
 
     @Override
