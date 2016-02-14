@@ -10,8 +10,16 @@ import android.support.v7.widget.Toolbar;
 
 public class SettingsActivity extends AppCompatActivity {
 
+    static void bindSummary(Preference preference, String newValue) {
+        if (preference instanceof ListPreference) {
+            ListPreference listPreference = (ListPreference) preference;
+            listPreference.setSummary(listPreference.getEntries()[listPreference.findIndexOfValue(newValue)]);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -22,12 +30,20 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    protected void onStop() {
         GlobalFunctions.showSnack();
-        super.onDestroy();
+        super.onStop();
     }
 
     public static class GeneralPreferences extends PreferenceFragment {
+        public static Preference.OnPreferenceChangeListener bindSummaryChange = new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                bindSummary(preference, (String) newValue);
+                return true;
+            }
+        };
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -39,21 +55,6 @@ public class SettingsActivity extends AppCompatActivity {
             //listPreference.setSummary(listPreference.getEntries()[listPreference.findIndexOfValue(]);
         }
 
-        public static Preference.OnPreferenceChangeListener bindSummaryChange = new Preference.OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                bindSummary(preference, (String) newValue);
-                return true;
-            }
-        };
-
-    }
-
-    static void bindSummary(Preference preference, String newValue) {
-        if (preference instanceof ListPreference) {
-            ListPreference listPreference = (ListPreference) preference;
-            listPreference.setSummary(listPreference.getEntries()[listPreference.findIndexOfValue(newValue)]);
-        }
     }
 
 }

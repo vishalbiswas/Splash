@@ -12,8 +12,10 @@
     tools:context="net.ddns.vishalbiswas.splash.NewsFeed"
     tools:showIn="@layout/activity_news_feed">
 <TextView
+    android:id="@+id/txtMessage"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:text="@string/error_login"
-    android:id="@+id/txtMessage"/>
+    android:text="@string/error_login" />
+
+    <include layout="@layout/snack_layout" />
 </RelativeLayout>

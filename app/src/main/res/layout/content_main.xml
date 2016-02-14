@@ -12,33 +12,35 @@
     tools:context="net.ddns.vishalbiswas.splash.MainActivity"
     tools:showIn="@layout/activity_main">
 <android.support.design.widget.TextInputLayout
+    android:id="@+id/userInputLayout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/userInputLayout">
+    android:layout_height="wrap_content">
     <EditText
+        android:id="@+id/txtUsername"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/username"
-        android:id="@+id/txtUsername"/>
+        android:hint="@string/username" />
 </android.support.design.widget.TextInputLayout>
     <android.support.design.widget.TextInputLayout
+        android:id="@+id/passwordInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/userInputLayout"
-        android:id="@+id/passwordInputLayout">
+        android:layout_below="@id/userInputLayout">
         <EditText
+            android:id="@+id/txtPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/password"
             android:inputType="textPassword"
-            android:id="@+id/txtPassword"
             />
     </android.support.design.widget.TextInputLayout>
     <android.support.v7.widget.AppCompatButton
+        android:id="@+id/btnLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/login"
         android:layout_below="@+id/passwordInputLayout"
         android:layout_centerHorizontal="true"
-        android:id="@+id/btnLogin"/>
+        android:text="@string/login" />
+
+    <include layout="@layout/snack_layout" />
 </RelativeLayout>

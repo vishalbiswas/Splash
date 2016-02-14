@@ -9,8 +9,8 @@
     <string name="title_activity_news_feed">News Feed</string>
     <string name="error_login">You are not authorised!</string>
     <string name="error_credentials">Invalid login or password!</string>
-    <string name="msgUsername">Username: </string>
-    <string name="msgPassword">Password: </string>
+    <string name="msgUsername">Username</string>
+    <string name="msgPassword">Password</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->

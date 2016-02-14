@@ -5,8 +5,8 @@
     <string name="error_credentials">अवैध लॉगइन या पासवर्ड!</string>
     <string name="error_login">आप अधिकृत नहीं हैं!</string>
     <string name="login">लॉगिन</string>
-    <string name="msgPassword"> पासवर्ड:</string>
-    <string name="msgUsername">उपयोगकर्ता नाम:</string>
+    <string name="msgPassword">पासवर्ड</string>
+    <string name="msgUsername">उपयोगकर्ता नाम</string>
     <string name="password">पासवर्ड</string>
     <string name="strLanguage">भाषा</string>
     <string name="strRemember">मुझे याद रखें</string>

@@ -3,11 +3,28 @@ package net.ddns.vishalbiswas.splash;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 
+import java.util.Locale;
+
 public class GlobalFunctions {
-    static Context context;
+    private static Context context;
+    private static Locale locale;
+
+    public static void lookupLocale(Context con) {
+        if (locale == null) initializeData(con);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        ((Activity) con).getBaseContext().getResources().updateConfiguration(config, ((Activity) con).getBaseContext().getResources().getDisplayMetrics());
+    }
+
+    public static void initializeData(Context con) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(con.getApplicationContext());
+        locale = new Locale(preferences.getString("locale", "en"));
+    }
 
     public static void launchSettings(Context con) {
         context = con;
@@ -16,8 +33,8 @@ public class GlobalFunctions {
     }
 
     public static void showSnack() {
-        if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(context.getResources().getConfiguration().locale.getLanguage())) {
-            Snackbar.make(((Activity) context).findViewById(R.id.userInputLayout), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
+        if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(locale.getLanguage())) {
+            Snackbar.make(((Activity) context).findViewById(R.id.frag), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
         }
     }
 }

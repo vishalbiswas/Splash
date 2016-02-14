@@ -3,17 +3,14 @@ package net.ddns.vishalbiswas.splash;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.View;
 
 public class SplashScreen extends AppCompatActivity {
-    private final int launchDelay = 000;
+    private final int launchDelay = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
@@ -25,6 +22,7 @@ public class SplashScreen extends AppCompatActivity {
                 finish();
             }
         }, launchDelay);
+        GlobalFunctions.initializeData(this);
     }
 
 }
