@@ -26,4 +26,5 @@
 
     <string name="strRemember">Remember me</string>
     <string name="strRememberSummary">Remember the account you login with</string>
+    <string name="restartNotify">Restart is needed to change the language</string>
 </resources>
