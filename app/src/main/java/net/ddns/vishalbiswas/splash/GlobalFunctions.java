@@ -16,7 +16,7 @@ public class GlobalFunctions {
     }
 
     public static void showSnack() {
-        if (PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(context.getResources().getConfiguration().locale.getLanguage())) {
+        if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(context.getResources().getConfiguration().locale.getLanguage())) {
             Snackbar.make(((Activity) context).findViewById(R.id.userInputLayout), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
         }
     }
