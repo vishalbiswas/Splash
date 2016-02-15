@@ -1,18 +1,30 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-
+    <PreferenceCategory
+        android:key="general"
+        android:title="@string/pref_general">
     <ListPreference
         android:defaultValue="en"
         android:entries="@array/lang_list"
         android:entryValues="@array/lang_list_values"
         android:key="locale"
-        android:title="@string/strLanguage"
         android:negativeButtonText="@null"
-        android:positiveButtonText="@null" />
+        android:positiveButtonText="@null"
+        android:title="@string/strLanguage" />
 
     <CheckBoxPreference
         android:defaultValue="false"
-        android:title="@string/strRemember"
+        android:key="remember"
         android:summary="@string/strRememberSummary"
-        android:key="remember" />
-
+        android:title="@string/strRemember" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="sources"
+        android:title="@string/strSource">
+        <MultiSelectListPreference
+            android:defaultValue="@array/arrSourcesNDTVValues"
+            android:entries="@array/arrSourcesNDTV"
+            android:entryValues="@array/arrSourcesNDTVValues"
+            android:key="sourcesNDTV"
+            android:title="@string/strSourceNDTV" />
+    </PreferenceCategory>
 </PreferenceScreen>

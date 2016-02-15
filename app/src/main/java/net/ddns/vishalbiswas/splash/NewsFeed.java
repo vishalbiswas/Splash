@@ -2,6 +2,8 @@ package net.ddns.vishalbiswas.splash;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,12 +20,17 @@ public class NewsFeed extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        txtMessage = (TextView)findViewById(R.id.txtMessage);
+        //txtMessage = (TextView)findViewById(R.id.txtMessage);
 
         String username = getIntent().getStringExtra("net.ddns.vishalbiswas.splash.EXTRA_USERNAME");
         String password = getIntent().getStringExtra("net.ddns.vishalbiswas.splash.EXTRA_PASSWORD");
 
-        txtMessage.setText(String.format("%s: %s\n%s: %s", getText(R.string.msgUsername), username, getText(R.string.msgPassword), password));
+        //txtMessage.setText(String.format("%s: %s\n%s: %s", getText(R.string.msgUsername), username, getText(R.string.msgPassword), password));
+        AppCompatImageView imgWelcome = (AppCompatImageView) findViewById(R.id.imgWelcome);
+        AppCompatTextView txtWelcome = (AppCompatTextView) findViewById(R.id.txtWelcome);
+        imgWelcome.setImageResource(R.mipmap.ic_launcher);
+        txtWelcome.setText(username);
+
     }
 
     @Override
