@@ -15,10 +15,10 @@ import java.net.URL;
 import java.util.HashSet;
 
 public class SplashScreen extends AppCompatActivity {
-    //private final int launchDelay = 5000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        GlobalFunctions.initializeData(SplashScreen.this);
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
@@ -26,7 +26,6 @@ public class SplashScreen extends AppCompatActivity {
         class pingNetworks extends AsyncTask<Void, Void, Void> {
             @Override
             protected Void doInBackground(Void... params) {
-                GlobalFunctions.initializeData(SplashScreen.this);
                 ConnectivityManager connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = connMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.isConnected()) {
