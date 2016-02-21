@@ -18,8 +18,8 @@ public class SplashScreen extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        GlobalFunctions.initializeData(SplashScreen.this);
         GlobalFunctions.lookupLocale(this);
+        GlobalFunctions.initializeData(SplashScreen.this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
