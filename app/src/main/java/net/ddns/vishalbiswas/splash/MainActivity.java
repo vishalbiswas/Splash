@@ -1,7 +1,9 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
@@ -29,6 +31,12 @@ public class MainActivity extends AppCompatActivity {
         btnLogin=(AppCompatButton)findViewById(R.id.btnLogin);
         btnRegister = (AppCompatButton) findViewById(R.id.btnRegister);
 
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (sharedPreferences.getBoolean("remember", false)) {
+            txtUsername.setText(sharedPreferences.getString("username", ""));
+            txtPassword.setText(sharedPreferences.getString("password", ""));
+        }
+
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -40,6 +48,13 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(EXTRA_USERNAME, username);
                     intent.putExtra(EXTRA_PASSWORD, password);
                     startActivity(intent);
+                    if (sharedPreferences.getBoolean("remember", false)) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("username", username);
+                        editor.putString("password", password);
+                        editor.apply();
+                    }
+                    finish();
                 }
                 else {
                     Snackbar.make(v,getText(R.string.error_credentials),Snackbar.LENGTH_LONG).show();
