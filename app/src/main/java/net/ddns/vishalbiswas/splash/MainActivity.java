@@ -33,8 +33,12 @@ public class MainActivity extends AppCompatActivity {
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPreferences.getBoolean("remember", false)) {
-            txtUsername.setText(sharedPreferences.getString("username", ""));
-            txtPassword.setText(sharedPreferences.getString("password", ""));
+            if (sharedPreferences.getBoolean("autolog", false)) {
+                doLogin();
+            } else {
+                txtUsername.setText(sharedPreferences.getString("username", ""));
+                txtPassword.setText(sharedPreferences.getString("password", ""));
+            }
         }
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
@@ -44,17 +48,14 @@ public class MainActivity extends AppCompatActivity {
                     String username = txtUsername.getText().toString();
                     String password = txtPassword.getText().toString();
 
-                    Intent intent = new Intent(MainActivity.this, NewsFeed.class);
-                    intent.putExtra(EXTRA_USERNAME, username);
-                    intent.putExtra(EXTRA_PASSWORD, password);
-                    startActivity(intent);
+                    GlobalFunctions.setUsername(username);
                     if (sharedPreferences.getBoolean("remember", false)) {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("username", username);
                         editor.putString("password", password);
                         editor.apply();
                     }
-                    finish();
+                    doLogin();
                 }
                 else {
                     Snackbar.make(v,getText(R.string.error_credentials),Snackbar.LENGTH_LONG).show();
@@ -68,6 +69,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, RegisterActivity.class));
             }
         });
+    }
+
+    private void doLogin() {
+        Intent intent = new Intent(MainActivity.this, NewsFeed.class);
+        intent.putExtra(EXTRA_USERNAME, GlobalFunctions.getUsername());
+        startActivity(intent);
+        finish();
     }
 
     private boolean checkEmpty() {

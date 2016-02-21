@@ -16,6 +16,12 @@
         android:key="remember"
         android:summary="@string/strRememberSummary"
         android:title="@string/strRemember" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="remember"
+            android:key="autolog"
+            android:summary="@string/strAutologSummary"
+            android:title="@string/strAutolog" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="sources"

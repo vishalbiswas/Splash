@@ -14,6 +14,7 @@ import java.util.Locale;
 public class GlobalFunctions extends Application {
     private static Context context;
     private static Locale locale;
+    private static String username;
 
     public static void lookupLocale(Context con) {
         if (locale == null) initializeData(con);
@@ -37,6 +38,14 @@ public class GlobalFunctions extends Application {
         if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(locale.getLanguage())) {
             Snackbar.make(((Activity) context).findViewById(R.id.frag), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
+    public static void setUsername(String user) {
+        username = user;
     }
 
     @Override
