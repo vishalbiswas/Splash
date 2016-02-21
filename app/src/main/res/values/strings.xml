@@ -46,7 +46,7 @@
     </string-array>
 
     <string name="strSource">Sources</string>
-    <string name="strSourceNDTV">NDTV</string>
+    <string name="strSourceNDTV" translatable="false">NDTV</string>
 
     <string-array name="arrSourcesNDTV">
         <item>@string/ndtvTop</item>

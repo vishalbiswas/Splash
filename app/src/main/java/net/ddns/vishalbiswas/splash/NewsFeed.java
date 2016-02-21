@@ -14,8 +14,8 @@ public class NewsFeed extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
+        GlobalFunctions.lookupLocale(this);
         setContentView(R.layout.activity_news_feed);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarNews);
         setSupportActionBar(toolbar);

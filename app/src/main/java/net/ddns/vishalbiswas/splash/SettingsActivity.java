@@ -19,8 +19,8 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
+        GlobalFunctions.lookupLocale(this);
         setContentView(R.layout.activity_settings);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarSettings);
         setSupportActionBar(toolbar);

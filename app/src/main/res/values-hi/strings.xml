@@ -23,4 +23,25 @@
     <string name="regPassword">पासवर्ड</string>
     <string name="regUser">उपयोगकर्ता नाम</string>
     <string name="regEmail">ईमेल</string>
+    <string name="ndtvAndhra">आंध्र प्रदेश खबर</string>
+    <string name="ndtvBusiness">व्यापार</string>
+    <string name="ndtvCities">शहर खबर</string>
+    <string name="ndtvCricket">क्रिकेट</string>
+    <string name="ndtvIndia">भारत समाचार</string>
+    <string name="ndtvKarnataka">कर्नाटक खबर</string>
+    <string name="ndtvKerala">केरल खबर</string>
+    <string name="ndtvMovies">चलचित्र</string>
+    <string name="ndtvOther">अन्य खेल</string>
+    <string name="ndtvPerson">व्यक्तित्व</string>
+    <string name="ndtvPhotos">तस्वीरें</string>
+    <string name="ndtvTamil">तमिलनाडु खबर</string>
+    <string name="ndtvTech">प्रौद्योगिकी समाचार</string>
+    <string name="ndtvTop">शीर्ष आलेख</string>
+    <string name="ndtvTrending">रुझान कहानियां</string>
+    <string name="ndtvVideos">वीडियो</string>
+    <string name="ndtvWorld">विश्व समाचार</string>
+    <string name="regButton">रजिस्टर</string>
+    <string name="title_activity_register">रजिस्टर</string>
+    <string name="strAutolog">ऑटो लॉगऑन</string>
+    <string name="strAutologSummary">पिछले खाते के साथ स्वचालित रूप से प्रवेश</string>
 </resources>
