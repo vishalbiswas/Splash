@@ -17,15 +17,11 @@ public class NewsFeed extends AppCompatActivity {
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_feed);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarNews);
         setSupportActionBar(toolbar);
 
-        //txtMessage = (TextView)findViewById(R.id.txtMessage);
-
         String username = getIntent().getStringExtra("net.ddns.vishalbiswas.splash.EXTRA_USERNAME");
-        String password = getIntent().getStringExtra("net.ddns.vishalbiswas.splash.EXTRA_PASSWORD");
 
-        //txtMessage.setText(String.format("%s: %s\n%s: %s", getText(R.string.msgUsername), username, getText(R.string.msgPassword), password));
         AppCompatImageView imgWelcome = (AppCompatImageView) findViewById(R.id.imgWelcome);
         AppCompatTextView txtWelcome = (AppCompatTextView) findViewById(R.id.txtWelcome);
         imgWelcome.setImageResource(R.mipmap.ic_launcher);

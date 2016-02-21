@@ -29,13 +29,15 @@ public class SplashScreen extends AppCompatActivity {
                 ConnectivityManager connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo netInfo = connMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.isConnected()) {
+                    URL urlServer;
+                    HttpURLConnection urlConn;
                     for (
                             final String source
                             : PreferenceManager.getDefaultSharedPreferences(SplashScreen.this).getStringSet("sourcesNDTV", new HashSet<String>())
                             ) {
                         try {
-                            URL urlServer = new URL(source);
-                            HttpURLConnection urlConn = (HttpURLConnection) urlServer.openConnection();
+                            urlServer = new URL(source);
+                            urlConn = (HttpURLConnection) urlServer.openConnection();
                             urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
                             urlConn.connect();
                             if (urlConn.getResponseCode() != 200) {

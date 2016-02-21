@@ -94,4 +94,9 @@
     <string name="strRememberSummary">Remember the account you login with</string>
     <string name="restartNotify">Restart is needed to change the language</string>
     <string name="pref_general">General</string>
+    <string name="title_activity_register">Register</string>
+    <string name="regUser">Username</string>
+    <string name="regEmail">Email</string>
+    <string name="regPassword">Password</string>
+    <string name="regButton">Register</string>
 </resources>

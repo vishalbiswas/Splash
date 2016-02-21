@@ -20,4 +20,7 @@
     <string name="ndtvLatest">NDTV ताज़ा खबर</string>
     <string name="reutersTop">Reuters समाचार</string>
     <string name="strSource">सूत्रे</string>
+    <string name="regPassword">पासवर्ड</string>
+    <string name="regUser">उपयोगकर्ता नाम</string>
+    <string name="regEmail">ईमेल</string>
 </resources>

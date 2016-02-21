@@ -14,19 +14,20 @@ import android.widget.EditText;
 public class MainActivity extends AppCompatActivity {
     static final String EXTRA_USERNAME = "net.ddns.vishalbiswas.splash.EXTRA_USERNAME", EXTRA_PASSWORD = "net.ddns.vishalbiswas.splash.EXTRA_PASSWORD";
     private EditText txtUsername, txtPassword;
-    private AppCompatButton btnLogin;
+    private AppCompatButton btnLogin, btnRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         GlobalFunctions.lookupLocale(this);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarLogin);
         setSupportActionBar(toolbar);
 
         txtUsername=(EditText)findViewById(R.id.txtUsername);
         txtPassword=(EditText)findViewById(R.id.txtPassword);
         btnLogin=(AppCompatButton)findViewById(R.id.btnLogin);
+        btnRegister = (AppCompatButton) findViewById(R.id.btnRegister);
 
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -43,6 +44,13 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     Snackbar.make(v,getText(R.string.error_credentials),Snackbar.LENGTH_LONG).show();
                 }
+            }
+        });
+
+        btnRegister.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
             }
         });
     }

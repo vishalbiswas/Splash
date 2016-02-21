@@ -22,9 +22,8 @@ public class SettingsActivity extends AppCompatActivity {
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarSettings);
         setSupportActionBar(toolbar);
-
         getFragmentManager().beginTransaction().add(R.id.frag, new GeneralPreferences()).commit();
 
     }
@@ -48,11 +47,9 @@ public class SettingsActivity extends AppCompatActivity {
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
-            //for (int i = 0;i<getPreferenceScreen().getPreferenceCount();++i) getPreferenceScreen().getPreference(i).setOnPreferenceChangeListener(bindSummaryChange);
             ListPreference listPreference = (ListPreference) findPreference("locale");
             listPreference.setOnPreferenceChangeListener(bindSummaryChange);
             bindSummary(listPreference, PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("locale", "en"));
-            //listPreference.setSummary(listPreference.getEntries()[listPreference.findIndexOfValue(]);
         }
 
     }

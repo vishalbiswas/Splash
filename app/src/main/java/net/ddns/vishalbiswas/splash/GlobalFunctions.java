@@ -1,6 +1,7 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +11,7 @@ import android.support.design.widget.Snackbar;
 
 import java.util.Locale;
 
-public class GlobalFunctions {
+public class GlobalFunctions extends Application {
     private static Context context;
     private static Locale locale;
 
@@ -36,5 +37,11 @@ public class GlobalFunctions {
         if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(locale.getLanguage())) {
             Snackbar.make(((Activity) context).findViewById(R.id.frag), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 }
