@@ -2,14 +2,13 @@ package net.ddns.vishalbiswas.splash;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatButton;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.support.design.widget.*;
-import android.view.View.*;
 import android.view.View;
+import android.view.View.OnClickListener;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -21,13 +20,7 @@ public class RegisterActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarRegister);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
 
-    @Override
-    protected void onStart()
-    {
-        // TODO: Implement this method
-        super.onStart();
         AppCompatButton regButton = (AppCompatButton) findViewById(R.id.regButton);
         regButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -35,19 +28,46 @@ public class RegisterActivity extends AppCompatActivity {
                 validateFields();
             }
         });
-        
     }
 
     private boolean validateFields() {
-        AppCompatEditText username = (AppCompatEditText) findViewById(R.id.regUser);
-        AppCompatEditText email = (AppCompatEditText) findViewById(R.id.regEmail);
-        AppCompatEditText password = (AppCompatEditText) findViewById(R.id.regPassword);
-        
-        if (username.length() == 0 || email.length()==0 || password.length() == 0) {
-            Snackbar.make(findViewById(R.id.frag), R.string.errEmpty, Snackbar.LENGTH_LONG);
+        AppCompatEditText viewUsername = (AppCompatEditText) findViewById(R.id.regUser);
+        AppCompatEditText viewEmail = (AppCompatEditText) findViewById(R.id.regEmail);
+        AppCompatEditText viewPassword = (AppCompatEditText) findViewById(R.id.regPassword);
+
+        String username = viewUsername.getText().toString().trim();
+        String email = viewEmail.getText().toString().trim();
+        String password = viewPassword.getText().toString().trim();
+
+        if (username.isEmpty()) {
+            viewUsername.setError(getText(R.string.errEmpty));
+            viewUsername.requestFocus();
             return false;
         }
-        
+
+        if (email.isEmpty()) {
+            viewEmail.setError(getText(R.string.errEmpty));
+            viewEmail.requestFocus();
+            return false;
+        }
+
+        if (password.isEmpty()) {
+            viewPassword.setError(getText(R.string.errEmpty));
+            viewPassword.requestFocus();
+            return false;
+        }
+
+        if (password.length() < 8) {
+            viewPassword.setError(getText(R.string.errShortPass));
+            viewPassword.requestFocus();
+            return false;
+        }
+
+        return checkUsernameAvailability(username);
+    }
+
+    private boolean checkUsernameAvailability(String username) {
+        //TODO: Implement validation through webservice
         return true;
     }
 

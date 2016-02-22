@@ -12,7 +12,7 @@
     <string name="msgUsername">Username</string>
     <string name="msgPassword">Password</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="errEmpty">Field(s) left blank!</string>
+    <string name="errEmpty">Field left blank!</string>
     
     
     <string name="ndtvTop">Top Stories</string>
@@ -103,4 +103,6 @@
     <string name="regEmail">Email</string>
     <string name="regPassword">Password</string>
     <string name="regButton">Register</string>
+    <string name="errInvalidEmail">Invalid email address!</string>
+    <string name="errShortPass">Password should be at least 8 characters</string>
 </resources>
