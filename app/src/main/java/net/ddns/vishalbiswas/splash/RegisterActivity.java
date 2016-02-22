@@ -3,8 +3,13 @@ package net.ddns.vishalbiswas.splash;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatButton;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.design.widget.*;
+import android.view.View.*;
+import android.view.View;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -18,6 +23,33 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    @Override
+    protected void onStart()
+    {
+        // TODO: Implement this method
+        super.onStart();
+        AppCompatButton regButton = (AppCompatButton) findViewById(R.id.regButton);
+        regButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                validateFields();
+            }
+        });
+        
+    }
+
+    private boolean validateFields() {
+        AppCompatEditText username = (AppCompatEditText) findViewById(R.id.regUser);
+        AppCompatEditText email = (AppCompatEditText) findViewById(R.id.regEmail);
+        AppCompatEditText password = (AppCompatEditText) findViewById(R.id.regPassword);
+        
+        if (username.length() == 0 || email.length()==0 || password.length() == 0) {
+            Snackbar.make(findViewById(R.id.frag), R.string.errEmpty, Snackbar.LENGTH_LONG);
+            return false;
+        }
+        
+        return true;
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
