@@ -46,4 +46,5 @@
     <string name="strAutologSummary">पिछले खाते के साथ स्वचालित रूप से प्रवेश</string>
     <string name="errInvalidEmail">अमान्य ईमेल पता!</string>
     <string name="errShortPass">पासवर्ड कम से कम 8 अक्षरों का होना चाहिए</string>
+    <string name="errEmpty">क्षेत्र को खाली छोड़ दिया!</string>
 </resources>
