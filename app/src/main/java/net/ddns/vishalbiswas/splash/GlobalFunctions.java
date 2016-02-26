@@ -15,6 +15,15 @@ public class GlobalFunctions extends Application {
     private static Context context;
     private static Locale locale;
     private static String username;
+    private static HTTP_CODE regStatus;
+
+    public static HTTP_CODE getRegStatus() {
+        return regStatus;
+    }
+
+    public static void setRegStatus(HTTP_CODE regStatus) {
+        GlobalFunctions.regStatus = regStatus;
+    }
 
     public static void lookupLocale(Context con) {
         if (locale == null) initializeData(con);
@@ -52,5 +61,13 @@ public class GlobalFunctions extends Application {
     public void onCreate() {
         super.onCreate();
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+    }
+
+    public enum HTTP_CODE {
+        SUCCESS,
+        FAILED,
+        NO_ACCESS,
+        REQUEST_FAILED,
+        UNKNOWN
     }
 }

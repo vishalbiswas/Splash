@@ -105,4 +105,8 @@
     <string name="regButton">Register</string>
     <string name="errInvalidEmail">Invalid email address!</string>
     <string name="errShortPass">Password should be at least 8 characters</string>
+    <string name="errNameUsed">Username not available!</string>
+    <string name="errNoAccess">Please, enable internet access!</string>
+    <string name="errConFailed">Connection failed!</string>
+    <string name="errUnknown">Unknown error has occurred!</string>
 </resources>

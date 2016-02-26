@@ -1,6 +1,7 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.AppCompatEditText;
@@ -9,6 +10,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+
+import java.util.regex.Pattern;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -25,7 +28,9 @@ public class RegisterActivity extends AppCompatActivity {
         regButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                validateFields();
+                if (validateFields()) {
+                    register();
+                }
             }
         });
     }
@@ -63,12 +68,47 @@ public class RegisterActivity extends AppCompatActivity {
             return false;
         }
 
-        return checkUsernameAvailability(username);
+        final Pattern emailPattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+        if (!(emailPattern.matcher(email).find())) {
+            viewEmail.setError(getText(R.string.errInvalidEmail));
+            viewEmail.requestFocus();
+            return false;
+        }
+
+        checkUsernameAvailability(username);
+
+        switch (GlobalFunctions.getRegStatus()) {
+            case SUCCESS:
+                return true;
+            case FAILED:
+                viewUsername.setError(getString(R.string.errNameUsed));
+                break;
+            case NO_ACCESS:
+                Snackbar.make(findViewById(R.id.frag), getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
+                break;
+            case REQUEST_FAILED:
+                Snackbar.make(findViewById(R.id.frag), getString(R.string.errConFailed), Snackbar.LENGTH_LONG).show();
+                break;
+            case UNKNOWN:
+                Snackbar.make(findViewById(R.id.frag), getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
+        }
+        return false;
     }
 
-    private boolean checkUsernameAvailability(String username) {
-        //TODO: Implement validation through webservice
+    private boolean register() {
+        //TODO: implement registration
         return true;
+    }
+
+    private void checkUsernameAvailability(final String username) {
+        CheckAvailable checkAvailable = new CheckAvailable();
+        try {
+            synchronized (checkAvailable.execute(username)) {
+                wait();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -93,4 +133,6 @@ public class RegisterActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }
