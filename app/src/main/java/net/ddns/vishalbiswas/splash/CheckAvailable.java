@@ -1,6 +1,7 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.os.AsyncTask;
+import android.os.Handler;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,23 +10,23 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
 
 class CheckAvailable extends AsyncTask<String, Void, Void> {
     final String checkURL = "http://vishalbiswas.asuscomm.com/checkuser.php";
+    public Handler handler;
 
     @Override
     protected void onPreExecute() {
-        GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+        GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.BUSY);
     }
 
     @Override
     protected Void doInBackground(String... params) {
         try {
             URL url = new URL(checkURL);
-            HttpsURLConnection webservice = (HttpsURLConnection) url.openConnection();
+            HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
             webservice.setRequestMethod("POST");
             webservice.setConnectTimeout(3000);
             String postMessage = String.format("user=%s", params[0]);
@@ -36,7 +37,7 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
             outputStream.flush();
             outputStream.close();
 
-            if (webservice.getResponseCode() == HttpsURLConnection.HTTP_OK) {
+            if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
                 String line;
                 StringBuilder response = new StringBuilder();
@@ -62,5 +63,10 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
             GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        handler.sendEmptyMessage(0);
     }
 }

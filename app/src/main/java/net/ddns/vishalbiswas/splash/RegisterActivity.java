@@ -1,19 +1,33 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatButton;
-import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-
-import java.util.regex.Pattern;
+import android.widget.Button;
+import android.widget.EditText;
 
 public class RegisterActivity extends AppCompatActivity {
+    EditText viewUsername;
+    final public Handler regHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    checkStatus();
+                    register();
+            }
+        }
+    };
+    EditText viewEmail;
+    EditText viewPassword;
+    Button regButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,59 +38,59 @@ public class RegisterActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        AppCompatButton regButton = (AppCompatButton) findViewById(R.id.regButton);
+        viewUsername = (EditText) findViewById(R.id.regUser);
+        viewEmail = (EditText) findViewById(R.id.regEmail);
+        viewPassword = (EditText) findViewById(R.id.regPassword);
+        regButton = (Button) findViewById(R.id.regButton);
+
         regButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (validateFields()) {
-                    register();
+                if (GlobalFunctions.getRegStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
+                    validateFields();
+                } else {
+                    Snackbar.make(findViewById(R.id.frag), R.string.warnRegBusy, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
     }
 
     private boolean validateFields() {
-        AppCompatEditText viewUsername = (AppCompatEditText) findViewById(R.id.regUser);
-        AppCompatEditText viewEmail = (AppCompatEditText) findViewById(R.id.regEmail);
-        AppCompatEditText viewPassword = (AppCompatEditText) findViewById(R.id.regPassword);
-
         String username = viewUsername.getText().toString().trim();
         String email = viewEmail.getText().toString().trim();
         String password = viewPassword.getText().toString().trim();
 
-        if (username.isEmpty()) {
-            viewUsername.setError(getText(R.string.errEmpty));
+        FieldValidator fieldValidator = new FieldValidator();
+
+        int resultCode = fieldValidator.validateUsername(username);
+        if (resultCode != -1) {
+            viewUsername.setError(getString(resultCode));
             viewUsername.requestFocus();
             return false;
         }
 
-        if (email.isEmpty()) {
-            viewEmail.setError(getText(R.string.errEmpty));
+        resultCode = fieldValidator.validateEmail(email);
+        if (resultCode != -1) {
+            viewEmail.setError(getString(resultCode));
             viewEmail.requestFocus();
             return false;
         }
 
-        if (password.isEmpty()) {
-            viewPassword.setError(getText(R.string.errEmpty));
+        resultCode = fieldValidator.validatePassword(password);
+        if (resultCode != -1) {
+            viewPassword.setError(getString(resultCode));
             viewPassword.requestFocus();
             return false;
         }
 
-        if (password.length() < 8) {
-            viewPassword.setError(getText(R.string.errShortPass));
-            viewPassword.requestFocus();
-            return false;
-        }
+        CheckAvailable checkAvailable = new CheckAvailable();
+        checkAvailable.handler = regHandler;
+        checkAvailable.execute(username);
 
-        final Pattern emailPattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-        if (!(emailPattern.matcher(email).find())) {
-            viewEmail.setError(getText(R.string.errInvalidEmail));
-            viewEmail.requestFocus();
-            return false;
-        }
+        return true;
+    }
 
-        checkUsernameAvailability(username);
-
+    private boolean checkStatus() {
         switch (GlobalFunctions.getRegStatus()) {
             case SUCCESS:
                 return true;
@@ -98,17 +112,6 @@ public class RegisterActivity extends AppCompatActivity {
     private boolean register() {
         //TODO: implement registration
         return true;
-    }
-
-    private void checkUsernameAvailability(final String username) {
-        CheckAvailable checkAvailable = new CheckAvailable();
-        try {
-            synchronized (checkAvailable.execute(username)) {
-                wait();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override

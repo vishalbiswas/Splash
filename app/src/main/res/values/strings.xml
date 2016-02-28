@@ -109,4 +109,5 @@
     <string name="errNoAccess">Please, enable internet access!</string>
     <string name="errConFailed">Connection failed!</string>
     <string name="errUnknown">Unknown error has occurred!</string>
+    <string name="warnRegBusy">Already working on it…</string>
 </resources>

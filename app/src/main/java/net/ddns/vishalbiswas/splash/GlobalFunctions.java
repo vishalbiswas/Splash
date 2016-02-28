@@ -68,6 +68,7 @@ public class GlobalFunctions extends Application {
         FAILED,
         NO_ACCESS,
         REQUEST_FAILED,
+        BUSY,
         UNKNOWN
     }
 }
