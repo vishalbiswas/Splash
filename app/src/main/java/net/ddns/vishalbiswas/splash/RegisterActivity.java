@@ -1,5 +1,6 @@
 package net.ddns.vishalbiswas.splash;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -13,9 +14,16 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.util.regex.Pattern;
+
 public class RegisterActivity extends AppCompatActivity {
-    EditText viewUsername;
-    final public Handler regHandler = new Handler() {
+    static EditText viewUsername;
+    static EditText viewEmail;
+    static EditText viewPassword;
+    static Button regButton;
+    static View snackLayout;
+
+    public static Handler regHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -25,9 +33,30 @@ public class RegisterActivity extends AppCompatActivity {
             }
         }
     };
-    EditText viewEmail;
-    EditText viewPassword;
-    Button regButton;
+
+    private static boolean checkStatus() {
+        switch (GlobalFunctions.getRegStatus()) {
+            case SUCCESS:
+                return true;
+            case FAILED:
+                FieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
+                break;
+            case NO_ACCESS:
+                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
+                break;
+            case REQUEST_FAILED:
+                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errConFailed), Snackbar.LENGTH_LONG).show();
+                break;
+            case UNKNOWN:
+                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
+        }
+        return false;
+    }
+
+    private static boolean register() {
+        //TODO: implement registration
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,76 +71,50 @@ public class RegisterActivity extends AppCompatActivity {
         viewEmail = (EditText) findViewById(R.id.regEmail);
         viewPassword = (EditText) findViewById(R.id.regPassword);
         regButton = (Button) findViewById(R.id.regButton);
+        snackLayout = findViewById(R.id.frag);
+
+        FieldValidator.errorProvider = new ErrorProvider();
+        FieldValidator.context = this;
+
+        viewUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    FieldValidator.validateUsername(viewUsername.getText().toString());
+                }
+            }
+        });
+
+        viewEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    FieldValidator.validateEmail(((EditText) v).getText().toString());
+                }
+            }
+        });
+
+        viewPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus) {
+                    FieldValidator.validatePassword(((EditText) v).getText().toString());
+                }
+            }
+        });
 
         regButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (GlobalFunctions.getRegStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    validateFields();
+                    if (viewUsername.getError() == null && viewEmail == null && viewPassword == null && GlobalFunctions.getRegStatus() == GlobalFunctions.HTTP_CODE.SUCCESS) {
+                        register();
+                    }
                 } else {
                     Snackbar.make(findViewById(R.id.frag), R.string.warnRegBusy, Snackbar.LENGTH_LONG).show();
                 }
             }
         });
-    }
-
-    private boolean validateFields() {
-        String username = viewUsername.getText().toString().trim();
-        String email = viewEmail.getText().toString().trim();
-        String password = viewPassword.getText().toString().trim();
-
-        FieldValidator fieldValidator = new FieldValidator();
-
-        int resultCode = fieldValidator.validateUsername(username);
-        if (resultCode != -1) {
-            viewUsername.setError(getString(resultCode));
-            viewUsername.requestFocus();
-            return false;
-        }
-
-        resultCode = fieldValidator.validateEmail(email);
-        if (resultCode != -1) {
-            viewEmail.setError(getString(resultCode));
-            viewEmail.requestFocus();
-            return false;
-        }
-
-        resultCode = fieldValidator.validatePassword(password);
-        if (resultCode != -1) {
-            viewPassword.setError(getString(resultCode));
-            viewPassword.requestFocus();
-            return false;
-        }
-
-        CheckAvailable checkAvailable = new CheckAvailable();
-        checkAvailable.handler = regHandler;
-        checkAvailable.execute(username);
-
-        return true;
-    }
-
-    private boolean checkStatus() {
-        switch (GlobalFunctions.getRegStatus()) {
-            case SUCCESS:
-                return true;
-            case FAILED:
-                viewUsername.setError(getString(R.string.errNameUsed));
-                break;
-            case NO_ACCESS:
-                Snackbar.make(findViewById(R.id.frag), getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
-                break;
-            case REQUEST_FAILED:
-                Snackbar.make(findViewById(R.id.frag), getString(R.string.errConFailed), Snackbar.LENGTH_LONG).show();
-                break;
-            case UNKNOWN:
-                Snackbar.make(findViewById(R.id.frag), getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
-        }
-        return false;
-    }
-
-    private boolean register() {
-        //TODO: implement registration
-        return true;
     }
 
     @Override
@@ -137,5 +140,75 @@ public class RegisterActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    static class FieldValidator {
+        static String username;
+        static String email;
+        static String password;
+        static ErrorProvider errorProvider;
+        static Context context;
 
+        public FieldValidator(ErrorProvider errorProvider, Context context) {
+            FieldValidator.errorProvider = errorProvider;
+            FieldValidator.context = context;
+        }
+
+        public static void validateUsername(final String username) {
+            if (FieldValidator.username == null || !(username.equals(FieldValidator.username))) {
+                if (username.isEmpty()) {
+                    errorProvider.setErrorUsername(R.string.errEmpty);
+                    return;
+                }
+
+                CheckAvailable checkAvailable = new CheckAvailable();
+                checkAvailable.handler = regHandler;
+                checkAvailable.execute(username);
+                FieldValidator.username = username;
+            }
+        }
+
+        public static void validateEmail(final String email) {
+            if (FieldValidator.email == null || !email.equals(FieldValidator.email)) {
+                if (email.isEmpty()) {
+                    errorProvider.setErrorEmail(R.string.errEmpty);
+                    return;
+                }
+
+                final Pattern emailPattern = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+                if (!(emailPattern.matcher(email).find())) {
+                    errorProvider.setErrorEmail(R.string.errInvalidEmail);
+                    return;
+                }
+                FieldValidator.email = email;
+            }
+        }
+
+        public static void validatePassword(final String password) {
+            if (FieldValidator.password == null || !password.equals(FieldValidator.password)) {
+                if (password.isEmpty()) {
+                    errorProvider.setErrorPassword(R.string.errEmpty);
+                    return;
+                }
+
+                if (password.length() < 8) {
+                    errorProvider.setErrorPassword(R.string.errShortPass);
+                    return;
+                }
+                FieldValidator.password = password;
+            }
+        }
+    }
+
+    class ErrorProvider {
+        public void setErrorUsername(int resId) {
+            viewUsername.setError(getString(resId));
+        }
+
+        public void setErrorEmail(int resId) {
+            viewEmail.setError(getString(resId));
+        }
+
+        public void setErrorPassword(int resId) {
+            viewPassword.setError(getString(resId));
+        }
+    }
 }

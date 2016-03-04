@@ -47,7 +47,7 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
                 }
                 bufferedReader.close();
                 JSONObject jsonObject = new JSONObject(response.toString());
-                Boolean isAvailable = jsonObject.getBoolean("available");
+                Boolean isAvailable = jsonObject.getBoolean("user");
 
                 if (isAvailable) {
                     GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
