@@ -15,14 +15,15 @@ public class GlobalFunctions extends Application {
     private static Context context;
     private static Locale locale;
     private static String username;
-    private static HTTP_CODE regStatus;
+    private static HTTP_CODE regNameStatus;
+    private static HTTP_CODE regEmailStatus;
 
-    public static HTTP_CODE getRegStatus() {
-        return regStatus;
+    public static HTTP_CODE getRegNameStatus() {
+        return regNameStatus;
     }
 
-    public static void setRegStatus(HTTP_CODE regStatus) {
-        GlobalFunctions.regStatus = regStatus;
+    public static void setRegNameStatus(HTTP_CODE regNameStatus) {
+        GlobalFunctions.regNameStatus = regNameStatus;
     }
 
     public static void lookupLocale(Context con) {
@@ -55,6 +56,18 @@ public class GlobalFunctions extends Application {
 
     public static void setUsername(String user) {
         username = user;
+    }
+
+    public static HTTP_CODE getRegEmailStatus() {
+        return regEmailStatus;
+    }
+
+    public static void setRegEmailStatus(HTTP_CODE regEmailStatus) {
+        GlobalFunctions.regEmailStatus = regEmailStatus;
+    }
+
+    public static boolean getRegStatus() {
+        return regNameStatus == HTTP_CODE.SUCCESS && regEmailStatus == HTTP_CODE.SUCCESS;
     }
 
     @Override

@@ -16,21 +16,32 @@ import java.net.URL;
 class CheckAvailable extends AsyncTask<String, Void, Void> {
     final String checkURL = "http://vishalbiswas.asuscomm.com/checkuser.php";
     public Handler handler;
-
-    @Override
-    protected void onPreExecute() {
-        GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.BUSY);
-    }
+    int message = 0;
 
     @Override
     protected Void doInBackground(String... params) {
+        Boolean checkForUser = true;
+        String postMessage = String.format("user=%s", params[0]);
+
+        if (params.length == 2) {
+            if (params[1].equals("email")) {
+                postMessage = String.format("email=%s", params[0]);
+                message = 1;
+                checkForUser = false;
+            }
+        }
+
+        if (checkForUser) {
+            GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
+        } else {
+            GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.BUSY);
+        }
+
         try {
             URL url = new URL(checkURL);
             HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
             webservice.setRequestMethod("POST");
             webservice.setConnectTimeout(3000);
-            String postMessage = String.format("user=%s", params[0]);
-
             webservice.setDoOutput(true);
             OutputStream outputStream = webservice.getOutputStream();
             outputStream.write(postMessage.getBytes());
@@ -47,26 +58,47 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
                 }
                 bufferedReader.close();
                 JSONObject jsonObject = new JSONObject(response.toString());
-                Boolean isAvailable = jsonObject.getBoolean("user");
+                Boolean isAvailable;
+                if (checkForUser) {
+                    isAvailable = jsonObject.getBoolean("user");
+                } else {
+                    isAvailable = jsonObject.getBoolean("email");
+                }
 
                 if (isAvailable) {
-                    GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
+                    if (checkForUser) {
+                        GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
+                    } else {
+                        GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
+                    }
                 } else {
-                    GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.FAILED);
+                    if (checkForUser) {
+                        GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.FAILED);
+                    } else {
+                        GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.FAILED);
+                    }
                 }
             } else {
-                GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
+                if (checkForUser) {
+                    GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
+                } else {
+                    GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
+                }
             }
 
         } catch (IOException | JSONException e) {
             e.printStackTrace();
-            GlobalFunctions.setRegStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+            if (checkForUser) {
+                GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+            } else {
+                GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+            }
         }
         return null;
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        handler.sendEmptyMessage(0);
+        handler.sendEmptyMessage(message);
     }
 }

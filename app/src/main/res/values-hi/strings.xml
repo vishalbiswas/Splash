@@ -51,5 +51,6 @@
     <string name="errNameUsed">उपयोगकर्ता नाम उपलब्ध नहीं!</string>
     <string name="errNoAccess">कृपया, इंटरनेट एक्सेस सक्षम!</string>
     <string name="errUnknown">अज्ञात त्रुटि हुई है!</string>
-    <string name="warnRegBusy">पहले ही इस पर काम कर रहा है ...</string>
+    <string name="warnRegBusy">पहले ही इस पर काम चल रहा है …</string>
+    <string name="errEmailUsed">ईमेल एड्रेस पहले से ही दर्ज है!</string>
 </resources>

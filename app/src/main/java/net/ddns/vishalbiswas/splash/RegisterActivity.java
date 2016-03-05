@@ -28,18 +28,25 @@ public class RegisterActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    checkStatus();
-                    register();
+                    checkStatus(true, GlobalFunctions.getRegNameStatus());
+                    break;
+                case 1:
+                    checkStatus(false, GlobalFunctions.getRegEmailStatus());
+                    break;
             }
         }
     };
 
-    private static boolean checkStatus() {
-        switch (GlobalFunctions.getRegStatus()) {
+    private static boolean checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
+        switch (code) {
             case SUCCESS:
                 return true;
             case FAILED:
-                FieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
+                if (checkForUser) {
+                    FieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
+                } else {
+                    FieldValidator.errorProvider.setErrorEmail(R.string.errEmailUsed);
+                }
                 break;
             case NO_ACCESS:
                 Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
@@ -106,8 +113,8 @@ public class RegisterActivity extends AppCompatActivity {
         regButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (GlobalFunctions.getRegStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    if (viewUsername.getError() == null && viewEmail == null && viewPassword == null && GlobalFunctions.getRegStatus() == GlobalFunctions.HTTP_CODE.SUCCESS) {
+                if (GlobalFunctions.getRegNameStatus() != GlobalFunctions.HTTP_CODE.BUSY && GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
+                    if (viewUsername.getError() == null && viewEmail == null && viewPassword == null && GlobalFunctions.getRegStatus()) {
                         register();
                     }
                 } else {
@@ -178,6 +185,10 @@ public class RegisterActivity extends AppCompatActivity {
                     errorProvider.setErrorEmail(R.string.errInvalidEmail);
                     return;
                 }
+
+                CheckAvailable checkAvailable = new CheckAvailable();
+                checkAvailable.handler = regHandler;
+                checkAvailable.execute(email, "email");
                 FieldValidator.email = email;
             }
         }
