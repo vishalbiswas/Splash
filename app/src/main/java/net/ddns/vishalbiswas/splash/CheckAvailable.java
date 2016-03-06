@@ -15,8 +15,8 @@ import java.net.URL;
 
 class CheckAvailable extends AsyncTask<String, Void, Void> {
     final String checkURL = "http://vishalbiswas.asuscomm.com/checkuser.php";
-    public Handler handler;
-    int message = 0;
+    int message = -1;
+    private Handler handler;
 
     @Override
     protected Void doInBackground(String... params) {
@@ -26,7 +26,7 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
         if (params.length == 2) {
             if (params[1].equals("email")) {
                 postMessage = String.format("email=%s", params[0]);
-                message = 1;
+                message = -2;
                 checkForUser = false;
             }
         }
@@ -99,6 +99,14 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        handler.sendEmptyMessage(message);
+        getHandler().sendEmptyMessage(message);
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 }

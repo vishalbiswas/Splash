@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import java.util.regex.Pattern;
 
@@ -22,47 +23,78 @@ public class RegisterActivity extends AppCompatActivity {
     static EditText viewPassword;
     static Button regButton;
     static View snackLayout;
+    final FieldValidator fieldValidator = new FieldValidator(new ErrorProvider(), this);
 
-    public static Handler regHandler = new Handler() {
+    public Handler regHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case 0:
+                case -1:
                     checkStatus(true, GlobalFunctions.getRegNameStatus());
                     break;
-                case 1:
+                case -2:
                     checkStatus(false, GlobalFunctions.getRegEmailStatus());
+                    break;
+                case 0:
+                    Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_LONG).show();
+                    finish();
+                    break;
+                default:
+                    failed(msg.what);
                     break;
             }
         }
     };
 
-    private static boolean checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
+    private void failed(int errorCode) {
+        int errorMessageResId = R.string.errUnknown;
+        switch (errorCode) {
+            case 1:
+                errorMessageResId = R.string.errServer;
+                break;
+            case 2:
+                errorMessageResId = R.string.errUsername;
+                break;
+            case 3:
+                errorMessageResId = R.string.errEmail;
+                break;
+            case 4:
+                errorMessageResId = R.string.errPassword;
+                break;
+            case 5:
+                errorMessageResId = R.string.errRequest;
+                break;
+        }
+        Snackbar.make(findViewById(R.id.frag), errorMessageResId, Snackbar.LENGTH_LONG).show();
+    }
+
+    private boolean checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
         switch (code) {
             case SUCCESS:
                 return true;
             case FAILED:
                 if (checkForUser) {
-                    FieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
+                    fieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
                 } else {
-                    FieldValidator.errorProvider.setErrorEmail(R.string.errEmailUsed);
+                    fieldValidator.errorProvider.setErrorEmail(R.string.errEmailUsed);
                 }
                 break;
             case NO_ACCESS:
-                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(snackLayout, getString(R.string.errNoAccess), Snackbar.LENGTH_LONG).show();
                 break;
             case REQUEST_FAILED:
-                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errConFailed), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(snackLayout, getString(R.string.errConFailed), Snackbar.LENGTH_LONG).show();
                 break;
             case UNKNOWN:
-                Snackbar.make(snackLayout, FieldValidator.context.getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
+                Snackbar.make(snackLayout, getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
         }
         return false;
     }
 
-    private static boolean register() {
-        //TODO: implement registration
-        return true;
+    private void register() {
+        AsyncRegister register = new AsyncRegister();
+        register.setHandler(regHandler);
+        register.execute(viewUsername.getText().toString(), viewEmail.getText().toString(), viewPassword.getText().toString());
     }
 
     @Override
@@ -80,14 +112,11 @@ public class RegisterActivity extends AppCompatActivity {
         regButton = (Button) findViewById(R.id.regButton);
         snackLayout = findViewById(R.id.frag);
 
-        FieldValidator.errorProvider = new ErrorProvider();
-        FieldValidator.context = this;
-
         viewUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    FieldValidator.validateUsername(viewUsername.getText().toString());
+                    fieldValidator.validateUsername(((EditText) v).getText().toString());
                 }
             }
         });
@@ -96,7 +125,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    FieldValidator.validateEmail(((EditText) v).getText().toString());
+                    fieldValidator.validateEmail(((EditText) v).getText().toString());
                 }
             }
         });
@@ -105,7 +134,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus) {
-                    FieldValidator.validatePassword(((EditText) v).getText().toString());
+                    fieldValidator.validatePassword(((EditText) v).getText().toString());
                 }
             }
         });
@@ -114,7 +143,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (GlobalFunctions.getRegNameStatus() != GlobalFunctions.HTTP_CODE.BUSY && GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    if (viewUsername.getError() == null && viewEmail == null && viewPassword == null && GlobalFunctions.getRegStatus()) {
+                    if (viewUsername.getError() == null && viewEmail.getError() == null && viewPassword.getError() == null && GlobalFunctions.getRegStatus()) {
                         register();
                     }
                 } else {
@@ -147,34 +176,34 @@ public class RegisterActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    static class FieldValidator {
-        static String username;
-        static String email;
-        static String password;
-        static ErrorProvider errorProvider;
-        static Context context;
+    class FieldValidator {
+        String username;
+        String email;
+        String password;
+        ErrorProvider errorProvider;
+        Context context;
 
         public FieldValidator(ErrorProvider errorProvider, Context context) {
-            FieldValidator.errorProvider = errorProvider;
-            FieldValidator.context = context;
+            this.errorProvider = errorProvider;
+            this.context = context;
         }
 
-        public static void validateUsername(final String username) {
-            if (FieldValidator.username == null || !(username.equals(FieldValidator.username))) {
+        public void validateUsername(final String username) {
+            if (this.username == null || !(username.equals(this.username))) {
                 if (username.isEmpty()) {
                     errorProvider.setErrorUsername(R.string.errEmpty);
                     return;
                 }
 
                 CheckAvailable checkAvailable = new CheckAvailable();
-                checkAvailable.handler = regHandler;
+                checkAvailable.setHandler(regHandler);
                 checkAvailable.execute(username);
-                FieldValidator.username = username;
+                this.username = username;
             }
         }
 
-        public static void validateEmail(final String email) {
-            if (FieldValidator.email == null || !email.equals(FieldValidator.email)) {
+        public void validateEmail(final String email) {
+            if (this.email == null || !email.equals(this.email)) {
                 if (email.isEmpty()) {
                     errorProvider.setErrorEmail(R.string.errEmpty);
                     return;
@@ -187,14 +216,14 @@ public class RegisterActivity extends AppCompatActivity {
                 }
 
                 CheckAvailable checkAvailable = new CheckAvailable();
-                checkAvailable.handler = regHandler;
+                checkAvailable.setHandler(regHandler);
                 checkAvailable.execute(email, "email");
-                FieldValidator.email = email;
+                this.email = email;
             }
         }
 
-        public static void validatePassword(final String password) {
-            if (FieldValidator.password == null || !password.equals(FieldValidator.password)) {
+        public void validatePassword(final String password) {
+            if (this.password == null || !password.equals(this.password)) {
                 if (password.isEmpty()) {
                     errorProvider.setErrorPassword(R.string.errEmpty);
                     return;
@@ -204,7 +233,7 @@ public class RegisterActivity extends AppCompatActivity {
                     errorProvider.setErrorPassword(R.string.errShortPass);
                     return;
                 }
-                FieldValidator.password = password;
+                this.password = password;
             }
         }
     }

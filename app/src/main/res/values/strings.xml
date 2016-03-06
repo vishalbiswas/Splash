@@ -111,4 +111,9 @@
     <string name="errUnknown">Unknown error has occurred!</string>
     <string name="warnRegBusy">Already working on it…</string>
     <string name="errEmailUsed">Email Address already registered!</string>
+    <string name="errUsername">Username invalid!</string>
+    <string name="errEmail">Email invalid!</string>
+    <string name="errPassword">Password invalid!</string>
+    <string name="errRequest">Request method not supported!</string>
+    <string name="errServer">Server error!</string>
 </resources>
