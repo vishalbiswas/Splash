@@ -1,6 +1,5 @@
 package net.ddns.vishalbiswas.splash;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,15 +16,14 @@ import android.widget.Toast;
 
 import java.util.regex.Pattern;
 
-public class RegisterActivity extends AppCompatActivity {
-    static EditText viewUsername;
-    static EditText viewEmail;
-    static EditText viewPassword;
-    static Button regButton;
-    static View snackLayout;
-    final FieldValidator fieldValidator = new FieldValidator(new ErrorProvider(), this);
+class RegisterActivity extends AppCompatActivity {
+    private static EditText viewUsername;
+    private static EditText viewEmail;
+    private static EditText viewPassword;
+    private static View snackLayout;
+    final FieldValidator fieldValidator = new FieldValidator(new ErrorProvider());
 
-    public Handler regHandler = new Handler() {
+    final public Handler regHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -64,14 +62,16 @@ public class RegisterActivity extends AppCompatActivity {
             case 5:
                 errorMessageResId = R.string.errRequest;
                 break;
+            case 6:
+                errorMessageResId = R.string.errNoAccess;
         }
         Snackbar.make(findViewById(R.id.frag), errorMessageResId, Snackbar.LENGTH_LONG).show();
     }
 
-    private boolean checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
+    private void checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
         switch (code) {
             case SUCCESS:
-                return true;
+                return;
             case FAILED:
                 if (checkForUser) {
                     fieldValidator.errorProvider.setErrorUsername(R.string.errNameUsed);
@@ -88,7 +88,6 @@ public class RegisterActivity extends AppCompatActivity {
             case UNKNOWN:
                 Snackbar.make(snackLayout, getString(R.string.errUnknown), Snackbar.LENGTH_LONG).show();
         }
-        return false;
     }
 
     private void register() {
@@ -109,7 +108,7 @@ public class RegisterActivity extends AppCompatActivity {
         viewUsername = (EditText) findViewById(R.id.regUser);
         viewEmail = (EditText) findViewById(R.id.regEmail);
         viewPassword = (EditText) findViewById(R.id.regPassword);
-        regButton = (Button) findViewById(R.id.regButton);
+        Button regButton = (Button) findViewById(R.id.regButton);
         snackLayout = findViewById(R.id.frag);
 
         viewUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
@@ -139,18 +138,20 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
-        regButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (GlobalFunctions.getRegNameStatus() != GlobalFunctions.HTTP_CODE.BUSY && GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    if (viewUsername.getError() == null && viewEmail.getError() == null && viewPassword.getError() == null && GlobalFunctions.getRegStatus()) {
-                        register();
+        if (regButton != null) {
+            regButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (GlobalFunctions.getRegNameStatus() != GlobalFunctions.HTTP_CODE.BUSY && GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
+                        if (viewUsername.getError() == null && viewEmail.getError() == null && viewPassword.getError() == null && GlobalFunctions.getRegStatus()) {
+                            register();
+                        }
+                    } else {
+                        Snackbar.make(findViewById(R.id.frag), R.string.warnRegBusy, Snackbar.LENGTH_LONG).show();
                     }
-                } else {
-                    Snackbar.make(findViewById(R.id.frag), R.string.warnRegBusy, Snackbar.LENGTH_LONG).show();
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -177,15 +178,13 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     class FieldValidator {
+        final ErrorProvider errorProvider;
         String username;
         String email;
         String password;
-        ErrorProvider errorProvider;
-        Context context;
 
-        public FieldValidator(ErrorProvider errorProvider, Context context) {
+        public FieldValidator(ErrorProvider errorProvider) {
             this.errorProvider = errorProvider;
-            this.context = context;
         }
 
         public void validateUsername(final String username) {

@@ -53,4 +53,9 @@
     <string name="errUnknown">अज्ञात त्रुटि हुई है!</string>
     <string name="warnRegBusy">पहले ही इस पर काम चल रहा है …</string>
     <string name="errEmailUsed">ईमेल एड्रेस पहले से ही दर्ज है!</string>
+    <string name="errEmail">ईमेल अवैध!</string>
+    <string name="errPassword">पासवर्ड अमान्य!</string>
+    <string name="errRequest">अनुरोध विधि समर्थित नहीं!</string>
+    <string name="errServer">सर्वर त्रुटि!</string>
+    <string name="errUsername">अमान्य उपयोगकर्ता नाम!</string>
 </resources>

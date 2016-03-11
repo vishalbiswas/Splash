@@ -13,8 +13,8 @@
     <string name="msgPassword">Password</string>
     <string name="title_activity_settings">Settings</string>
     <string name="errEmpty">Field left blank!</string>
-    
-    
+
+
     <string name="ndtvTop">Top Stories</string>
     <string name="ndtvLatest">Latest Stories</string>
     <string name="ndtvTrending">Trending Stories</string>
@@ -116,4 +116,12 @@
     <string name="errPassword">Password invalid!</string>
     <string name="errRequest">Request method not supported!</string>
     <string name="errServer">Server error!</string>
+    <string name="errNoLoginServer">No login server available</string>
+    <string name="warnOffline">OFFLINE</string>
+    <string name="errInvalidCreds">Wrong username or password</string>
+    <string name="errPartialData">Server received incomplete data</string>
+    <string name="tipProfpic">Profile Icon</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

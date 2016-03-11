@@ -6,17 +6,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 
 import java.util.Locale;
 
 public class GlobalFunctions extends Application {
+    public static ConnectivityManager connMan;
+    public static boolean isSessionAlive = false;
     private static Context context;
     private static Locale locale;
     private static String username;
     private static HTTP_CODE regNameStatus;
     private static HTTP_CODE regEmailStatus;
+    private static String server;
+    private static int uid;
+    private static String name;
+    private static Drawable profpic;
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -68,6 +76,38 @@ public class GlobalFunctions extends Application {
 
     public static boolean getRegStatus() {
         return regNameStatus == HTTP_CODE.SUCCESS && regEmailStatus == HTTP_CODE.SUCCESS;
+    }
+
+    public static String getServer() {
+        return server;
+    }
+
+    public static void setServer(String server) {
+        GlobalFunctions.server = server;
+    }
+
+    public static int getUid() {
+        return uid;
+    }
+
+    public static void setUid(int uid) {
+        GlobalFunctions.uid = uid;
+    }
+
+    public static String getName() {
+        return name;
+    }
+
+    public static void setName(String name) {
+        GlobalFunctions.name = name;
+    }
+
+    public static Drawable getProfpic() {
+        return profpic;
+    }
+
+    public static void setProfpic(Drawable profpic) {
+        GlobalFunctions.profpic = profpic;
     }
 
     @Override

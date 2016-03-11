@@ -14,25 +14,20 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class AsyncRegister extends AsyncTask<String, Void, JSONObject> {
-    final String registerURL = String.format("%s/signup.php", GlobalFunctions.getServer());
+class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
+    final String loginURL = String.format("%s/login.php", GlobalFunctions.getServer());
     private Handler handler;
-
-    public void setHandler(Handler handler) {
-        this.handler = handler;
-    }
 
     @Override
     protected JSONObject doInBackground(String... params) {
         String username = params[0];
-        String email = params[1];
-        String password = params[2];
-        String postMessage = String.format("name=%s&email=%s&pwd=%s", username, email, password);
+        String password = params[1];
+        String postMessage = String.format("user=%s&pass=%s", username, password);
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                URL url = new URL(registerURL);
+                URL url = new URL(loginURL);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);
@@ -69,16 +64,33 @@ class AsyncRegister extends AsyncTask<String, Void, JSONObject> {
     }
 
     @Override
-    protected void onPostExecute(JSONObject jsonObject) {
+    public void onPostExecute(JSONObject jsonObject) {
         if (jsonObject != null) {
             try {
                 int status = jsonObject.getInt("status");
-                handler.sendEmptyMessage((status));
+
+                if (status == 0) {
+                    GlobalFunctions.setName(jsonObject.getString("name"));
+                    /*if (jsonObject.has("profpic")) {
+                        GlobalFunctions.setProfpic((Drawable) jsonObject.get("profpic"));
+                    } else {
+                        GlobalFunctions.setProfpic(null);
+                    }*/
+                    GlobalFunctions.setUid(jsonObject.getInt("uid"));
+                    GlobalFunctions.setUsername(jsonObject.getString("user"));
+                    GlobalFunctions.isSessionAlive = true;
+                }
+
+                handler.sendEmptyMessage(status);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         } else {
             handler.sendEmptyMessage(6);
         }
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
     }
 }

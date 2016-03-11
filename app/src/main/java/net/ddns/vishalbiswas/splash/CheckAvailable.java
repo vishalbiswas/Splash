@@ -1,5 +1,6 @@
 package net.ddns.vishalbiswas.splash;
 
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 
@@ -14,8 +15,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 class CheckAvailable extends AsyncTask<String, Void, Void> {
-    final String checkURL = "http://vishalbiswas.asuscomm.com/checkuser.php";
-    int message = -1;
+    private final String checkURL = String.format("%s/checkuser.php", GlobalFunctions.getServer());
+    private int message = -1;
     private Handler handler;
 
     @Override
@@ -30,68 +31,77 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
                 checkForUser = false;
             }
         }
+        NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnected()) {
 
-        if (checkForUser) {
-            GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
-        } else {
-            GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.BUSY);
-        }
-
-        try {
-            URL url = new URL(checkURL);
-            HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
-            webservice.setRequestMethod("POST");
-            webservice.setConnectTimeout(3000);
-            webservice.setDoOutput(true);
-            OutputStream outputStream = webservice.getOutputStream();
-            outputStream.write(postMessage.getBytes());
-            outputStream.flush();
-            outputStream.close();
-
-            if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
-                String line;
-                StringBuilder response = new StringBuilder();
-
-                while ((line = bufferedReader.readLine()) != null) {
-                    response.append(line);
-                }
-                bufferedReader.close();
-                JSONObject jsonObject = new JSONObject(response.toString());
-                Boolean isAvailable;
-                if (checkForUser) {
-                    isAvailable = jsonObject.getBoolean("user");
-                } else {
-                    isAvailable = jsonObject.getBoolean("email");
-                }
-
-                if (isAvailable) {
-                    if (checkForUser) {
-                        GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
-                    } else {
-                        GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
-                    }
-                } else {
-                    if (checkForUser) {
-                        GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.FAILED);
-                    } else {
-                        GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.FAILED);
-                    }
-                }
+            if (checkForUser) {
+                GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
             } else {
-                if (checkForUser) {
-                    GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
-                } else {
-                    GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
-                }
+                GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.BUSY);
             }
 
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
+            try {
+                URL url = new URL(checkURL);
+                HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
+                webservice.setRequestMethod("POST");
+                webservice.setConnectTimeout(3000);
+                webservice.setDoOutput(true);
+                OutputStream outputStream = webservice.getOutputStream();
+                outputStream.write(postMessage.getBytes());
+                outputStream.flush();
+                outputStream.close();
+
+                if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
+                    String line;
+                    StringBuilder response = new StringBuilder();
+
+                    while ((line = bufferedReader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    bufferedReader.close();
+                    JSONObject jsonObject = new JSONObject(response.toString());
+                    Boolean isAvailable;
+                    if (checkForUser) {
+                        isAvailable = jsonObject.getBoolean("user");
+                    } else {
+                        isAvailable = jsonObject.getBoolean("email");
+                    }
+
+                    if (isAvailable) {
+                        if (checkForUser) {
+                            GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
+                        } else {
+                            GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.SUCCESS);
+                        }
+                    } else {
+                        if (checkForUser) {
+                            GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.FAILED);
+                        } else {
+                            GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.FAILED);
+                        }
+                    }
+                } else {
+                    if (checkForUser) {
+                        GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
+                    } else {
+                        GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.REQUEST_FAILED);
+                    }
+                }
+
+            } catch (IOException | JSONException e) {
+                e.printStackTrace();
+                if (checkForUser) {
+                    GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+                } else {
+                    GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+                }
+            }
+        } else {
             if (checkForUser) {
-                GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+                GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.NO_ACCESS);
             } else {
-                GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.UNKNOWN);
+                GlobalFunctions.setRegEmailStatus(GlobalFunctions.HTTP_CODE.NO_ACCESS);
             }
         }
         return null;

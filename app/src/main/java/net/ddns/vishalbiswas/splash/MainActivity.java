@@ -3,20 +3,47 @@ package net.ddns.vishalbiswas.splash;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 
-public class MainActivity extends AppCompatActivity {
-    static final String EXTRA_USERNAME = "net.ddns.vishalbiswas.splash.EXTRA_USERNAME", EXTRA_PASSWORD = "net.ddns.vishalbiswas.splash.EXTRA_PASSWORD";
+class MainActivity extends AppCompatActivity {
+    final private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    Intent intent = new Intent(MainActivity.this, NewsFeed.class);
+                    startActivity(intent);
+                    break;
+                case 1:
+                    setError(R.string.errInvalidCreds);
+                    break;
+                case 2:
+                    setError(R.string.errPartialData);
+                    break;
+                case 3:
+                    setError(R.string.errRequest);
+                    break;
+                case 6:
+                    setError(R.string.errNoAccess);
+                    break;
+            }
+        }
+    };
     private EditText txtUsername, txtPassword;
-    private AppCompatButton btnLogin, btnRegister;
+
+    private void setError(int resId) {
+        Snackbar.make(findViewById(R.id.frag), getString(resId), Snackbar.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,8 +55,8 @@ public class MainActivity extends AppCompatActivity {
 
         txtUsername=(EditText)findViewById(R.id.txtUsername);
         txtPassword=(EditText)findViewById(R.id.txtPassword);
-        btnLogin=(AppCompatButton)findViewById(R.id.btnLogin);
-        btnRegister = (AppCompatButton) findViewById(R.id.btnRegister);
+        Button btnLogin = (Button) findViewById(R.id.btnLogin);
+        Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPreferences.getBoolean("remember", false)) {
@@ -41,41 +68,48 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!checkEmpty()) {
-                    String username = txtUsername.getText().toString();
-                    String password = txtPassword.getText().toString();
+        if (btnLogin != null) {
+            btnLogin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (!checkEmpty()) {
+                        String username = txtUsername.getText().toString();
+                        String password = txtPassword.getText().toString();
 
-                    GlobalFunctions.setUsername(username);
-                    if (sharedPreferences.getBoolean("remember", false)) {
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("username", username);
-                        editor.putString("password", password);
-                        editor.apply();
+                        GlobalFunctions.setUsername(username);
+                        if (sharedPreferences.getBoolean("remember", false)) {
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("username", username);
+                            editor.putString("password", password);
+                            editor.apply();
+                        }
+                        doLogin();
+                    } else {
+                        Snackbar.make(v, getText(R.string.error_credentials), Snackbar.LENGTH_LONG).show();
                     }
-                    doLogin();
                 }
-                else {
-                    Snackbar.make(v,getText(R.string.error_credentials),Snackbar.LENGTH_LONG).show();
-                }
-            }
-        });
+            });
+        }
 
-        btnRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, RegisterActivity.class));
-            }
-        });
+        if (btnRegister != null) {
+            btnRegister.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(MainActivity.this, RegisterActivity.class));
+                }
+            });
+        }
     }
 
     private void doLogin() {
-        Intent intent = new Intent(MainActivity.this, NewsFeed.class);
-        intent.putExtra(EXTRA_USERNAME, GlobalFunctions.getUsername());
-        startActivity(intent);
-        finish();
+        String username = txtUsername.getText().toString().trim();
+        String password = txtPassword.getText().toString().trim();
+
+        if (!(username.isEmpty() || password.isEmpty())) {
+            AsyncLogin asyncLogin = new AsyncLogin();
+            asyncLogin.setHandler(handler);
+            asyncLogin.execute(username, password);
+        }
     }
 
     private boolean checkEmpty() {
@@ -84,19 +118,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             GlobalFunctions.launchSettings(MainActivity.this);
             return true;

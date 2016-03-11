@@ -14,7 +14,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
 
-public class SplashScreen extends AppCompatActivity {
+class SplashScreen extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,14 +23,40 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
+
         class pingNetworks extends AsyncTask<Void, Void, Void> {
             @Override
             protected Void doInBackground(Void... params) {
-                ConnectivityManager connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo netInfo = connMan.getActiveNetworkInfo();
+                GlobalFunctions.connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
                 if (netInfo != null && netInfo.isConnected()) {
                     URL urlServer;
                     HttpURLConnection urlConn;
+                    String[] sources = {"http://vishalbiswas.asuscomm.com", "http://vishalbiswas.ddns.net"};
+                    for (final String source : sources) {
+                        try {
+                            urlServer = new URL(source);
+                            urlConn = (HttpURLConnection) urlServer.openConnection();
+                            urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
+                            urlConn.connect();
+                            if (urlConn.getResponseCode() == 200) {
+                                GlobalFunctions.setServer(source);
+                                break;
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    if (GlobalFunctions.getServer() == null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(SplashScreen.this, R.string.errNoLoginServer, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
                     for (
                             final String source
                             : PreferenceManager.getDefaultSharedPreferences(SplashScreen.this).getStringSet("sourcesNDTV", new HashSet<String>())
@@ -52,6 +78,13 @@ public class SplashScreen extends AppCompatActivity {
                             });
                         }
                     }
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(SplashScreen.this, R.string.warnOffline, Toast.LENGTH_LONG).show();
+                        }
+                    });
                 }
                 return null;
             }
