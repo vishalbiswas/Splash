@@ -13,9 +13,21 @@
     tools:showIn="@layout/activity_news_feed">
 <TextView
     android:id="@+id/txtMessage"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="@string/error_login" />
 
-    <include layout="@layout/snack_layout" />
+    <include
+        android:id="@+id/include"
+        layout="@layout/snack_layout" />
+
+    <fragment
+        android:id="@+id/fragment"
+        android:name="net.ddns.vishalbiswas.splash.UserDisplayFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/include"
+        android:layout_alignParentTop="true"
+        android:layout_alignRight="@+id/include"
+        tools:layout="@layout/fragment_user_display" />
 </RelativeLayout>

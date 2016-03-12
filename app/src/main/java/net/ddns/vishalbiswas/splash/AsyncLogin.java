@@ -1,8 +1,11 @@
 package net.ddns.vishalbiswas.splash;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,13 +74,16 @@ class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
 
                 if (status == 0) {
                     GlobalFunctions.setName(jsonObject.getString("name"));
-                    /*if (jsonObject.has("profpic")) {
-                        GlobalFunctions.setProfpic((Drawable) jsonObject.get("profpic"));
+                    if (jsonObject.has("profpic")) {
+                        byte[] picBytes = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
+                        Bitmap profpic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);
+                        GlobalFunctions.setProfpic(profpic);
                     } else {
                         GlobalFunctions.setProfpic(null);
-                    }*/
+                    }
                     GlobalFunctions.setUid(jsonObject.getInt("uid"));
                     GlobalFunctions.setUsername(jsonObject.getString("user"));
+                    GlobalFunctions.setEmail(jsonObject.getString("email"));
                     GlobalFunctions.isSessionAlive = true;
                 }
 

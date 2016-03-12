@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.drawable.Drawable;
+import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -24,7 +24,8 @@ public class GlobalFunctions extends Application {
     private static String server;
     private static int uid;
     private static String name;
-    private static Drawable profpic;
+    private static String email;
+    private static Bitmap profpic;
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -102,12 +103,20 @@ public class GlobalFunctions extends Application {
         GlobalFunctions.name = name;
     }
 
-    public static Drawable getProfpic() {
+    public static Bitmap getProfpic() {
         return profpic;
     }
 
-    public static void setProfpic(Drawable profpic) {
+    public static void setProfpic(Bitmap profpic) {
         GlobalFunctions.profpic = profpic;
+    }
+
+    public static String getEmail() {
+        return email;
+    }
+
+    public static void setEmail(String email) {
+        GlobalFunctions.email = email;
     }
 
     @Override

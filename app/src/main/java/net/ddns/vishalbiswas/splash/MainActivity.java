@@ -16,6 +16,9 @@ import android.widget.Button;
 import android.widget.EditText;
 
 class MainActivity extends AppCompatActivity {
+    SharedPreferences sharedPreferences;
+    private EditText txtUsername, txtPassword;
+
     final private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -23,6 +26,12 @@ class MainActivity extends AppCompatActivity {
                 case 0:
                     Intent intent = new Intent(MainActivity.this, NewsFeed.class);
                     startActivity(intent);
+                    if (sharedPreferences.getBoolean("remember", false)) {
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("username", txtUsername.getText().toString().trim());
+                        editor.putString("password", txtPassword.getText().toString().trim());
+                        editor.apply();
+                    }
                     break;
                 case 1:
                     setError(R.string.errInvalidCreds);
@@ -39,7 +48,6 @@ class MainActivity extends AppCompatActivity {
             }
         }
     };
-    private EditText txtUsername, txtPassword;
 
     private void setError(int resId) {
         Snackbar.make(findViewById(R.id.frag), getString(resId), Snackbar.LENGTH_SHORT).show();
@@ -52,19 +60,19 @@ class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarLogin);
         setSupportActionBar(toolbar);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         txtUsername=(EditText)findViewById(R.id.txtUsername);
         txtPassword=(EditText)findViewById(R.id.txtPassword);
         Button btnLogin = (Button) findViewById(R.id.btnLogin);
         Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
-        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         if (sharedPreferences.getBoolean("remember", false)) {
+            txtUsername.setText(sharedPreferences.getString("username", ""));
+            txtPassword.setText(sharedPreferences.getString("password", ""));
+
             if (sharedPreferences.getBoolean("autolog", false)) {
                 doLogin();
-            } else {
-                txtUsername.setText(sharedPreferences.getString("username", ""));
-                txtPassword.setText(sharedPreferences.getString("password", ""));
             }
         }
 
@@ -73,16 +81,6 @@ class MainActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (!checkEmpty()) {
-                        String username = txtUsername.getText().toString();
-                        String password = txtPassword.getText().toString();
-
-                        GlobalFunctions.setUsername(username);
-                        if (sharedPreferences.getBoolean("remember", false)) {
-                            SharedPreferences.Editor editor = sharedPreferences.edit();
-                            editor.putString("username", username);
-                            editor.putString("password", password);
-                            editor.apply();
-                        }
                         doLogin();
                     } else {
                         Snackbar.make(v, getText(R.string.error_credentials), Snackbar.LENGTH_LONG).show();
@@ -113,7 +111,7 @@ class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkEmpty() {
-        return txtUsername == null || txtUsername.getText().toString().isEmpty() || txtPassword == null || txtPassword.getText().toString().isEmpty();
+        return txtUsername == null || txtUsername.getText().toString().trim().isEmpty() || txtPassword == null || txtPassword.getText().toString().trim().isEmpty();
     }
 
     @Override

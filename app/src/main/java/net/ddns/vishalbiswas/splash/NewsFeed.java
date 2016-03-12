@@ -1,10 +1,12 @@
 package net.ddns.vishalbiswas.splash;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 class NewsFeed extends AppCompatActivity {
@@ -23,15 +25,23 @@ class NewsFeed extends AppCompatActivity {
         int uid = GlobalFunctions.getUid();
         String username = GlobalFunctions.getUsername();
         String name = GlobalFunctions.getName();
-        //Drawable profpic = GlobalFunctions.getProfpic();
+        String email = GlobalFunctions.getEmail();
+        Bitmap profpic = GlobalFunctions.getProfpic();
 
-        //ImageView imgWelcome = (ImageView) findViewById(R.id.imgWelcome);
-        TextView txtMessage = (TextView) findViewById(R.id.txtMessage);
-        //imgWelcome.setImageResource(R.mipmap.ic_launcher);
-        if (txtMessage != null) {
-            txtMessage.setText(name);
+        ImageView fragPic = (ImageView) findViewById(R.id.fragPic);
+        TextView fragUser = (TextView) findViewById(R.id.fragUser);
+        TextView fragEmail = (TextView) findViewById(R.id.fragEmail);
+
+        if (profpic != null) {
+            assert fragPic != null;
+            fragPic.setImageBitmap(profpic);
         }
 
+        assert fragUser != null;
+        fragUser.setText(name);
+
+        assert fragEmail != null;
+        fragEmail.setText(email);
     }
 
     @Override
