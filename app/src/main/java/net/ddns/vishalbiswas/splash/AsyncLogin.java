@@ -73,7 +73,17 @@ class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
                 int status = jsonObject.getInt("status");
 
                 if (status == 0) {
-                    GlobalFunctions.setName(jsonObject.getString("name"));
+                    if (jsonObject.has("fname")) {
+                        GlobalFunctions.setFirstname(jsonObject.getString("fname"));
+                    } else {
+                        GlobalFunctions.setFirstname("");
+                    }
+                    if (jsonObject.has("lname")) {
+                        GlobalFunctions.setLastname(jsonObject.getString("lname"));
+                    } else {
+                        GlobalFunctions.setLastname("");
+                    }
+
                     if (jsonObject.has("profpic")) {
                         byte[] picBytes = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
                         Bitmap profpic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);

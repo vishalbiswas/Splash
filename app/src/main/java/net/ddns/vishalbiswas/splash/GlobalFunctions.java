@@ -23,7 +23,8 @@ public class GlobalFunctions extends Application {
     private static HTTP_CODE regEmailStatus;
     private static String server;
     private static int uid;
-    private static String name;
+    private static String firstname;
+    private static String lastname;
     private static String email;
     private static Bitmap profpic;
 
@@ -95,12 +96,12 @@ public class GlobalFunctions extends Application {
         GlobalFunctions.uid = uid;
     }
 
-    public static String getName() {
-        return name;
+    public static String getFirstname() {
+        return firstname;
     }
 
-    public static void setName(String name) {
-        GlobalFunctions.name = name;
+    public static void setFirstname(String firstname) {
+        GlobalFunctions.firstname = firstname;
     }
 
     public static Bitmap getProfpic() {
@@ -117,6 +118,14 @@ public class GlobalFunctions extends Application {
 
     public static void setEmail(String email) {
         GlobalFunctions.email = email;
+    }
+
+    public static String getLastname() {
+        return lastname;
+    }
+
+    public static void setLastname(String lastname) {
+        GlobalFunctions.lastname = lastname;
     }
 
     @Override

@@ -52,6 +52,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.ddns.vishalbiswas.splash.MainActivity" />
         </activity>
+        <activity android:name=".ProfileActivity" />
     </application>
 
 </manifest>

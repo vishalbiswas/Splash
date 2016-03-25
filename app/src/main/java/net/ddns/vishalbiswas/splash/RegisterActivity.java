@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import java.util.regex.Pattern;
 
-class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends AppCompatActivity {
     private static EditText viewUsername;
     private static EditText viewEmail;
     private static EditText viewPassword;

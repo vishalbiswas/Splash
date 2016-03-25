@@ -22,7 +22,7 @@
         layout="@layout/snack_layout" />
 
     <fragment
-        android:id="@+id/fragment"
+        android:id="@+id/userDisplayFragment"
         android:name="net.ddns.vishalbiswas.splash.UserDisplayFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

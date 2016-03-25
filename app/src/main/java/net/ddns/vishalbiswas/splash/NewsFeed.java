@@ -1,15 +1,17 @@
 package net.ddns.vishalbiswas.splash;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-class NewsFeed extends AppCompatActivity {
+public class NewsFeed extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +26,12 @@ class NewsFeed extends AppCompatActivity {
 
         int uid = GlobalFunctions.getUid();
         String username = GlobalFunctions.getUsername();
-        String name = GlobalFunctions.getName();
+        String name;
+        if (GlobalFunctions.getFirstname().isEmpty() && GlobalFunctions.getLastname().isEmpty()) {
+            name = username;
+        } else {
+            name = String.format("%s %s", GlobalFunctions.getFirstname(), GlobalFunctions.getLastname());
+        }
         String email = GlobalFunctions.getEmail();
         Bitmap profpic = GlobalFunctions.getProfpic();
 
@@ -42,6 +49,16 @@ class NewsFeed extends AppCompatActivity {
 
         assert fragEmail != null;
         fragEmail.setText(email);
+
+        View userDisplayFragmet = findViewById(R.id.userDisplayFragment);
+        assert userDisplayFragmet != null;
+        userDisplayFragmet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(NewsFeed.this, ProfileActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
