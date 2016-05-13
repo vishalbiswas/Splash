@@ -1,15 +1,12 @@
 package net.ddns.vishalbiswas.splash;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 public class NewsFeed extends AppCompatActivity {
 
@@ -25,30 +22,6 @@ public class NewsFeed extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         int uid = GlobalFunctions.getUid();
-        String username = GlobalFunctions.getUsername();
-        String name;
-        if (GlobalFunctions.getFirstname().isEmpty() && GlobalFunctions.getLastname().isEmpty()) {
-            name = username;
-        } else {
-            name = String.format("%s %s", GlobalFunctions.getFirstname(), GlobalFunctions.getLastname());
-        }
-        String email = GlobalFunctions.getEmail();
-        Bitmap profpic = GlobalFunctions.getProfpic();
-
-        ImageView fragPic = (ImageView) findViewById(R.id.fragPic);
-        TextView fragUser = (TextView) findViewById(R.id.fragUser);
-        TextView fragEmail = (TextView) findViewById(R.id.fragEmail);
-
-        if (profpic != null) {
-            assert fragPic != null;
-            fragPic.setImageBitmap(profpic);
-        }
-
-        assert fragUser != null;
-        fragUser.setText(name);
-
-        assert fragEmail != null;
-        fragEmail.setText(email);
 
         View userDisplayFragmet = findViewById(R.id.userDisplayFragment);
         assert userDisplayFragmet != null;
@@ -60,6 +33,7 @@ public class NewsFeed extends AppCompatActivity {
             }
         });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

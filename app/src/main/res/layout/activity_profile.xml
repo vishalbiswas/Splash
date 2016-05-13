@@ -11,8 +11,8 @@
 
     <ImageView
         android:id="@+id/imgPic"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
+        android:layout_width="256dp"
+        android:layout_height="256dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
@@ -30,7 +30,8 @@
         android:layout_marginTop="32dp"
         android:ems="10"
         android:hint="@string/txtFName"
-        android:inputType="textPersonName" />
+        android:inputType="textPersonName"
+        android:maxLength="50" />
 
     <EditText
         android:id="@+id/editLName"
@@ -41,5 +42,6 @@
         android:layout_below="@+id/editFName"
         android:ems="10"
         android:hint="@string/txtLName"
-        android:inputType="textPersonName" />
+        android:inputType="textPersonName"
+        android:maxLength="50" />
 </RelativeLayout>
