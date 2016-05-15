@@ -46,6 +46,7 @@ public class SplashScreen extends AppCompatActivity {
                     }
                     sources.add("http://vishalbiswas.asuscomm.com");
                     sources.add("http://vishalbiswas.ddns.net");
+                    sources.add("http://vishalbiswas.tigrimigri.com");
 
                     for (String source : sources) {
                         try {
