@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -12,7 +13,9 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -32,8 +35,20 @@ public class SplashScreen extends AppCompatActivity {
                 if (netInfo != null && netInfo.isConnected()) {
                     URL urlServer;
                     HttpURLConnection urlConn;
-                    String[] sources = {"http://vishalbiswas.asuscomm.com", "http://vishalbiswas.ddns.net"};
-                    for (final String source : sources) {
+                    List<String> sources = new ArrayList<>();
+
+                    if (BuildConfig.BUILD_TYPE.equals("debug")) {
+                        if (Build.PRODUCT.startsWith("sdk")) {
+                            sources.add("http://10.0.2.1");
+                        } else {
+                            sources.add("http://vishal-pc");
+                        }
+                    }
+                    sources.add("http://vishalbiswas.asuscomm.com");
+                    sources.add("http://vishalbiswas.ddns.net");
+                    sources.add("http://vishalbiswas.tigrimigri.com");
+
+                    for (String source : sources) {
                         try {
                             urlServer = new URL(source);
                             urlConn = (HttpURLConnection) urlServer.openConnection();
