@@ -58,4 +58,12 @@
     <string name="errRequest">अनुरोध विधि समर्थित नहीं!</string>
     <string name="errServer">सर्वर त्रुटि!</string>
     <string name="errUsername">अमान्य उपयोगकर्ता नाम!</string>
+    <string name="errInvalidCreds">उपयोगकर्ता का नाम या पासवर्ड गलत</string>
+    <string name="errNoLoginServer">कोई लॉगऑन सर्वर उपलब्ध नहीं</string>
+    <string name="errPartialData">सर्वर को अधूरा डेटा प्राप्त हुआ</string>
+    <string name="tipProfpic">Profile छबि</string>
+    <string name="txtFName">मूल नाम</string>
+    <string name="txtLName">उपनाम</string>
+    <string name="txtSave">संचय</string>
+    <string name="warnOffline">ऑफलाइन</string>
 </resources>
