@@ -38,11 +38,11 @@
 
     <!-- Strings related to Settings -->
     <string name="strLanguage">Language</string>
-    <string-array name="lang_list">
+    <string-array name="lang_list" translatable="false">
         <item>English</item>
         <item>हिंदी</item>
     </string-array>
-    <string-array name="lang_list_values">
+    <string-array name="lang_list_values" translatable="false">
         <item>en</item>
         <item>hi</item>
     </string-array>
@@ -71,7 +71,7 @@
         <item>@string/ndtvPhotos</item>
     </string-array>
 
-    <string-array name="arrSourcesNDTVValues">
+    <string-array name="arrSourcesNDTVValues" translatable="false">
         <item>http://feeds.feedburner.com/NdtvNews-TopStories</item>
         <item>http://feeds.feedburner.com/NDTV-LatestNews</item>
         <item>http://feeds.feedburner.com/NDTV-Trending</item>

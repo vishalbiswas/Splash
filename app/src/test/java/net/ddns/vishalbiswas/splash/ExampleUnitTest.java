@@ -1,7 +1,6 @@
 package net.ddns.vishalbiswas.splash;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 /**
