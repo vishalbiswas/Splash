@@ -1,11 +1,8 @@
 package net.ddns.vishalbiswas.splash;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,21 +13,21 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Locale;
 
-class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
-    private final String loginURL = String.format("%s/login.php", GlobalFunctions.getServer());
+class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
+    private final String getuserURL = String.format("%s/getuser.php", GlobalFunctions.getServer());
     private Handler handler;
 
     @Override
-    protected JSONObject doInBackground(String... params) {
-        String username = params[0];
-        String password = params[1];
-        String postMessage = String.format("user=%s&pass=%s", username, password);
+    protected JSONObject doInBackground(Integer... params) {
+        int uid = (int) params[0];
+        String postMessage = String.format(Locale.ENGLISH, "uid=%d", uid);
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                URL url = new URL(loginURL);
+                URL url = new URL(getuserURL);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);
@@ -62,48 +59,30 @@ class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
                 e.printStackTrace();
             }
         }
-
         return null;
     }
 
     @Override
-    public void onPostExecute(JSONObject jsonObject) {
+    protected void onPostExecute(JSONObject jsonObject) {
         if (jsonObject != null) {
+            int uid;
             try {
-                int status = jsonObject.getInt("status");
-
-                if (status == 0) {
-                    if (jsonObject.has("fname")) {
-                        GlobalFunctions.setFirstname(jsonObject.getString("fname"));
-                    } else {
-                        GlobalFunctions.setFirstname("");
-                    }
-                    if (jsonObject.has("lname")) {
-                        GlobalFunctions.setLastname(jsonObject.getString("lname"));
-                    } else {
-                        GlobalFunctions.setLastname("");
-                    }
-
-                    if (jsonObject.has("profpic")) {
-                        byte[] picBytes = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
-                        Bitmap profpic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);
-                        GlobalFunctions.setProfpic(profpic);
-                    } else {
-                        GlobalFunctions.setProfpic(null);
-                    }
-                    GlobalFunctions.setUid(jsonObject.getInt("uid"));
-                    GlobalFunctions.setUsername(jsonObject.getString("user"));
-                    GlobalFunctions.setEmail(jsonObject.getString("email"));
-                    GlobalFunctions.isSessionAlive = true;
-                }
-
-                handler.sendEmptyMessage(status);
-            } catch (JSONException e) {
-                e.printStackTrace();
+                uid = jsonObject.getInt("uid");
+            } catch (JSONException ex) {
+                handler.sendEmptyMessage(-2);
+                return;
             }
-        } else {
-            handler.sendEmptyMessage(6);
+            try {
+                String name = jsonObject.getString("user");
+                UsernameCache.setUser(uid, name);
+            } catch (JSONException ex) {
+                handler.sendEmptyMessage(uid);
+            }
         }
+        else {
+            handler.sendEmptyMessage(-1);
+        }
+        handler.sendEmptyMessage(0);
     }
 
     void setHandler(Handler handler) {

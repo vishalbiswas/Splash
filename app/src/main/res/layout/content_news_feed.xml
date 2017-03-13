@@ -11,15 +11,20 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="net.ddns.vishalbiswas.splash.NewsFeed"
     tools:showIn="@layout/activity_news_feed">
-<TextView
-    android:id="@+id/txtMessage"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:text="@string/error_login" />
 
     <include
         android:id="@+id/include"
         layout="@layout/snack_layout" />
+
+    <ListView
+        android:id="@+id/threadsListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/userDisplayFragment"
+        android:layout_toStartOf="@+id/userDisplayFragment" />
 
     <fragment
         android:id="@+id/userDisplayFragment"
@@ -30,4 +35,6 @@
         android:layout_alignParentTop="true"
         android:layout_alignRight="@+id/include"
         tools:layout="@layout/fragment_user_display" />
+
+
 </RelativeLayout>

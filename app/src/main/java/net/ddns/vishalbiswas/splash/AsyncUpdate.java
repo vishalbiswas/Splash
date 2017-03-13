@@ -15,15 +15,15 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
-    final static String updateURL = String.format("%s/update.php", GlobalFunctions.getServer());
-    final static String crlf = "\r\n";
-    final static String twoHyphens = "--";
-    final static String mainBoundary = "mainBoundary";
+class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
+    private final static String updateURL = String.format("%s/update.php", GlobalFunctions.getServer());
+    private final static String crlf = "\r\n";
+    private final static String twoHyphens = "--";
+    private final static String mainBoundary = "mainBoundary";
     final static String subBoundary = "subBoundary";
     private Handler handler;
 
-    public void setHandler(Handler handler) {
+    void setHandler(Handler handler) {
         this.handler = handler;
     }
 

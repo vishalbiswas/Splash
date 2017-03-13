@@ -3,10 +3,13 @@ package net.ddns.vishalbiswas.splash;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.ListViewCompat;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
 
 public class NewsFeed extends AppCompatActivity {
 
@@ -32,6 +35,8 @@ public class NewsFeed extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        ((ListView) findViewById(R.id.threadsListView)).setAdapter(new ThreadsAdapter(this));
     }
 
 

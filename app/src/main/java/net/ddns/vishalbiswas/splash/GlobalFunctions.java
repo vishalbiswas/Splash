@@ -134,7 +134,7 @@ public class GlobalFunctions extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
-    public enum HTTP_CODE {
+    enum HTTP_CODE {
         SUCCESS,
         FAILED,
         NO_ACCESS,

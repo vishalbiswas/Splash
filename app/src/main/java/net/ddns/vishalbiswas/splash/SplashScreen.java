@@ -41,7 +41,7 @@ public class SplashScreen extends AppCompatActivity {
                         if (Build.PRODUCT.startsWith("sdk")) {
                             sources.add("http://10.0.2.1");
                         } else {
-                            sources.add("http://vishal-pc");
+                            sources.add("http://192.168.1.2");
                         }
                     }
                     sources.add("http://vishalbiswas.asuscomm.com");
