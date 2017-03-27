@@ -21,7 +21,12 @@ public class UserDisplayFragment extends Fragment {
         // Required empty public constructor
     }
 
-    public static void updateViews(ImageView fragPic, TextView fragUser, TextView fragEmail) {
+    public void updateViews() {
+        View currentView = getView();
+        assert currentView != null;
+        ImageView fragPic = (ImageView) (currentView.findViewById(R.id.fragPic));
+        TextView fragUser = (TextView) (getView().findViewById(R.id.fragUser));
+        TextView fragEmail = (TextView) (getView().findViewById(R.id.fragEmail));
         String username = GlobalFunctions.defaultIdentity.getUsername();
         String name;
         if (GlobalFunctions.defaultIdentity.getFirstname().isEmpty() && GlobalFunctions.defaultIdentity.getLastname().isEmpty()) {
@@ -56,9 +61,7 @@ public class UserDisplayFragment extends Fragment {
     public void onStart() {
         super.onStart();
         if (getView() != null) {
-            updateViews((ImageView) getView().findViewById(R.id.fragPic),
-                    (TextView) getView().findViewById(R.id.fragUser),
-                    (TextView) getView().findViewById(R.id.fragEmail));
+            updateViews();
         }
     }
 

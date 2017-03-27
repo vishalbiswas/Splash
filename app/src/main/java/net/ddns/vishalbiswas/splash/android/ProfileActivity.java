@@ -1,6 +1,7 @@
 package net.ddns.vishalbiswas.splash.android;
 
 import android.app.Activity;
+import android.app.FragmentManager;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,7 +32,7 @@ public class ProfileActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    UserDisplayFragment.updateViews();
+                    ((UserDisplayFragment) getFragmentManager().findFragmentById(R.id.fragUser)).updateViews();
                     finish();
                     return;
                 case 1:
