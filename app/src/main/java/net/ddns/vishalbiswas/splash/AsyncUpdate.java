@@ -16,12 +16,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
-    private final static String updateURL = String.format("%s/update.php", GlobalFunctions.getServer());
+    private final static String updatePath = "/update.php";
     private final static String crlf = "\r\n";
     private final static String twoHyphens = "--";
     private final static String mainBoundary = "mainBoundary";
     final static String subBoundary = "subBoundary";
     private Handler handler;
+    private int serverIndex;
 
     void setHandler(Handler handler) {
         this.handler = handler;
@@ -29,17 +30,18 @@ class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
 
     @Override
     protected JSONObject doInBackground(Object... params) {
-        Bitmap profpic = (Bitmap) params[0];
-        String firstname = params[1].toString().trim();
-        String lastname = params[2].toString().trim();
-        int uid = GlobalFunctions.getUid();
+        serverIndex = (int) params[0];
+        Bitmap profpic = (Bitmap) params[1];
+        String firstname = params[2].toString().trim();
+        String lastname = params[3].toString().trim();
+        int uid = GlobalFunctions.identities.get(serverIndex).getUid();
         String postMessage = String.format("uid=%s&fname=%s&lname=%s", String.valueOf(uid), firstname, lastname);
 
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                HttpURLConnection webservice = (HttpURLConnection) (new URL(updateURL)).openConnection();
+                HttpURLConnection webservice = (HttpURLConnection) (new URL(GlobalFunctions.servers.get(serverIndex) + updatePath)).openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setUseCaches(false);
                 webservice.setDoOutput(true);
@@ -84,7 +86,7 @@ class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
                 outputStream.writeBytes(crlf);
                 outputStream.flush();
 
-                if (profpic != GlobalFunctions.getProfpic()) {
+                if (profpic != GlobalFunctions.identities.get(serverIndex).getProfpic()) {
                     outputStream.writeBytes(twoHyphens + mainBoundary + crlf);
                     outputStream.writeBytes("Content-Disposition: form-data; name=\"profpic\"; filename=\"" + String.valueOf(uid) + ".jpg\"" + crlf);
                     outputStream.writeBytes(crlf);
@@ -143,21 +145,21 @@ class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
 
                 if (status == 0) {
                     if (jsonObject.has("fname")) {
-                        GlobalFunctions.setFirstname(jsonObject.getString("fname"));
+                        GlobalFunctions.identities.get(serverIndex).setFirstname(jsonObject.getString("fname"));
                     } else {
-                        GlobalFunctions.setFirstname("");
+                        GlobalFunctions.identities.get(serverIndex).setFirstname("");
                     }
                     if (jsonObject.has("lname")) {
-                        GlobalFunctions.setLastname(jsonObject.getString("lname"));
+                        GlobalFunctions.identities.get(serverIndex).setLastname(jsonObject.getString("lname"));
                     } else {
-                        GlobalFunctions.setLastname("");
+                        GlobalFunctions.identities.get(serverIndex).setLastname("");
                     }
 
                     if (jsonObject.has("profpic")) {
                         Bitmap profpic = (Bitmap) jsonObject.get("profpic");
-                        GlobalFunctions.setProfpic(profpic);
+                        GlobalFunctions.identities.get(serverIndex).setProfpic(profpic);
                     } else {
-                        GlobalFunctions.setProfpic(null);
+                        GlobalFunctions.identities.get(serverIndex).setProfpic(null);
                     }
                 }
 

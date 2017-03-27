@@ -22,7 +22,7 @@ class ThreadsAdapter extends BaseAdapter {
         inflater = activity.getLayoutInflater();
 
         //// FIXME: 3/13/17 demo code to be removed
-        addThread(new Thread("Hello", "Welcome to Splash app! Have fun!", GlobalFunctions.getUid(), new Date(), new Date()));
+        addThread(new Thread(0, "Hello", "Welcome to Splash app! Have fun!", GlobalFunctions.identities.get(0).getUid(), new Date(), new Date()));
     }
 
     void addThread(Thread thread) {
@@ -66,7 +66,7 @@ class ThreadsAdapter extends BaseAdapter {
 
             holder.title.setText(thread.getTitle());
             holder.content.setText(thread.getContent());
-            holder.creator.setText(UsernameCache.getUser(handler, thread.getCreatorID()));
+            holder.creator.setText(UsernameCache.getUser(handler, thread.getServerIndex(), thread.getCreatorID()));
             holder.mtime.setText(thread.getMtime().toString());
         }
 
@@ -80,7 +80,7 @@ class ThreadsAdapter extends BaseAdapter {
         TextView mtime;
     }
 
-    Handler handler = new Handler() {
+    private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what > 0) {

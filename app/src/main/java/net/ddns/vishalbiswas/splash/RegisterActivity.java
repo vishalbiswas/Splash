@@ -6,6 +6,7 @@ import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,9 +22,10 @@ public class RegisterActivity extends AppCompatActivity {
     private static EditText viewEmail;
     private static EditText viewPassword;
     private static View snackLayout;
-    final FieldValidator fieldValidator = new FieldValidator(new ErrorProvider());
+    final private FieldValidator fieldValidator = new FieldValidator(new ErrorProvider());
+    final private int serverIndex =  getIntent().getIntExtra("serverIndex", -1);
 
-    final public Handler regHandler = new Handler() {
+    final private Handler regHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -36,7 +38,7 @@ public class RegisterActivity extends AppCompatActivity {
                 case 0:
                     Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_LONG).show();
                     finish();
-                    break;
+                    return;
                 default:
                     failed(msg.what);
                     break;
@@ -93,17 +95,25 @@ public class RegisterActivity extends AppCompatActivity {
     private void register() {
         AsyncRegister register = new AsyncRegister();
         register.setHandler(regHandler);
-        register.execute(viewUsername.getText().toString(), viewEmail.getText().toString(), viewPassword.getText().toString());
+        register.execute(serverIndex, viewUsername.getText().toString(), viewEmail.getText().toString(), viewPassword.getText().toString());
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
+
+        if (serverIndex < 0) {
+            Log.e("Splash", "RegisterActivity received negative serverIndex");
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_register);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarRegister);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        toolbar.setTitle(String.format("%s (%s)", getString(R.string.title_activity_register), GlobalFunctions.servers.get(serverIndex)));
 
         viewUsername = (EditText) findViewById(R.id.regUser);
         viewEmail = (EditText) findViewById(R.id.regEmail);
@@ -173,17 +183,17 @@ public class RegisterActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class FieldValidator {
+    private class FieldValidator {
         final ErrorProvider errorProvider;
         String username;
         String email;
         String password;
 
-        public FieldValidator(ErrorProvider errorProvider) {
+        FieldValidator(ErrorProvider errorProvider) {
             this.errorProvider = errorProvider;
         }
 
-        public void validateUsername(final String username) {
+        void validateUsername(final String username) {
             if (this.username == null || !(username.equals(this.username))) {
                 if (username.isEmpty()) {
                     errorProvider.setErrorUsername(R.string.errEmpty);
@@ -192,12 +202,12 @@ public class RegisterActivity extends AppCompatActivity {
 
                 CheckAvailable checkAvailable = new CheckAvailable();
                 checkAvailable.setHandler(regHandler);
-                checkAvailable.execute(username);
+                checkAvailable.execute(serverIndex, username);
                 this.username = username;
             }
         }
 
-        public void validateEmail(final String email) {
+        void validateEmail(final String email) {
             if (this.email == null || !email.equals(this.email)) {
                 if (email.isEmpty()) {
                     errorProvider.setErrorEmail(R.string.errEmpty);
@@ -212,12 +222,12 @@ public class RegisterActivity extends AppCompatActivity {
 
                 CheckAvailable checkAvailable = new CheckAvailable();
                 checkAvailable.setHandler(regHandler);
-                checkAvailable.execute(email, "email");
+                checkAvailable.execute(serverIndex, email, "email");
                 this.email = email;
             }
         }
 
-        public void validatePassword(final String password) {
+        void validatePassword(final String password) {
             if (this.password == null || !password.equals(this.password)) {
                 if (password.isEmpty()) {
                     errorProvider.setErrorPassword(R.string.errEmpty);
@@ -233,16 +243,16 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    class ErrorProvider {
-        public void setErrorUsername(int resId) {
+    private class ErrorProvider {
+        void setErrorUsername(int resId) {
             viewUsername.setError(getString(resId));
         }
 
-        public void setErrorEmail(int resId) {
+        void setErrorEmail(int resId) {
             viewEmail.setError(getString(resId));
         }
 
-        public void setErrorPassword(int resId) {
+        void setErrorPassword(int resId) {
             viewPassword.setError(getString(resId));
         }
     }

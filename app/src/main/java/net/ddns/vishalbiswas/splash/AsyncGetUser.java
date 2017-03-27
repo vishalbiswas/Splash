@@ -16,18 +16,20 @@ import java.net.URL;
 import java.util.Locale;
 
 class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
-    private final String getuserURL = String.format("%s/getuser.php", GlobalFunctions.getServer());
+    private final String getuserPath = "/getuser.php";
+    private int serverIndex;
     private Handler handler;
 
     @Override
     protected JSONObject doInBackground(Integer... params) {
-        int uid = (int) params[0];
+        int uid = params[1];
+        serverIndex = params[0];
         String postMessage = String.format(Locale.ENGLISH, "uid=%d", uid);
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                URL url = new URL(getuserURL);
+                URL url = new URL(GlobalFunctions.servers.get(serverIndex) + getuserPath);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);
@@ -74,7 +76,7 @@ class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
             }
             try {
                 String name = jsonObject.getString("user");
-                UsernameCache.setUser(uid, name);
+                UsernameCache.setUser(serverIndex, uid, name);
             } catch (JSONException ex) {
                 handler.sendEmptyMessage(uid);
             }

@@ -9,8 +9,10 @@ class Thread {
     private int creator_id;
     private Date ctime;
     private Date mtime;
+    private int serverIndex;
 
-    Thread (String title, String content, int creater_id, Date ctime, Date mtime) {
+    Thread (int serverIndex, String title, String content, int creater_id, Date ctime, Date mtime) {
+        this.serverIndex = serverIndex;
         this.title = title;
         this.content = content;
         this.creator_id = creater_id;
@@ -38,5 +40,9 @@ class Thread {
 
     Date getMtime() {
         return mtime;
+    }
+
+    public int getServerIndex() {
+        return serverIndex;
     }
 }

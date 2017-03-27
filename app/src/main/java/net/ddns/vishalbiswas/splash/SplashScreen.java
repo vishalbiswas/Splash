@@ -26,6 +26,25 @@ public class SplashScreen extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash_screen);
 
+        if (BuildConfig.BUILD_TYPE.equals("debug") && GlobalFunctions.servers.size() == 0) {
+            if (Build.PRODUCT.startsWith("sdk")) {
+                GlobalFunctions.servers.add("http://10.0.2.1");
+            } else {
+                GlobalFunctions.servers.add("http://192.168.1.2");
+            }
+            GlobalFunctions.updateServerList(SplashScreen.this);
+        }
+                    /*sources.add("http://vishalbiswas.asuscomm.com");
+                    sources.add("http://vishalbiswas.ddns.net");
+                    sources.add("http://vishalbiswas.tigrimigri.com");*/
+
+
+        if (GlobalFunctions.servers.size() == 0) {
+            Toast.makeText(SplashScreen.this, R.string.errNoLoginServer, Toast.LENGTH_LONG).show();
+            startActivity(new Intent(SplashScreen.this, SourcesManagerActivity.class));
+            finish();
+            return;
+        }
 
         class pingNetworks extends AsyncTask<Void, Void, Void> {
             @Override
@@ -35,46 +54,9 @@ public class SplashScreen extends AppCompatActivity {
                 if (netInfo != null && netInfo.isConnected()) {
                     URL urlServer;
                     HttpURLConnection urlConn;
-                    List<String> sources = new ArrayList<>();
 
-                    if (BuildConfig.BUILD_TYPE.equals("debug")) {
-                        if (Build.PRODUCT.startsWith("sdk")) {
-                            sources.add("http://10.0.2.1");
-                        } else {
-                            sources.add("http://192.168.1.2");
-                        }
-                    }
-                    sources.add("http://vishalbiswas.asuscomm.com");
-                    sources.add("http://vishalbiswas.ddns.net");
-                    sources.add("http://vishalbiswas.tigrimigri.com");
-
-                    for (String source : sources) {
-                        try {
-                            urlServer = new URL(source);
-                            urlConn = (HttpURLConnection) urlServer.openConnection();
-                            urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
-                            urlConn.connect();
-                            if (urlConn.getResponseCode() == 200) {
-                                GlobalFunctions.setServer(source);
-                                break;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    if (GlobalFunctions.getServer() == null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(SplashScreen.this, R.string.errNoLoginServer, Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
-
-                    for (
-                            final String source
-                            : PreferenceManager.getDefaultSharedPreferences(SplashScreen.this).getStringSet("sourcesNDTV", new HashSet<String>())
+                    for (final String source
+                            : GlobalFunctions.servers
                             ) {
                         try {
                             urlServer = new URL(source);

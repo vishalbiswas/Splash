@@ -23,14 +23,27 @@
             android:summary="@string/strAutologSummary"
             android:title="@string/strAutolog" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="sources"
+    <Preference
+        android:key="source"
         android:title="@string/strSource">
-        <MultiSelectListPreference
-            android:defaultValue="@array/arrSourcesNDTVValues"
-            android:entries="@array/arrSourcesNDTV"
-            android:entryValues="@array/arrSourcesNDTVValues"
-            android:key="sourcesNDTV"
-            android:title="@string/strSourceNDTV" />
+        <intent android:targetClass="net.ddns.vishalbiswas.splash.SourcesManagerActivity" />
+    </Preference>
+    <PreferenceCategory
+        android:key="defaultIdentity"
+        android:title="@string/defaultIdentity">
+        <EditTextPreference
+            android:defaultValue="SplashUser"
+            android:key="defaultUser"
+            android:title="@string/defaultUser"
+            android:summary="@string/strDefUserSummary" />
+        <EditTextPreference
+            android:key="defaultFname"
+            android:title="@string/defaultFname" />
+        <EditTextPreference
+            android:key="defaultLname"
+            android:title="@string/defaultLname" />
+        <EditTextPreference
+            android:key="defaultEmail"
+            android:title="@string/defaultEmail" />
     </PreferenceCategory>
 </PreferenceScreen>

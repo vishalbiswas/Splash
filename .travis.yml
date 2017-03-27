@@ -5,6 +5,7 @@ android:
     # use the latest revision of Android SDK Tools
     - platform-tools
     - tools
+    - tools
 
     # The BuildTools version used by your project
     - build-tools-25.0.2
@@ -17,6 +18,8 @@ android:
 #    - extra-google-m2repository
 #    - extra-android-m2repository
 #    - addon-google_apis-google-19
+script:
+  - ./gradlew build
 before_cache:
   - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:

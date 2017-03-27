@@ -19,7 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ProfileActivity extends AppCompatActivity {
-    final int requestCode = 0x0421;
+    private final int requestCode = 0x0421;
+    final int serverIndex = getIntent().getIntExtra("serverIndex", -1);
+
     final private Handler handler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -27,7 +29,7 @@ public class ProfileActivity extends AppCompatActivity {
                 case 0:
                     UserDisplayFragment.updateViews();
                     finish();
-                    break;
+                    return;
                 case 1:
                     setError(R.string.errUnknown);
                     break;
@@ -43,10 +45,10 @@ public class ProfileActivity extends AppCompatActivity {
             }
         }
     };
-    ImageView imgPic;
-    Bitmap profPic;
-    EditText editFName;
-    EditText editLName;
+    private ImageView imgPic;
+    private Bitmap profPic;
+    private EditText editFName;
+    private EditText editLName;
 
     private void setError(int resId) {
         View view = findViewById(android.R.id.content);
@@ -59,16 +61,17 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+
         imgPic = (ImageView) findViewById(R.id.imgPic);
         editFName = (EditText) findViewById(R.id.editFName);
         editLName = (EditText) findViewById(R.id.editLName);
 
-        if (GlobalFunctions.getProfpic() != null) {
-            profPic = GlobalFunctions.getProfpic();
+        if (GlobalFunctions.identities.get(serverIndex).getProfpic() != null) {
+            profPic = GlobalFunctions.identities.get(serverIndex).getProfpic();
             imgPic.setImageBitmap(profPic);
         }
-        editFName.setText(GlobalFunctions.getFirstname());
-        editLName.setText(GlobalFunctions.getLastname());
+        editFName.setText(GlobalFunctions.identities.get(serverIndex).getFirstname());
+        editLName.setText(GlobalFunctions.identities.get(serverIndex).getLastname());
 
         imgPic.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,7 +117,7 @@ public class ProfileActivity extends AppCompatActivity {
             case R.id.menuSave:
                 AsyncUpdate update = new AsyncUpdate();
                 update.setHandler(handler);
-                update.execute(profPic, editFName.getText(), editLName.getText());
+                update.execute(serverIndex, profPic, editFName.getText(), editLName.getText());
                 return true;
         }
 

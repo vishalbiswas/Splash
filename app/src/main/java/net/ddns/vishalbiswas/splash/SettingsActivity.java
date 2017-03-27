@@ -30,7 +30,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onStop() {
-        GlobalFunctions.showSnack();
+        GlobalFunctions.showSnack(SettingsActivity.this);
         super.onStop();
     }
 

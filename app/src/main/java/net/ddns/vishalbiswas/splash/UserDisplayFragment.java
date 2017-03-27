@@ -12,9 +12,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 public class UserDisplayFragment extends Fragment {
-    static ImageView fragPic;
-    static TextView fragUser;
-    static TextView fragEmail;
+    private static ImageView fragPic;
+    private static TextView fragUser;
+    private static TextView fragEmail;
 
     private OnFragmentInteractionListener mListener;
 
@@ -23,15 +23,15 @@ public class UserDisplayFragment extends Fragment {
     }
 
     public static void updateViews() {
-        String username = GlobalFunctions.getUsername();
+        String username = GlobalFunctions.defaultIdentity.getUsername();
         String name;
-        if (GlobalFunctions.getFirstname().isEmpty() && GlobalFunctions.getLastname().isEmpty()) {
+        if (GlobalFunctions.defaultIdentity.getFirstname().isEmpty() && GlobalFunctions.defaultIdentity.getLastname().isEmpty()) {
             name = username;
         } else {
-            name = String.format("%s %s", GlobalFunctions.getFirstname(), GlobalFunctions.getLastname());
+            name = String.format("%s %s", GlobalFunctions.defaultIdentity.getFirstname(), GlobalFunctions.defaultIdentity.getLastname());
         }
-        String email = GlobalFunctions.getEmail();
-        Bitmap profpic = GlobalFunctions.getProfpic();
+        String email = GlobalFunctions.defaultIdentity.getEmail();
+        Bitmap profpic = GlobalFunctions.defaultIdentity.getProfpic();
         if (profpic != null) {
             assert fragPic != null;
             fragPic.setImageBitmap(profpic);

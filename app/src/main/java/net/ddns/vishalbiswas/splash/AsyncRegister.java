@@ -14,8 +14,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class AsyncRegister extends AsyncTask<String, Void, JSONObject> {
-    final String registerURL = String.format("%s/signup.php", GlobalFunctions.getServer());
+class AsyncRegister extends AsyncTask<Object, Void, JSONObject> {
+    private final String registerPath = "/signup.php";
     private Handler handler;
 
     public void setHandler(Handler handler) {
@@ -23,16 +23,16 @@ class AsyncRegister extends AsyncTask<String, Void, JSONObject> {
     }
 
     @Override
-    protected JSONObject doInBackground(String... params) {
-        String username = params[0];
-        String email = params[1];
-        String password = params[2];
+    protected JSONObject doInBackground(Object... params) {
+        String username = params[1].toString();
+        String email = params[2].toString();
+        String password = params[3].toString();
         String postMessage = String.format("name=%s&email=%s&pwd=%s", username, email, password);
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                URL url = new URL(registerURL);
+                URL url = new URL(GlobalFunctions.servers.get((int)params[0]) + registerPath);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);

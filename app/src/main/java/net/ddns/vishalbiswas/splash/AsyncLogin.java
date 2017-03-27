@@ -17,20 +17,22 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
-    private final String loginURL = String.format("%s/login.php", GlobalFunctions.getServer());
+class AsyncLogin extends AsyncTask<Object, Void, JSONObject> {
+    private final String loginPath = "/login.php";
     private Handler handler;
+    private int serverIndex;
 
     @Override
-    protected JSONObject doInBackground(String... params) {
-        String username = params[0];
-        String password = params[1];
+    protected JSONObject doInBackground(Object... params) {
+        serverIndex = (int)params[0];
+        String username = params[1].toString();
+        String password = params[2].toString();
         String postMessage = String.format("user=%s&pass=%s", username, password);
 
         NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
         if (netInfo != null && netInfo.isConnected()) {
             try {
-                URL url = new URL(loginURL);
+                URL url = new URL(GlobalFunctions.servers.get(serverIndex) + loginPath);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);
@@ -73,27 +75,31 @@ class AsyncLogin extends AsyncTask<String, Void, JSONObject> {
                 int status = jsonObject.getInt("status");
 
                 if (status == 0) {
+                    if (GlobalFunctions.identities.get(serverIndex) == null) {
+                        GlobalFunctions.identities.append(serverIndex, new UserIdentity());
+                    }
+
                     if (jsonObject.has("fname")) {
-                        GlobalFunctions.setFirstname(jsonObject.getString("fname"));
+                        GlobalFunctions.identities.get(serverIndex).setFirstname(jsonObject.getString("fname"));
                     } else {
-                        GlobalFunctions.setFirstname("");
+                        GlobalFunctions.identities.get(serverIndex).setFirstname("");
                     }
                     if (jsonObject.has("lname")) {
-                        GlobalFunctions.setLastname(jsonObject.getString("lname"));
+                        GlobalFunctions.identities.get(serverIndex).setLastname(jsonObject.getString("lname"));
                     } else {
-                        GlobalFunctions.setLastname("");
+                        GlobalFunctions.identities.get(serverIndex).setLastname("");
                     }
 
                     if (jsonObject.has("profpic")) {
                         byte[] picBytes = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
                         Bitmap profpic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);
-                        GlobalFunctions.setProfpic(profpic);
+                        GlobalFunctions.identities.get(serverIndex).setProfpic(profpic);
                     } else {
-                        GlobalFunctions.setProfpic(null);
+                        GlobalFunctions.identities.get(serverIndex).setProfpic(null);
                     }
-                    GlobalFunctions.setUid(jsonObject.getInt("uid"));
-                    GlobalFunctions.setUsername(jsonObject.getString("user"));
-                    GlobalFunctions.setEmail(jsonObject.getString("email"));
+                    GlobalFunctions.identities.get(serverIndex).setUid(jsonObject.getInt("uid"));
+                    GlobalFunctions.identities.get(serverIndex).setUsername(jsonObject.getString("user"));
+                    GlobalFunctions.identities.get(serverIndex).setEmail(jsonObject.getString("email"));
                     GlobalFunctions.isSessionAlive = true;
                 }
 

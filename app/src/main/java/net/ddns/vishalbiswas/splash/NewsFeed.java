@@ -17,24 +17,13 @@ public class NewsFeed extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         if (!GlobalFunctions.isSessionAlive) {
             finish();
+            return;
         }
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_feed);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarNews);
         setSupportActionBar(toolbar);
-
-        int uid = GlobalFunctions.getUid();
-
-        View userDisplayFragmet = findViewById(R.id.userDisplayFragment);
-        assert userDisplayFragmet != null;
-        userDisplayFragmet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(NewsFeed.this, ProfileActivity.class);
-                startActivity(intent);
-            }
-        });
 
         ((ListView) findViewById(R.id.threadsListView)).setAdapter(new ThreadsAdapter(this));
     }

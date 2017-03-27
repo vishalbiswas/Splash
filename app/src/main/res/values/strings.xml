@@ -34,8 +34,6 @@
     <string name="ndtvVideos">Videos</string>
     <string name="ndtvPhotos">Photos</string>
 
-    <string name="reutersTop">Reuters Top News</string>
-
     <!-- Strings related to Settings -->
     <string name="strLanguage">Language</string>
     <string-array name="lang_list" translatable="false">
@@ -48,50 +46,6 @@
     </string-array>
 
     <string name="strSource">Sources</string>
-    <string name="strSourceNDTV" translatable="false">NDTV</string>
-
-    <string-array name="arrSourcesNDTV">
-        <item>@string/ndtvTop</item>
-        <item>@string/ndtvLatest</item>
-        <item>@string/ndtvTrending</item>
-        <item>@string/ndtvBusiness</item>
-        <item>@string/ndtvCricket</item>
-        <item>@string/ndtvOther</item>
-        <item>@string/ndtvMovies</item>
-        <item>@string/ndtvIndia</item>
-        <item>@string/ndtvWorld</item>
-        <item>@string/ndtvCities</item>
-        <item>@string/ndtvTech</item>
-        <item>@string/ndtvPerson</item>
-        <item>@string/ndtvTamil</item>
-        <item>@string/ndtvKerala</item>
-        <item>@string/ndtvKarnataka</item>
-        <item>@string/ndtvAndhra</item>
-        <item>@string/ndtvVideos</item>
-        <item>@string/ndtvPhotos</item>
-    </string-array>
-
-    <string-array name="arrSourcesNDTVValues" translatable="false">
-        <item>http://feeds.feedburner.com/NdtvNews-TopStories</item>
-        <item>http://feeds.feedburner.com/NDTV-LatestNews</item>
-        <item>http://feeds.feedburner.com/NDTV-Trending</item>
-        <item>http://feeds.feedburner.com/NDTV-Business</item>
-        <item>http://feeds.feedburner.com/NDTV-Cricket</item>
-        <item>http://feeds.feedburner.com/NDTV-Sports</item>
-        <item>http://feeds.feedburner.com/NDTV-Ent</item>
-        <item>http://feeds.feedburner.com/ndtv/Lsgd</item>
-        <item>http://feeds.feedburner.com/ndtv/Tqgx</item>
-        <item>http://feeds.feedburner.com/NdtvNews-Cities</item>
-        <item>http://feeds.feedburner.com/NDTV-Tech</item>
-        <item>http://feeds.feedburner.com/News-People</item>
-        <item>http://feeds.feedburner.com/News-TN</item>
-        <item>http://feeds.feedburner.com/News-Kerala</item>
-        <item>http://feeds.feedburner.com/News-Karnataka</item>
-        <item>http://feeds.feedburner.com/News-AP</item>
-        <item>http://feeds.feedburner.com/ndtv/videos</item>
-        <item>http://feeds.feedburner.com/NdtvNews-Photos</item>
-    </string-array>
-
     <string name="strRemember">Remember me</string>
     <string name="strRememberSummary">Remember the account you login with</string>
     <string name="strAutolog">Auto Logon</string>
@@ -127,4 +81,15 @@
     <string name="txtFName">First Name</string>
     <string name="txtLName">Last Name</string>
     <string name="txtSave">Save</string>
+    <string name="skip">Skip Login</string>
+    <string name="title_activity_sources_manager">Manage Forum Sources</string>
+    <string name="warnConfigServer">No servers configured! Taking you to server configuration…</string>
+    <string name="strEnterUrl">Enter URL..</string>
+    <string name="strSave">Save</string>
+    <string name="defaultIdentity">Default Identity</string>
+    <string name="defaultUser">Default Username</string>
+    <string name="strDefUserSummary">Default username when logging in/registering</string>
+    <string name="defaultFname">Default First Name</string>
+    <string name="defaultLname">Default Last Name</string>
+    <string name="defaultEmail">Default Email</string>
 </resources>

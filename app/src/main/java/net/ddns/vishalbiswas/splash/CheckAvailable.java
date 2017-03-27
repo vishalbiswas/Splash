@@ -14,19 +14,19 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class CheckAvailable extends AsyncTask<String, Void, Void> {
-    private final String checkURL = String.format("%s/checkuser.php", GlobalFunctions.getServer());
+class CheckAvailable extends AsyncTask<Object, Void, Void> {
+    private final String checkPath = "/checkuser.php";
     private int message = -1;
     private Handler handler;
 
     @Override
-    protected Void doInBackground(String... params) {
+    protected Void doInBackground(Object... params) {
         Boolean checkForUser = true;
-        String postMessage = String.format("user=%s", params[0]);
+        String postMessage = String.format("user=%s", params[1]);
 
-        if (params.length == 2) {
-            if (params[1].equals("email")) {
-                postMessage = String.format("email=%s", params[0]);
+        if (params.length == 3) {
+            if (params[2].equals("email")) {
+                postMessage = String.format("email=%s", params[1]);
                 message = -2;
                 checkForUser = false;
             }
@@ -41,7 +41,7 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
             }
 
             try {
-                URL url = new URL(checkURL);
+                URL url = new URL(GlobalFunctions.servers.get((int)params[0]) + checkPath);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setRequestMethod("POST");
                 webservice.setConnectTimeout(3000);
@@ -109,11 +109,7 @@ class CheckAvailable extends AsyncTask<String, Void, Void> {
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        getHandler().sendEmptyMessage(message);
-    }
-
-    public Handler getHandler() {
-        return handler;
+        handler.sendEmptyMessage(message);
     }
 
     public void setHandler(Handler handler) {

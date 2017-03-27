@@ -18,7 +18,6 @@
     <string name="restartNotify">भाषा बदलने के लिए पुनः प्रारंभ की जरूरत है</string>
     <string name="pref_general">सामान्य</string>
     <string name="ndtvLatest">NDTV ताज़ा खबर</string>
-    <string name="reutersTop">Reuters समाचार</string>
     <string name="strSource">सूत्रे</string>
     <string name="regPassword">पासवर्ड</string>
     <string name="regUser">उपयोगकर्ता नाम</string>
@@ -66,4 +65,15 @@
     <string name="txtLName">उपनाम</string>
     <string name="txtSave">संचय</string>
     <string name="warnOffline">ऑफलाइन</string>
+    <string name="defaultEmail">मुख्य ईमेल</string>
+    <string name="defaultFname">मुख्य नाम</string>
+    <string name="defaultIdentity">मुख्य पहचान</string>
+    <string name="defaultLname">मुख्य उपनाम</string>
+    <string name="defaultUser">मुख्य उपयोगकर्ता नाम</string>
+    <string name="skip">लॉगिन छोड़ दें</string>
+    <string name="strDefUserSummary">लोगिन करने के लिये मुख्य नाम</string>
+    <string name="strEnterUrl">URL डाले...</string>
+    <string name="warnConfigServer">कोई सरवर उपलब्ध नही है…</string>
+    <string name="title_activity_sources_manager">फोरम बदले</string>
+    <string name="strSave">सन्चित करे</string>
 </resources>

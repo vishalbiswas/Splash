@@ -53,6 +53,19 @@
                 android:value="net.ddns.vishalbiswas.splash.MainActivity" />
         </activity>
         <activity android:name=".ProfileActivity" />
+        <activity
+            android:name=".SourcesManagerActivity"
+            android:label="@string/title_activity_sources_manager"
+            android:parentActivityName=".SettingsActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.ddns.vishalbiswas.splash.SettingsActivity" />
+        </activity>
     </application>
 
 </manifest>
