@@ -1,27 +1,22 @@
 language: android
 android:
   components:
-    # Uncomment the lines below if you want to
-    # use the latest revision of Android SDK Tools
-    - platform-tools
-    - tools
-    - tools
-
-    # The BuildTools version used by your project
-    - build-tools-25.0.2
-
-    # The SDK version used to compile your project
-    - android-25
-
-    # Additional components
-#    - extra-google-google_play_services
-#    - extra-google-m2repository
-#    - extra-android-m2repository
-#    - addon-google_apis-google-19
-script: ./gradlew build
+  - platform-tools
+  - tools
+  - tools
+  - build-tools-25.0.2
+  - android-25
+script: "./gradlew build"
 before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+- rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
 cache:
   directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+  - "$HOME/.gradle/caches/"
+  - "$HOME/.gradle/wrapper/"
+deploy:
+  provider: releases
+  api_key:
+    secure: JOZz2amU2Yd+OxU8+o9cuTrvtgRMMR53KAo9xDwiyNoPGrZscFYxcO/ti2v3VgNntdiyentTu8QD6ZopvRr8SicgoLZ9Q20aE9yWcwrkV6cKvCCzpXMWx5fvp8V2p+MOvtgwUDjGYJzDc6fryulGWVrSsoWv1JEamMefcKVI103XMFmaOJBBkBzUj/TNDHKj9T7T+kdxeGEyxhCBu0ipnd/f/Quj2O5doLiKa4wCJd2T6H83Z1vyoh5UusaQD7+USzysFrHcSCcae5NOetbxToW3FKcjNofsgAdlEgig/WvdsxVw8wz/ReW4yjGm3MqRNiDjfJzKJFW0WT/4BK0IBkeP9eRyJIrnVujY8GsrkEukHkcM3LjtAvV7N7F3NTodad3AwucjD/zeqtJc0zhtKWj3dHp+S6t6lTh3kDEUkLyCjhhO6BuqiimPOXEsIDsxMSPlYbikw1hpzxomR6spr9Lbq3I9k7tyeKw7LLRWMEtzxv2JSyXO9H6Nv0eQTrI8fPgZUyyQmTvLtOrxDzdy/5Ok2zN2CsSQCD33X4mGGrNtG+dQiTANjklZLBdSoR9eWOX1t0cmX5b1tg7LWySr7f2YzMU376Yvdg5v67fVdmRaXr7GksxXTBlr5938OJwLixHBoVFeacm50Ied79q6W0lMj+w0r9vJVFXgGB75tRY=
+  file: app/build/outputs/apk/app-debug.apk
+  on:
+    repo: vishalbiswas/Splash
