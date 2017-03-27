@@ -1,9 +1,11 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes.asyncs;
 
 import android.graphics.Bitmap;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +17,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
+public class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
     private final static String updatePath = "/update.php";
     private final static String crlf = "\r\n";
     private final static String twoHyphens = "--";
@@ -24,7 +26,7 @@ class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
     private Handler handler;
     private int serverIndex;
 
-    void setHandler(Handler handler) {
+    public void setHandler(Handler handler) {
         this.handler = handler;
     }
 

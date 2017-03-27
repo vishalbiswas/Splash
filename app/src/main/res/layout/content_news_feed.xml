@@ -9,7 +9,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="net.ddns.vishalbiswas.splash.NewsFeed"
+    tools:context="net.ddns.vishalbiswas.splash.android.NewsFeed"
     tools:showIn="@layout/activity_news_feed">
 
     <include
@@ -22,19 +22,7 @@
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/userDisplayFragment"
-        android:layout_toStartOf="@+id/userDisplayFragment" />
-
-    <fragment
-        android:id="@+id/userDisplayFragment"
-        android:name="net.ddns.vishalbiswas.splash.UserDisplayFragment"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/include"
-        android:layout_alignParentTop="true"
-        android:layout_alignRight="@+id/include"
-        tools:layout="@layout/fragment_user_display" />
+        android:layout_alignParentTop="true" />
 
 
 </RelativeLayout>

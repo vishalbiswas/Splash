@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
 import android.os.Bundle;
 import android.preference.ListPreference;
@@ -7,6 +7,9 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 public class SettingsActivity extends AppCompatActivity {
 

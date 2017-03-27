@@ -1,8 +1,10 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes.asyncs;
 
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,7 +16,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class CheckAvailable extends AsyncTask<Object, Void, Void> {
+public class CheckAvailable extends AsyncTask<Object, Void, Void> {
     private final String checkPath = "/checkuser.php";
     private int message = -1;
     private Handler handler;

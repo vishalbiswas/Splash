@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -14,6 +14,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.asyncs.AsyncUpdate;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 import java.io.IOException;
 import java.io.InputStream;

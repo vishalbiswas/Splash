@@ -1,8 +1,9 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -15,15 +16,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.asyncs.AsyncRegister;
+import net.ddns.vishalbiswas.splash.classes.asyncs.CheckAvailable;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
+
 import java.util.regex.Pattern;
 
 public class RegisterActivity extends AppCompatActivity {
-    private static EditText viewUsername;
-    private static EditText viewEmail;
-    private static EditText viewPassword;
-    private static View snackLayout;
+    private EditText viewUsername;
+    private EditText viewEmail;
+    private EditText viewPassword;
+    private View snackLayout;
     final private FieldValidator fieldValidator = new FieldValidator(new ErrorProvider());
-    final private int serverIndex =  getIntent().getIntExtra("serverIndex", -1);
+    private int serverIndex;
 
     final private Handler regHandler = new Handler() {
         @Override
@@ -70,7 +76,7 @@ public class RegisterActivity extends AppCompatActivity {
         Snackbar.make(findViewById(R.id.frag), errorMessageResId, Snackbar.LENGTH_LONG).show();
     }
 
-    private void checkStatus(boolean checkForUser, GlobalFunctions.HTTP_CODE code) {
+    private void checkStatus(boolean checkForUser, @NonNull GlobalFunctions.HTTP_CODE code) {
         switch (code) {
             case SUCCESS:
                 return;
@@ -103,6 +109,7 @@ public class RegisterActivity extends AppCompatActivity {
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
 
+        serverIndex = getIntent().getIntExtra("serverIndex", -1);
         if (serverIndex < 0) {
             Log.e("Splash", "RegisterActivity received negative serverIndex");
             finish();
@@ -120,6 +127,9 @@ public class RegisterActivity extends AppCompatActivity {
         viewPassword = (EditText) findViewById(R.id.regPassword);
         Button regButton = (Button) findViewById(R.id.regButton);
         snackLayout = findViewById(R.id.frag);
+
+        viewUsername.setText(GlobalFunctions.defaultIdentity.getUsername());
+        viewEmail.setText(GlobalFunctions.defaultIdentity.getEmail());
 
         viewUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override

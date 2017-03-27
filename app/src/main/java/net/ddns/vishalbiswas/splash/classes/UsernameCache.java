@@ -1,17 +1,11 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 import android.util.SparseArray;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import net.ddns.vishalbiswas.splash.classes.asyncs.AsyncGetUser;
 
-class UsernameCache {
+public class UsernameCache {
     private static SparseArray<SparseArray<String>> usernames = new SparseArray<>();
 
     static String getUser(Handler handler, int serverIndex, int uid) {
@@ -35,7 +29,7 @@ class UsernameCache {
         return name;
     }
 
-    static void setUser(int serverIndex, int uid, String name) {
+    public static void setUser(int serverIndex, int uid, String name) {
         SparseArray<String> serverArray= usernames.get(serverIndex);
         if (serverArray == null) {
             serverArray = new SparseArray<>();

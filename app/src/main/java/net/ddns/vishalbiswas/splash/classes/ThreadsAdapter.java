@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -10,15 +10,17 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
+import net.ddns.vishalbiswas.splash.R;
+
 import java.util.ArrayList;
 import java.util.Date;
 
-class ThreadsAdapter extends BaseAdapter {
+public class ThreadsAdapter extends BaseAdapter {
 
     private ArrayList<Thread> threadLists = new ArrayList<>();
     private LayoutInflater inflater;
 
-    ThreadsAdapter (Activity activity) {
+    public ThreadsAdapter(Activity activity) {
         inflater = activity.getLayoutInflater();
 
         //// FIXME: 3/13/17 demo code to be removed
@@ -48,7 +50,7 @@ class ThreadsAdapter extends BaseAdapter {
     public View getView(int i, View view, ViewGroup viewGroup) {
         ThreadViewHolder holder;
         if (view == null) {
-            view = inflater.inflate(R.layout.threads_list_item, null);
+            view = inflater.inflate(R.layout.list_item_thread, null);
 
             holder = new ThreadViewHolder();
             holder.title = (TextView) view.findViewById(R.id.threadTitle);

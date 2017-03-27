@@ -1,8 +1,11 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes.asyncs;
 
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
+
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
+import net.ddns.vishalbiswas.splash.classes.UsernameCache;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Locale;
 
-class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
+public class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
     private final String getuserPath = "/getuser.php";
     private int serverIndex;
     private Handler handler;
@@ -87,7 +90,7 @@ class AsyncGetUser extends AsyncTask<Integer, Void, JSONObject> {
         handler.sendEmptyMessage(0);
     }
 
-    void setHandler(Handler handler) {
+    public void setHandler(Handler handler) {
         this.handler = handler;
     }
 }

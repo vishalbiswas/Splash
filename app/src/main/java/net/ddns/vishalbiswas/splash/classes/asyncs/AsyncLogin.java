@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes.asyncs;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -6,6 +6,9 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Base64;
+
+import net.ddns.vishalbiswas.splash.classes.UserIdentity;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,7 +20,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-class AsyncLogin extends AsyncTask<Object, Void, JSONObject> {
+public class AsyncLogin extends AsyncTask<Object, Void, JSONObject> {
     private final String loginPath = "/login.php";
     private Handler handler;
     private int serverIndex;
@@ -100,7 +103,6 @@ class AsyncLogin extends AsyncTask<Object, Void, JSONObject> {
                     GlobalFunctions.identities.get(serverIndex).setUid(jsonObject.getInt("uid"));
                     GlobalFunctions.identities.get(serverIndex).setUsername(jsonObject.getString("user"));
                     GlobalFunctions.identities.get(serverIndex).setEmail(jsonObject.getString("email"));
-                    GlobalFunctions.isSessionAlive = true;
                 }
 
                 handler.sendEmptyMessage(status);
@@ -112,7 +114,7 @@ class AsyncLogin extends AsyncTask<Object, Void, JSONObject> {
         }
     }
 
-    void setHandler(Handler handler) {
+    public void setHandler(Handler handler) {
         this.handler = handler;
     }
 }

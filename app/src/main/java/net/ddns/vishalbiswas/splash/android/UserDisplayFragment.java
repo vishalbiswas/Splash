@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -11,18 +11,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class UserDisplayFragment extends Fragment {
-    private static ImageView fragPic;
-    private static TextView fragUser;
-    private static TextView fragEmail;
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
+public class UserDisplayFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public UserDisplayFragment() {
         // Required empty public constructor
     }
 
-    public static void updateViews() {
+    public static void updateViews(ImageView fragPic, TextView fragUser, TextView fragEmail) {
         String username = GlobalFunctions.defaultIdentity.getUsername();
         String name;
         if (GlobalFunctions.defaultIdentity.getFirstname().isEmpty() && GlobalFunctions.defaultIdentity.getLastname().isEmpty()) {
@@ -57,10 +56,9 @@ public class UserDisplayFragment extends Fragment {
     public void onStart() {
         super.onStart();
         if (getView() != null) {
-            fragPic = (ImageView) getView().findViewById(R.id.fragPic);
-            fragUser = (TextView) getView().findViewById(R.id.fragUser);
-            fragEmail = (TextView) getView().findViewById(R.id.fragEmail);
-            updateViews();
+            updateViews((ImageView) getView().findViewById(R.id.fragPic),
+                    (TextView) getView().findViewById(R.id.fragUser),
+                    (TextView) getView().findViewById(R.id.fragEmail));
         }
     }
 
@@ -103,7 +101,7 @@ public class UserDisplayFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnFragmentInteractionListener {
+    interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }

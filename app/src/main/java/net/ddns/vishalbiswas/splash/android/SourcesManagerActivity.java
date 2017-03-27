@@ -1,34 +1,22 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
-import android.app.Dialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.ArraySet;
-import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
 
 public class SourcesManagerActivity extends AppCompatActivity {
 

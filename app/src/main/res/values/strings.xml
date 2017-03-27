@@ -15,25 +15,6 @@
     <string name="errEmpty">Field left blank!</string>
 
 
-    <string name="ndtvTop">Top Stories</string>
-    <string name="ndtvLatest">Latest Stories</string>
-    <string name="ndtvTrending">Trending Stories</string>
-    <string name="ndtvBusiness">Business</string>
-    <string name="ndtvCricket">Cricket</string>
-    <string name="ndtvOther">Other Sports</string>
-    <string name="ndtvMovies">Movies</string>
-    <string name="ndtvIndia">India news</string>
-    <string name="ndtvWorld">World news</string>
-    <string name="ndtvCities">Cities news</string>
-    <string name="ndtvTech">Technology news</string>
-    <string name="ndtvPerson">Personalities</string>
-    <string name="ndtvTamil">Tamil Nadu news</string>
-    <string name="ndtvKerala">Kerala news</string>
-    <string name="ndtvKarnataka">Karnataka news</string>
-    <string name="ndtvAndhra">Andhra Pradesh news</string>
-    <string name="ndtvVideos">Videos</string>
-    <string name="ndtvPhotos">Photos</string>
-
     <!-- Strings related to Settings -->
     <string name="strLanguage">Language</string>
     <string-array name="lang_list" translatable="false">
@@ -92,4 +73,5 @@
     <string name="defaultFname">Default First Name</string>
     <string name="defaultLname">Default Last Name</string>
     <string name="defaultEmail">Default Email</string>
+    <string name="descDeleteServer">Delete Server</string>
 </resources>

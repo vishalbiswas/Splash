@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes;
 
 import android.app.Activity;
 import android.app.Application;
@@ -6,31 +6,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.util.SparseArray;
 
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.android.SettingsActivity;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
-    public static boolean isSessionAlive = false;
     private static Locale locale;
     private static HTTP_CODE regNameStatus;
     private static HTTP_CODE regEmailStatus;
     /**
      * Run updateServerList after adding or deleting from it
      */
-    static ArrayList<String> servers = new ArrayList<>();
-    static SparseArray<UserIdentity> identities = new SparseArray<>();
-    static UserIdentity defaultIdentity;
+    public static ArrayList<String> servers = new ArrayList<>();
+    public static SparseArray<UserIdentity> identities = new SparseArray<>();
+    public static UserIdentity defaultIdentity;
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -102,7 +102,7 @@ public class GlobalFunctions extends Application {
         defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
     }
 
-    enum HTTP_CODE {
+    public enum HTTP_CODE {
         SUCCESS,
         FAILED,
         NO_ACCESS,

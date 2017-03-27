@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,6 +11,15 @@ class Thread {
     private Date mtime;
     private int serverIndex;
 
+    /**
+     * Create a new thread
+     * @param serverIndex Index of GlobalFunctions.servers
+     * @param title Title of thread
+     * @param content Text content of the thread
+     * @param creater_id UID of the poster
+     * @param ctime Thread creation time
+     * @param mtime Thread modification time
+     */
     Thread (int serverIndex, String title, String content, int creater_id, Date ctime, Date mtime) {
         this.serverIndex = serverIndex;
         this.title = title;

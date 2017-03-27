@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="net.ddns.vishalbiswas.splash.ProfileActivity">
+    tools:context="net.ddns.vishalbiswas.splash.android.ProfileActivity">
 
     <ImageView
         android:id="@+id/imgPic"

@@ -1,4 +1,4 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
 import android.content.Context;
 import android.content.Intent;
@@ -7,15 +7,15 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import net.ddns.vishalbiswas.splash.BuildConfig;
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -88,7 +88,7 @@ public class SplashScreen extends AppCompatActivity {
 
             @Override
             protected void onPostExecute(Void aVoid) {
-                Intent intent = new Intent(SplashScreen.this, MainActivity.class);
+                Intent intent = new Intent(SplashScreen.this, LoginActivity.class);
                 startActivity(intent);
                 SplashScreen.this.finish();
                 super.onPostExecute(aVoid);

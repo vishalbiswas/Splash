@@ -1,8 +1,8 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.classes;
 
 import android.graphics.Bitmap;
 
-class UserIdentity {
+public class UserIdentity {
     private int uid = -1;
     private String username = null;
     private String firstname = "";
@@ -17,54 +17,54 @@ class UserIdentity {
         this.email = email;
     }
 
-    UserIdentity() {
+    public UserIdentity() {
     }
 
-    String getUsername() {
+    public String getUsername() {
         return username;
     }
 
-    void setUsername(String username) {
+    public void setUsername(String username) {
         this.username = username;
     }
 
-    String getFirstname() {
+    public String getFirstname() {
         return firstname;
     }
 
-    void setFirstname(String firstname) {
+    public void setFirstname(String firstname) {
         this.firstname = firstname;
     }
 
-    String getLastname() {
+    public String getLastname() {
         return lastname;
     }
 
-    void setLastname(String lastname) {
+    public void setLastname(String lastname) {
         this.lastname = lastname;
     }
 
-    String getEmail() {
+    public String getEmail() {
         return email;
     }
 
-    void setEmail(String email) {
+    public void setEmail(String email) {
         this.email = email;
     }
 
-    Bitmap getProfpic() {
+    public Bitmap getProfpic() {
         return profpic;
     }
 
-    void setProfpic(Bitmap profpic) {
+    public void setProfpic(Bitmap profpic) {
         this.profpic = profpic;
     }
 
-    int getUid() {
+    public int getUid() {
         return uid;
     }
 
-    void setUid(int uid) {
+    public void setUid(int uid) {
         this.uid = uid;
     }
 }

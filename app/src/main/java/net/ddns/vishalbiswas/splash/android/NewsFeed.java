@@ -1,24 +1,20 @@
-package net.ddns.vishalbiswas.splash;
+package net.ddns.vishalbiswas.splash.android;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ListViewCompat;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
+
+import net.ddns.vishalbiswas.splash.R;
+import net.ddns.vishalbiswas.splash.classes.GlobalFunctions;
+import net.ddns.vishalbiswas.splash.classes.ThreadsAdapter;
 
 public class NewsFeed extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        if (!GlobalFunctions.isSessionAlive) {
-            finish();
-            return;
-        }
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_news_feed);
