@@ -70,7 +70,7 @@ public class SplashScreen extends AppCompatActivity {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(SplashScreen.this, source, Toast.LENGTH_LONG).show();
+                                    Toast.makeText(SplashScreen.this, String.format("%s %s", source, getString(R.string.strNoResponse)), Toast.LENGTH_LONG).show();
                                 }
                             });
                         }

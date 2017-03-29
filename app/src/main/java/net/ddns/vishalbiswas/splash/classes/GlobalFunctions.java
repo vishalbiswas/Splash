@@ -86,7 +86,7 @@ public class GlobalFunctions extends Application {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        Set<String> sources = preferences.getStringSet("sources", null);
+        Set<String> sources = getSharedPreferences("sources", MODE_PRIVATE).getStringSet("sources", null);
         if (sources == null) {
             SharedPreferences.Editor editor = getSharedPreferences("sources", MODE_PRIVATE).edit();
             sources = new HashSet<>(0);

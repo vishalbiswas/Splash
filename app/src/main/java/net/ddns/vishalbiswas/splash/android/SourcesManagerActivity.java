@@ -70,17 +70,38 @@ public class SourcesManagerActivity extends AppCompatActivity {
         }
 
         @Override
-        public View getView(final int i, View view, ViewGroup viewGroup) {
+        public View getView(final int index, View view, ViewGroup viewGroup) {
             SourceViewHolder vh;
             if (view == null) {
                 view = getLayoutInflater().inflate(R.layout.list_item_source, null);
                 assert view != null;
                 vh = new SourceViewHolder(view);
-                vh.itemSource.setText(GlobalFunctions.servers.get(i));
+                vh.itemSource.setText(GlobalFunctions.servers.get(index));
+                vh.itemSource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final EditText serverEdit = new EditText(SourcesManagerActivity.this);
+                        serverEdit.setLayoutParams(new LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.MATCH_PARENT,
+                                LinearLayout.LayoutParams.MATCH_PARENT));
+                        serverEdit.setText(((TextView)v).getText());
+                        new AlertDialog.Builder(SourcesManagerActivity.this).setTitle(R.string.strEnterUrl)
+                                .setView(serverEdit).setPositiveButton(getString(R.string.strSave), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if (!serverEdit.getText().toString().isEmpty()) {
+                                    GlobalFunctions.servers.set(index, serverEdit.getText().toString());
+                                    GlobalFunctions.updateServerList(SourcesManagerActivity.this);
+                                    notifyDataSetChanged();
+                                }
+                            }
+                        }).show();
+                    }
+                });
                 vh.imageButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        GlobalFunctions.servers.remove(i);
+                        GlobalFunctions.servers.remove(index);
                         GlobalFunctions.updateServerList(SourcesManagerActivity.this);
                         notifyDataSetChanged();
                     }
@@ -88,7 +109,7 @@ public class SourcesManagerActivity extends AppCompatActivity {
                 view.setTag(vh);
             }
             vh = (SourceViewHolder) view.getTag();
-            vh.itemSource.setText(GlobalFunctions.servers.get(i));
+            vh.itemSource.setText(GlobalFunctions.servers.get(index));
             return view;
         }
 

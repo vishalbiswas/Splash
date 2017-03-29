@@ -59,4 +59,5 @@
     <string name="title_activity_sources_manager">फोरम बदले</string>
     <string name="strSave">सन्चित करे</string>
     <string name="descDeleteServer">सर्वर निकाले</string>
+    <string name="strNoResponse">" बन्द है"</string>
 </resources>

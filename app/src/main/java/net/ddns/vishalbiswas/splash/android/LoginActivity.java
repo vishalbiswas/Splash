@@ -87,10 +87,14 @@ public class LoginActivity extends AppCompatActivity {
         Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
         if (sharedPreferences.getBoolean("remember", false)) {
+            String user = sharedPreferences.getString("username", "");
+            String pass = sharedPreferences.getString("password", "");
+            int serverIndex = sharedPreferences.getInt("server", -1);
+            txtUsername.setText(user);
+            txtPassword.setText(pass);
+            spinServer.setSelection(serverIndex);
             if (sharedPreferences.getBoolean("autolog", false)) {
-                doLogin(sharedPreferences.getString("username", ""),
-                        sharedPreferences.getString("password", ""),
-                        sharedPreferences.getInt("server", -1));
+                doLogin(user, pass, serverIndex);
             }
         }
 

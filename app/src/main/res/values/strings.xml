@@ -74,4 +74,5 @@
     <string name="defaultLname">Default Last Name</string>
     <string name="defaultEmail">Default Email</string>
     <string name="descDeleteServer">Delete Server</string>
+    <string name="strNoResponse">is not responding</string>
 </resources>
