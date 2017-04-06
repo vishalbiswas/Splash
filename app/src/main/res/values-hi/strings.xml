@@ -60,4 +60,7 @@
     <string name="strSave">सन्चित करे</string>
     <string name="descDeleteServer">सर्वर निकाले</string>
     <string name="strNoResponse">" बन्द है"</string>
+    <string name="strAskLogin">क्या अाप अभी लॉगिन करना चाहते है?</string>
+    <string name="strCloseSources">पोस्ट देखे</string>
+    <string name="strFilterSource">फ़िल्टर करें</string>
 </resources>

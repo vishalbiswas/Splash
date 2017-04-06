@@ -75,4 +75,7 @@
     <string name="defaultEmail">Default Email</string>
     <string name="descDeleteServer">Delete Server</string>
     <string name="strNoResponse">is not responding</string>
+    <string name="strFilterSource">Filter by Sources</string>
+    <string name="strCloseSources">Return to threads view</string>
+    <string name="strAskLogin">Do you want to login now?</string>
 </resources>

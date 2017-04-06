@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="net.ddns.vishalbiswas.splash.android.LoginActivity">
+    tools:context="vishal.chetan.splash.android.LoginActivity">
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

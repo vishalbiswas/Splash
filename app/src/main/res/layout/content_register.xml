@@ -10,7 +10,7 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="net.ddns.vishalbiswas.splash.android.RegisterActivity"
+    tools:context="vishal.chetan.splash.android.RegisterActivity"
     tools:showIn="@layout/activity_register">
 
     <android.support.design.widget.TextInputLayout

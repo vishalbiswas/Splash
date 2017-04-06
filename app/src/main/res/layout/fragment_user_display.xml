@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:weightSum="1"
-    tools:context="net.ddns.vishalbiswas.splash.android.UserDisplayFragment">
+    tools:context="vishal.chetan.splash.android.UserDisplayFragment">
 
     <!-- TODO: Update blank fragment layout -->
     <RelativeLayout

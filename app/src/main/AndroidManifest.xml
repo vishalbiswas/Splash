@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="net.ddns.vishalbiswas.splash">
+    package="vishal.chetan.splash">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".classes.GlobalFunctions"
+        android:name="vishal.chetan.splash.GlobalFunctions"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".android.LoginActivity"
+            android:name="vishal.chetan.splash.android.LoginActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.ddns.vishalbiswas.splash.android.SplashScreen" />
+                android:value="vishal.chetan.splash.android.SplashScreen" />
         </activity>
         <activity
-            android:name=".android.SplashScreen"
+            android:name="vishal.chetan.splash.android.SplashScreen"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar.NoTitleBar">
             <intent-filter>
@@ -31,40 +31,40 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".android.NewsFeed"
+            android:name="vishal.chetan.splash.android.NewsFeed"
             android:label="@string/title_activity_news_feed"
-            android:parentActivityName=".android.LoginActivity"
+            android:parentActivityName="vishal.chetan.splash.android.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.ddns.vishalbiswas.splash.android.LoginActivity" />
+                android:value="vishal.chetan.splash.android.LoginActivity" />
         </activity>
         <activity
-            android:name=".android.SettingsActivity"
+            android:name="vishal.chetan.splash.android.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".android.RegisterActivity"
+            android:name="vishal.chetan.splash.android.RegisterActivity"
             android:label="@string/title_activity_register"
-            android:parentActivityName=".android.LoginActivity"
+            android:parentActivityName="vishal.chetan.splash.android.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.ddns.vishalbiswas.splash.android.LoginActivity" />
+                android:value="vishal.chetan.splash.android.LoginActivity" />
         </activity>
-        <activity android:name=".android.ProfileActivity" />
+        <activity android:name="vishal.chetan.splash.android.ProfileActivity" />
         <activity
-            android:name=".android.SourcesManagerActivity"
+            android:name="vishal.chetan.splash.android.SourcesManagerActivity"
             android:label="@string/title_activity_sources_manager"
-            android:parentActivityName=".android.SettingsActivity"
+            android:parentActivityName="vishal.chetan.splash.android.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="net.ddns.vishalbiswas.splash.SourcesManagerActivity" />
+                <action android:name="vishal.chetan.splash.SourcesManagerActivity" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="net.ddns.vishalbiswas.splash.android.SettingsActivity" />
+                android:value="vishal.chetan.splash.android.SettingsActivity" />
         </activity>
     </application>
 

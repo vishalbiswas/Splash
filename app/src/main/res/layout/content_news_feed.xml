@@ -1,28 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="net.ddns.vishalbiswas.splash.android.NewsFeed"
+    tools:context="vishal.chetan.splash.android.NewsFeed"
     tools:showIn="@layout/activity_news_feed">
 
-    <include
-        android:id="@+id/include"
-        layout="@layout/snack_layout" />
-
-    <ListView
+    <android.support.v7.widget.RecyclerView
         android:id="@+id/threadsListView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true" />
+        android:layout_height="match_parent" />
+
+    <include
+        android:id="@+id/includeSnack"
+        layout="@layout/snack_layout" />
 
 
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
