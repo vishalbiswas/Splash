@@ -19,6 +19,7 @@ class Thread {
     private final Date ctime;
     private final Date mtime;
     private final int serverIndex;
+    private final int topicId;
 
     /**
      * Create a new thread
@@ -29,13 +30,14 @@ class Thread {
      * @param ctime Thread creation time
      * @param mtime Thread modification time
      */
-    Thread (int serverIndex, String title, String content, int creater_id, Date ctime, Date mtime) {
+    Thread (int serverIndex, String title, String content, int creater_id, Date ctime, Date mtime, int topicId) {
         this.serverIndex = serverIndex;
         this.title = title;
         this.content = content;
         this.creator_id = creater_id;
         this.ctime = ctime;
         this.mtime = mtime;
+        this.topicId = topicId;
     }
 
     private ArrayList comments = null;

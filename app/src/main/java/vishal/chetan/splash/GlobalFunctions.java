@@ -8,12 +8,17 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.util.SparseArray;
+import android.widget.Toast;
 
 import vishal.chetan.splash.android.SettingsActivity;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -40,18 +45,18 @@ public class GlobalFunctions extends Application {
 
     public static void lookupLocale(Context con) {
         if (locale == null) initializeData(con);
-        Configuration config = new Configuration();
+        final Configuration config = new Configuration();
         config.locale = locale;
         ((Activity) con).getBaseContext().getResources().updateConfiguration(config, ((Activity) con).getBaseContext().getResources().getDisplayMetrics());
     }
 
     public static void initializeData(Context context) {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         locale = new Locale(preferences.getString("locale", "en"));
     }
 
     public static void launchSettings(Context context) {
-        Intent intent = new Intent(context,SettingsActivity.class);
+        final Intent intent = new Intent(context, SettingsActivity.class);
         context.startActivity(intent);
     }
 
@@ -76,18 +81,19 @@ public class GlobalFunctions extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        servers.addChangeListener(new ServerList.ServerListChangeListener() {
+        connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
-            public void onChange(String name, String url, SourceOperation sourceOperation) {
+            public void onChange(ServerList.SplashSource source, SourceOperation sourceOperation) {
                 switch (sourceOperation) {
                     case ADD:
                     case UPDATE:
                         getSharedPreferences("sources", Context.MODE_PRIVATE).edit()
-                                .putString(name, url).apply();
+                                .putString(source.getName(), source.getUrl()).apply();
                         break;
                     case DELETE:
                         getSharedPreferences("sources", Context.MODE_PRIVATE).edit()
-                                .remove(name).apply();
+                                .remove(source.getName()).apply();
                 }
             }
         });
@@ -116,12 +122,54 @@ public class GlobalFunctions extends Application {
         defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
     }
 
-    public enum HTTP_CODE {
-        SUCCESS,
-        FAILED,
-        NO_ACCESS,
-        REQUEST_FAILED,
-        BUSY,
-        UNKNOWN
+    public static class CheckSource extends AsyncTask<Integer, Void, Void> {
+        protected ServerList.SplashSource source;
+        Activity activity;
+
+        public CheckSource(Activity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        protected Void doInBackground(Integer... params) {
+            source = GlobalFunctions.servers.get(params[0]);
+            boolean result = false;
+            NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
+            if (netInfo != null && netInfo.isConnected()) {
+                URL urlServer;
+                HttpURLConnection urlConn;
+                try {
+                    urlServer = new URL(source.getUrl());
+                    urlConn = (HttpURLConnection) urlServer.openConnection();
+                    urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
+                    urlConn.connect();
+                    if (urlConn.getResponseCode() != 200) {
+                        throw new Exception();
+                    }
+                    result = true;
+                } catch (Exception e) {
+                    result = false;
+                }
+            }
+            if (!result) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(activity, "Error occurred while connecting to " + source.getName() + ". Disabling...", Toast.LENGTH_LONG).show();
+                    }
+                });
+                GlobalFunctions.servers.setDisabled(params[0], true);
+            }
+            return null;
+        }
     }
+
+public enum HTTP_CODE {
+    SUCCESS,
+    FAILED,
+    NO_ACCESS,
+    REQUEST_FAILED,
+    BUSY,
+    UNKNOWN
+}
 }

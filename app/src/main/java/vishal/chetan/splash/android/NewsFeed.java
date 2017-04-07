@@ -48,9 +48,15 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         threadsListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         threadsListView.setHasFixedSize(true);
         nav_view.setNavigationItemSelectedListener(this);
-        GlobalFunctions.servers.addChangeListener(new ServerList.ServerListChangeListener() {
+        GlobalFunctions.servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
-            public void onChange(String name, String url, SourceOperation sourceOperation) {
+            public void onChange(ServerList.SplashSource source, SourceOperation sourceOperation) {
+                updateOptionsMenu();
+            }
+        });
+        GlobalFunctions.servers.addListener(new ServerList.OnServerDisabledListener() {
+            @Override
+            public void onDisabled() {
                 updateOptionsMenu();
             }
         });

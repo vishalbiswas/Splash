@@ -34,10 +34,6 @@ public class SplashScreen extends AppCompatActivity {
                 GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2"));
             }
         }
-                    /*sources.add("http://vishalbiswas.asuscomm.com");
-                    sources.add("http://vishalbiswas.ddns.net");
-                    sources.add("http://vishalbiswas.tigrimigri.com");*/
-
 
         if (GlobalFunctions.servers.size() == 0) {
             Toast.makeText(SplashScreen.this, R.string.errNoLoginServer, Toast.LENGTH_LONG).show();
@@ -46,57 +42,13 @@ public class SplashScreen extends AppCompatActivity {
             return;
         }
 
-        class pingNetworks extends AsyncTask<Void, Void, Void> {
-            @Override
-            protected Void doInBackground(Void... params) {
-                GlobalFunctions.connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
-                if (netInfo != null && netInfo.isConnected()) {
-                    URL urlServer;
-                    HttpURLConnection urlConn;
-
-                    for (final ServerList.SplashSource source
-                            : GlobalFunctions.servers
-                            ) {
-                        try {
-                            urlServer = new URL(source.getUrl());
-                            urlConn = (HttpURLConnection) urlServer.openConnection();
-                            urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
-                            urlConn.connect();
-                            if (urlConn.getResponseCode() != 200) {
-                                throw new Exception();
-                            }
-                        } catch (Exception e) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(SplashScreen.this, String.format("%s %s", source.getName(), getString(R.string.strNoResponse)), Toast.LENGTH_LONG).show();
-                                    source.setDisabled(true);
-                                }
-                            });
-                        }
-                    }
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(SplashScreen.this, R.string.warnOffline, Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                Intent intent = new Intent(SplashScreen.this, NewsFeed.class);
-                startActivity(intent);
-                SplashScreen.this.finish();
-                super.onPostExecute(aVoid);
-            }
+        final GlobalFunctions.CheckSource checkSource = new GlobalFunctions.CheckSource(this);
+        for(int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+            checkSource.execute(i);
         }
 
-        new pingNetworks().execute();
+        startActivity(new Intent(SplashScreen.this, NewsFeed.class));
+        finish();
     }
 
 }

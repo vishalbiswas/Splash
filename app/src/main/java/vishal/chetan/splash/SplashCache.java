@@ -94,7 +94,7 @@ class SplashCache {
             if (filterIndex == -1) {
                 ArrayList<Thread> allThreads = new ArrayList<>();
                 //// FIXME: 3/13/17 demo code to be removed
-                add(new Thread(0, "Hello", "Welcome to Splash app! Have fun!", 1, new Date(), new Date()));
+                add(new Thread(0, "Hello", "Welcome to Splash app! Have fun!", 1, new Date(), new Date(), 0));
                 for (int index = 0; index < GlobalFunctions.servers.size(); ++index) {
                     allThreads.addAll(threads.get(index, new ArrayList<Thread>()));
                 }
