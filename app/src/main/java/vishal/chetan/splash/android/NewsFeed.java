@@ -47,10 +47,21 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         threadsListView.setLayoutManager(new LinearLayoutManager(this));
         threadsListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         threadsListView.setHasFixedSize(true);
+
         nav_view.setNavigationItemSelectedListener(this);
         GlobalFunctions.servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
-            public void onChange(ServerList.SplashSource source, SourceOperation sourceOperation) {
+            public void onAdd(ServerList.SplashSource source) {
+                updateOptionsMenu();
+            }
+
+            @Override
+            public void onRemove(ServerList.SplashSource source) {
+                updateOptionsMenu();
+            }
+
+            @Override
+            public void onUpdate(ServerList.SplashSource previousSource, ServerList.SplashSource updatedSource) {
                 updateOptionsMenu();
             }
         });
@@ -113,7 +124,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
                 actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
             }
             updateNavHeader(ItemId);
-            threadsListView.setAdapter(new ThreadsAdapter(ItemId));
+            threadsListView.setAdapter(new ThreadsAdapter(this, ItemId));
             nav_view.setCheckedItem(ItemId);
             item.setChecked(true);
             previousItemId = ItemId;
@@ -130,7 +141,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
             identity = GlobalFunctions.identities.get(itemId);
         }
         if (identity == null) { // user has not logged in to the selected server
-            Snackbar.make(findViewById(R.id.includeSnack), getString(R.string.strAskLogin), Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_INDEFINITE)
                     .setAction(getString(R.string.login), new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -143,6 +154,14 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         ((ImageView)header.findViewById(R.id.headerPic)).setImageBitmap(identity.getProfpic());
         ((TextView)header.findViewById(R.id.headerUser)).setText(identity.getUsername());
         ((TextView)header.findViewById(R.id.headerEmail)).setText(identity.getEmail());
+        if (itemId != -1) {
+            header.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", itemId));
+                }
+            });
+        }
     }
 
     @Override

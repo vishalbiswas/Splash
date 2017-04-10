@@ -1,46 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:weightSum="1" android:layout_margin="@dimen/activity_horizontal_margin">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="5dp"
+    android:orientation="vertical"
+    android:weightSum="1">
 
-    <TextView
-        android:id="@+id/threadTitle"
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
-        android:gravity="center_vertical"
-        android:maxLines="1"
-        android:text="Demo Title"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/cardBackground"
+        app:cardCornerRadius="5dp">
 
-    <TextView
-        android:id="@+id/threadPreview"
-        android:layout_width="match_parent"
-        android:gravity="center_vertical"
-        android:maxLines="2"
-        android:text="Demo Content that will span multiple lines. This will show content of the thread upto a few lines."
-        android:layout_height="wrap_content" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:orientation="horizontal"
-        android:layout_weight="1">
-
-        <TextView
-            android:id="@+id/creator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Username"
-            android:textStyle="italic" />
-
-        <TextView
-            android:id="@+id/mtime"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="end"
-            android:gravity="end"
-            android:text="Last Modified Time" />
-    </LinearLayout>
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="15dp">
+
+            <TextView
+                android:id="@+id/threadTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="Demo Title"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/threadPreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:maxLines="2"
+                android:text="Demo Content that will span multiple lines. This will show content of the thread upto a few lines." />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/creator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Username"
+                    android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/mtime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:gravity="end"
+                    android:text="Last Modified Time" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
+
 </LinearLayout>

@@ -2,16 +2,18 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root_coord"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/cardListBackground"
     android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:fitsSystemWindows="true">
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
         <android.support.design.widget.AppBarLayout
             android:layout_width="match_parent"
@@ -32,8 +34,8 @@
             android:id="@+id/newsDrawer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context="vishal.chetan.splash.android.NewsFeed"
             android:fitsSystemWindows="true"
+            tools:context="vishal.chetan.splash.android.NewsFeed"
             tools:openDrawer="start">
 
             <include
@@ -51,13 +53,14 @@
 
         </android.support.v4.widget.DrawerLayout>
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
-            android:src="@android:drawable/ic_menu_add" />
-
     </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_menu_add" />
+
 </android.support.design.widget.CoordinatorLayout>

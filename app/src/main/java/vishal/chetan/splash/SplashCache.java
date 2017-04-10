@@ -1,5 +1,6 @@
 package vishal.chetan.splash;
 
+import android.support.v4.util.LongSparseArray;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -8,28 +9,30 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Stack;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
 
 import static android.content.ContentValues.TAG;
 
-class SplashCache {
-    static class UsernameCache {
+public class SplashCache {
+    public static class UsernameCache {
         interface OnGetUserListener {
-            void onGetUser(int uid);
+            void onGetUser(long uid);
         }
 
-        private static final SparseArray<SparseArray<String>> usernames = new SparseArray<>();
+        private static final SparseArray<LongSparseArray<String>> usernames = new SparseArray<>();
         private static final SparseArray<Stack<OnGetUserListener>> listeners = new SparseArray<>();
 
-        static String getUser(final int serverIndex, final int uid) {
+        public static String getUser(final int serverIndex, final long uid) {
             Log.e(TAG, String.format("getting uid:%s server=%s", uid, serverIndex));
-            SparseArray<String> serverArray = usernames.get(serverIndex);
+            LongSparseArray<String> serverArray = usernames.get(serverIndex);
             String name = null;
             if (serverArray == null) {
-                serverArray = new SparseArray<>();
+                serverArray = new LongSparseArray<>();
                 usernames.append(serverIndex, serverArray);
             } else {
                 name = serverArray.get(uid);
@@ -40,14 +43,14 @@ class SplashCache {
             return name;
         }
 
-        static private void loadUsername(final int serverIndex, int uid) {
+        static private void loadUsername(final int serverIndex, long uid) {
             new AsyncHelper(serverIndex, "getuser/" + uid) {
                 @Override
                 protected void onPostExecute(JSONObject jsonObject) {
                     if (jsonObject != null) {
-                        int uid;
+                        long uid;
                         try {
-                            uid = jsonObject.getInt("uid");
+                            uid = jsonObject.getLong("uid");
                         } catch (JSONException ex) {
                             Log.e(TAG, "uid not found");
                             return;
@@ -65,10 +68,10 @@ class SplashCache {
             }.execute();
         }
 
-        public static void setUser(int serverIndex, int uid, String name) {
-            SparseArray<String> serverArray = usernames.get(serverIndex);
+        public static void setUser(int serverIndex, long uid, String name) {
+            LongSparseArray<String> serverArray = usernames.get(serverIndex);
             if (serverArray == null) {
-                serverArray = new SparseArray<>();
+                serverArray = new LongSparseArray<>();
                 usernames.append(serverIndex, serverArray);
             }
             serverArray.append(uid, name);
@@ -88,35 +91,65 @@ class SplashCache {
     }
 
     public static class ThreadCache {
-        private static final SparseArray<ArrayList<Thread>> threads = new SparseArray<>();
+        public static void setFilterListener(OnThreadFilteredListener filterListener) {
+            ThreadCache.filterListener = filterListener;
+        }
 
-        public static ArrayList<Thread> getAllForIndex(int filterIndex) {
+        public interface OnThreadAddedListener {
+            void onAddThread(Thread thread);
+        }
+
+        public interface OnThreadFilteredListener {
+            // always adds an item to start
+            void onFilter(int position);
+        }
+
+        private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
+        private static ArrayList<Thread> allThreads = new ArrayList<>();
+        private static List<OnThreadAddedListener> addListeners = new ArrayList<>();
+        private static OnThreadFilteredListener filterListener;
+
+        public static ArrayList<Thread> getAllForIndex(final int filterIndex) {
+            //// FIXME: 3/13/17 demo code to be removed
+            add(new Thread(0, 0, "Hello", "Welcome to Splash app! Have fun!", 1, new Date(), new Date(), 0));
             if (filterIndex == -1) {
-                ArrayList<Thread> allThreads = new ArrayList<>();
-                //// FIXME: 3/13/17 demo code to be removed
-                add(new Thread(0, "Hello", "Welcome to Splash app! Have fun!", 1, new Date(), new Date(), 0));
-                for (int index = 0; index < GlobalFunctions.servers.size(); ++index) {
-                    allThreads.addAll(threads.get(index, new ArrayList<Thread>()));
-                }
                 Collections.sort(allThreads, new Thread.ModificationTimeComparator());
                 return allThreads;
             } else if (filterIndex < 0) {
                 // index should be positive
                 return null;
             } else {
-                return threads.get(filterIndex, new ArrayList<Thread>());
+                LongSparseArray<Thread> threadList = threads.get(filterIndex, new LongSparseArray<Thread>());
+                ArrayList<Thread> returnList = new ArrayList<>();
+                for(int i = 0; i < threadList.size(); ++i) {
+                    returnList.add(threadList.get(i));
+                }
+                Collections.sort(returnList, new Thread.ModificationTimeComparator());
+                return returnList;
             }
         }
 
         public static void add(Thread thread) {
-            ArrayList<Thread> threadList = threads.get(thread.getServerIndex());
+            LongSparseArray<Thread> threadList = threads.get(thread.getServerIndex());
             if (threadList == null) {
-                threadList = new ArrayList<>();
-                threadList.add(thread);
+                threadList = new LongSparseArray<>();
+                threadList.append(thread.getThreadId(), thread);
                 threads.append(thread.getServerIndex(), threadList);
             } else {
-                threadList.add(thread);
+                threadList.append(thread.getThreadId(), thread);
             }
+            allThreads.add(0, thread);
+            for (OnThreadAddedListener listener : addListeners) {
+                listener.onAddThread(thread);
+            }
+        }
+
+        public static Thread getThread(int serverIndex, long threadId) {
+            return threads.get(serverIndex).get(threadId);
+        }
+
+        public static void addOnThreadAddedListener(OnThreadAddedListener listener) {
+            addListeners.add(listener);
         }
     }
 }

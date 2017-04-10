@@ -6,24 +6,25 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name="vishal.chetan.splash.GlobalFunctions"
+        android:name=".GlobalFunctions"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name="vishal.chetan.splash.android.LoginActivity"
+            android:name=".android.LoginActivity"
             android:label="@string/app_name"
+            android:parentActivityName=".android.NewsFeed"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.SplashScreen" />
         </activity>
         <activity
-            android:name="vishal.chetan.splash.android.SplashScreen"
+            android:name=".android.SplashScreen"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar.NoTitleBar">
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,40 +32,52 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="vishal.chetan.splash.android.NewsFeed"
+            android:name=".android.NewsFeed"
             android:label="@string/title_activity_news_feed"
-            android:parentActivityName="vishal.chetan.splash.android.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.LoginActivity" />
         </activity>
         <activity
-            android:name="vishal.chetan.splash.android.SettingsActivity"
+            android:name=".android.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name="vishal.chetan.splash.android.RegisterActivity"
+            android:name=".android.RegisterActivity"
             android:label="@string/title_activity_register"
-            android:parentActivityName="vishal.chetan.splash.android.LoginActivity"
+            android:parentActivityName=".android.LoginActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.LoginActivity" />
         </activity>
-        <activity android:name="vishal.chetan.splash.android.ProfileActivity" />
         <activity
-            android:name="vishal.chetan.splash.android.SourcesManagerActivity"
+            android:name=".android.ProfileActivity"
+            android:parentActivityName=".android.NewsFeed" />
+        <activity
+            android:name=".android.SourcesManagerActivity"
             android:label="@string/title_activity_sources_manager"
-            android:parentActivityName="vishal.chetan.splash.android.SettingsActivity"
+            android:parentActivityName=".android.SettingsActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="vishal.chetan.splash.SourcesManagerActivity" />
+                <action android:name="vishal.chetan.splash.android.SourcesManagerActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.SettingsActivity" />
+        </activity>
+        <activity
+            android:name=".android.ViewThreadActivity"
+            android:label="@string/title_activity_view_thread"
+            android:parentActivityName=".android.NewsFeed"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="vishal.chetan.splash.android.NewsFeed" />
         </activity>
     </application>
 

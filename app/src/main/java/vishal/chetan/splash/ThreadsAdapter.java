@@ -1,6 +1,9 @@
 package vishal.chetan.splash;
 
+import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,8 +11,10 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import vishal.chetan.splash.android.ViewThreadActivity;
+
 public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadViewHolder> {
-    static class ThreadViewHolder extends RecyclerView.ViewHolder {
+    class ThreadViewHolder extends RecyclerView.ViewHolder {
         final TextView title;
         final TextView content;
         final TextView creator;
@@ -25,9 +30,19 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     }
 
     private final ArrayList<Thread> threadList;
+    private final Context context;
 
-    public ThreadsAdapter(int filter) {
+    public ThreadsAdapter(Context context, int filter) {
         threadList = SplashCache.ThreadCache.getAllForIndex(filter);
+        if (filter == -1) {
+            SplashCache.ThreadCache.setFilterListener(new SplashCache.ThreadCache.OnThreadFilteredListener() {
+                @Override
+                public void onFilter(int position) {
+                    notifyItemInserted(position);
+                }
+            });
+        }
+        this.context = context;
     }
 
     @Override
@@ -44,7 +59,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         if (name == null) {
             SplashCache.UsernameCache.addGetUserListener(thread.getServerIndex(), new SplashCache.UsernameCache.OnGetUserListener() {
                 @Override
-                public void onGetUser(int uid) {
+                public void onGetUser(long uid) {
                     if (uid == thread.getCreatorID()) {
                         notifyItemChanged(holder.getAdapterPosition());
                     }
@@ -53,7 +68,13 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
             name = "UID:" + thread.getCreatorID();
         }
         holder.creator.setText(name);
-        holder.mtime.setText(thread.getMtime().toString());
+        holder.mtime.setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                context.startActivity(new Intent(context, ViewThreadActivity.class).putExtra("serverIndex", thread.getServerIndex()).putExtra("threadId", thread.getThreadId()));
+            }
+        });
     }
 
     @Override

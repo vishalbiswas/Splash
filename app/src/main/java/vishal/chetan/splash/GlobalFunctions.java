@@ -82,32 +82,11 @@ public class GlobalFunctions extends Application {
     public void onCreate() {
         super.onCreate();
         connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        servers.addListener(new ServerList.OnServerListChangeListener() {
-            @Override
-            public void onChange(ServerList.SplashSource source, SourceOperation sourceOperation) {
-                switch (sourceOperation) {
-                    case ADD:
-                    case UPDATE:
-                        getSharedPreferences("sources", Context.MODE_PRIVATE).edit()
-                                .putString(source.getName(), source.getUrl()).apply();
-                        break;
-                    case DELETE:
-                        getSharedPreferences("sources", Context.MODE_PRIVATE).edit()
-                                .remove(source.getName()).apply();
-                }
-            }
-        });
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        Set<String> sources = getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", null);
-        if (sources == null) {
-            SharedPreferences.Editor editor = getSharedPreferences("settings", MODE_PRIVATE).edit();
-            sources = new HashSet<>(0);
-            editor.putStringSet("sourceKeys", null);
-            editor.apply();
-        }
+        Set<String> sources = getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>());
         for (String key :
                 sources) {
             String sourceUrl = getSharedPreferences("sources", MODE_PRIVATE).getString(key, null);
@@ -120,6 +99,35 @@ public class GlobalFunctions extends Application {
                 preferences.getString("defaultLname", ""),
                 preferences.getString("defaultEmail", ""));
         defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        servers.addListener(new ServerList.OnServerListChangeListener() {
+            @Override
+            public void onAdd(ServerList.SplashSource source) {
+                Set<String> sourceKeys = new HashSet<>(getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>()));
+                if (!sourceKeys.contains(source.getName())) {
+                    sourceKeys.add(source.getName());
+                    getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putStringSet("sourceKeys", sourceKeys).apply();
+                    getSharedPreferences("sources", Context.MODE_PRIVATE).edit()
+                            .putString(source.getName(), source.getUrl()).apply();
+                } else {
+                    Toast.makeText(getApplicationContext(), getString(R.string.strSrcExists), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onRemove(ServerList.SplashSource source) {
+                Set<String> sourceKeys = new HashSet<>(getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>()));
+                sourceKeys.remove(source.getName());
+                getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putStringSet("sourceKeys", sourceKeys).apply();
+                getSharedPreferences("sources", Context.MODE_PRIVATE).edit().remove(source.getName()).apply();
+            }
+
+            @Override
+            public void onUpdate(ServerList.SplashSource previousSource, ServerList.SplashSource updatedSource) {
+                onRemove(previousSource);
+                onAdd(updatedSource);
+            }
+        });
+
     }
 
     public static class CheckSource extends AsyncTask<Integer, Void, Void> {
@@ -131,7 +139,7 @@ public class GlobalFunctions extends Application {
         }
 
         @Override
-        protected Void doInBackground(Integer... params) {
+        protected Void doInBackground(final Integer... params) {
             source = GlobalFunctions.servers.get(params[0]);
             boolean result = false;
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
@@ -156,20 +164,20 @@ public class GlobalFunctions extends Application {
                     @Override
                     public void run() {
                         Toast.makeText(activity, "Error occurred while connecting to " + source.getName() + ". Disabling...", Toast.LENGTH_LONG).show();
+                        GlobalFunctions.servers.setDisabled(params[0], true);
                     }
                 });
-                GlobalFunctions.servers.setDisabled(params[0], true);
             }
             return null;
         }
     }
 
-public enum HTTP_CODE {
-    SUCCESS,
-    FAILED,
-    NO_ACCESS,
-    REQUEST_FAILED,
-    BUSY,
-    UNKNOWN
-}
+    public enum HTTP_CODE {
+        SUCCESS,
+        FAILED,
+        NO_ACCESS,
+        REQUEST_FAILED,
+        BUSY,
+        UNKNOWN
+    }
 }

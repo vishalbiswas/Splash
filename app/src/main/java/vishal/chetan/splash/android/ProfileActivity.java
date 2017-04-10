@@ -24,7 +24,7 @@ import java.io.InputStream;
 
 public class ProfileActivity extends AppCompatActivity {
     private final int requestCode = 0x0421;
-    private final int serverIndex = getIntent().getIntExtra("serverIndex", -1);
+    private int serverIndex;
 
     final private Handler handler = new Handler() {
         @Override
@@ -65,6 +65,7 @@ public class ProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        serverIndex = getIntent().getIntExtra("serverIndex", -1);
 
         imgPic = (ImageView) findViewById(R.id.imgPic);
         editFName = (EditText) findViewById(R.id.editFName);

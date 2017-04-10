@@ -4,7 +4,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
-class Thread {
+public class Thread {
+    public int getTopicId() {
+        return topicId;
+    }
+
     //TODO: is final required?
     final static class ModificationTimeComparator implements Comparator<Thread> {
         @Override
@@ -13,9 +17,14 @@ class Thread {
         }
     }
 
+    public long getThreadId() {
+        return threadId;
+    }
+
+    private final long threadId;
     private final String title;
     private final String content;
-    private final int creator_id;
+    private final long creator_id;
     private final Date ctime;
     private final Date mtime;
     private final int serverIndex;
@@ -23,42 +32,49 @@ class Thread {
 
     /**
      * Create a new thread
+     * @param threadId ID of the thread
      * @param serverIndex Index of GlobalFunctions.servers
      * @param title Title of thread
      * @param content Text content of the thread
-     * @param creater_id UID of the poster
+     * @param creator_id UID of the poster
      * @param ctime Thread creation time
      * @param mtime Thread modification time
+     * @param topicId Sub forum id
      */
-    Thread (int serverIndex, String title, String content, int creater_id, Date ctime, Date mtime, int topicId) {
+    Thread (long threadId, int serverIndex, String title, String content, long creator_id, Date ctime, Date mtime, int topicId) {
+        this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
         this.content = content;
-        this.creator_id = creater_id;
+        this.creator_id = creator_id;
         this.ctime = ctime;
         this.mtime = mtime;
         this.topicId = topicId;
     }
 
-    private ArrayList comments = null;
+    public ArrayList<String> getComments() {
+        return comments;
+    }
 
-    String getTitle() {
+    private ArrayList<String> comments = new ArrayList<>();
+
+    public String getTitle() {
         return title;
     }
 
-    String getContent() {
+    public String getContent() {
         return content;
     }
 
-    int getCreatorID() {
+    public long getCreatorID() {
         return creator_id;
     }
 
-    Date getCtime() {
+    public Date getCtime() {
         return ctime;
     }
 
-    Date getMtime() {
+    public Date getMtime() {
         return mtime;
     }
 

@@ -45,10 +45,9 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
     }
 
     public interface OnServerListChangeListener {
-        enum SourceOperation {
-            ADD, UPDATE, DELETE
-        }
-        void onChange(SplashSource source, SourceOperation sourceOperation);
+        void onAdd(SplashSource source);
+        void onRemove(SplashSource source);
+        void onUpdate(SplashSource previousSource, SplashSource updatedSource);
     }
 
     public interface OnServerDisabledListener {
@@ -64,9 +63,8 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
     @Override
     public SplashSource set(int index, SplashSource element) {
         SplashSource previousElement = super.set(index, element);
-        for (OnServerListChangeListener changelistener:
-                changeListeners) {
-            changelistener.onChange(element, OnServerListChangeListener.SourceOperation.UPDATE);
+        for (OnServerListChangeListener changelistener : changeListeners) {
+            changelistener.onUpdate(previousElement, element);
         }
         return previousElement;
     }
@@ -91,7 +89,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         boolean val = super.add(s);
         for (OnServerListChangeListener changelistener:
              changeListeners) {
-            changelistener.onChange(s, OnServerListChangeListener.SourceOperation.ADD);
+            changelistener.onAdd(s);
         }
         return val;
     }
@@ -101,7 +99,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         SplashSource s = super.remove(index);
         for (OnServerListChangeListener changelistener:
                 changeListeners) {
-            changelistener.onChange(s, OnServerListChangeListener.SourceOperation.DELETE);
+            changelistener.onRemove(s);
         }
         return s;
     }

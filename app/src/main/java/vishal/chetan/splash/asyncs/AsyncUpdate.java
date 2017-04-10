@@ -37,7 +37,7 @@ public class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
         Bitmap profpic = (Bitmap) params[1];
         String firstname = params[2].toString().trim();
         String lastname = params[3].toString().trim();
-        int uid = GlobalFunctions.identities.get(serverIndex).getUid();
+        long uid = GlobalFunctions.identities.get(serverIndex).getUid();
         String postMessage = String.format("uid=%s&fname=%s&lname=%s", String.valueOf(uid), firstname, lastname);
 
 
@@ -67,7 +67,7 @@ public class AsyncUpdate extends AsyncTask<Object, Void, JSONObject> {
                 outputStream.writeBytes(crlf);
                 outputStream.writeBytes("Content-Type: text/plain");
                 outputStream.writeBytes(crlf);
-                outputStream.writeInt(uid);
+                outputStream.writeLong(uid);
                 outputStream.writeBytes(crlf);
                 outputStream.flush();
 

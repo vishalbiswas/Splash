@@ -128,7 +128,7 @@ public class RegisterActivity extends AppCompatActivity {
         ActionBar toolbar = getSupportActionBar();
         assert toolbar != null;
         toolbar.setDisplayHomeAsUpEnabled(true);
-        toolbar.setTitle(String.format("%s (%s)", getString(R.string.title_activity_register), GlobalFunctions.servers.get(serverIndex)));
+        toolbar.setTitle(String.format("%s (%s)", getString(R.string.title_activity_register), GlobalFunctions.servers.get(serverIndex).getName()));
 
         viewUsername = (EditText) findViewById(R.id.regUser);
         viewEmail = (EditText) findViewById(R.id.regEmail);

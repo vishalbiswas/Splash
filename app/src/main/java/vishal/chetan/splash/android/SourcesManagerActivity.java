@@ -6,6 +6,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SwitchCompat;
@@ -47,6 +48,8 @@ public class SourcesManagerActivity extends AppCompatActivity {
         RecyclerView sourcesList = (RecyclerView) findViewById(R.id.sourcesList);
         sourcesList.setLayoutManager(new LinearLayoutManager(this));
         sourcesList.setAdapter(sourcesAdapter);
+
+        sourcesList.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
     }
 
     class SourcesAdapter extends RecyclerView.Adapter<SourcesAdapter.SourceViewHolder> {
@@ -62,13 +65,21 @@ public class SourcesManagerActivity extends AppCompatActivity {
             holder.sourceEnabled.setOnCheckedChangeListener(new SwitchCompat.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    GlobalFunctions.servers.setDisabled(holder.getAdapterPosition(), !isChecked);
+                    int position = holder.getAdapterPosition();
+                    if (position >= 0) {
+                        GlobalFunctions.servers.setDisabled(position, !isChecked);
+                    }
                 }
             });
             GlobalFunctions.servers.addListener(new ServerList.OnServerDisabledListener() {
                 @Override
                 public void onDisabled() {
-                    holder.sourceEnabled.setChecked(!source.isDisabled());
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            holder.sourceEnabled.setChecked(!source.isDisabled());
+                        }
+                    });
                 }
             });
             holder.itemSourceName.setText(source.getName());
@@ -138,13 +149,13 @@ public class SourcesManagerActivity extends AppCompatActivity {
                 final String url = serverEdit.getText().toString();
                 if (!name.isEmpty() && !name.isEmpty()) {
                     int correctIndex = index;
+                    ServerList.SplashSource source = new ServerList.SplashSource(name, url);
                     if (index == -1) {
                         correctIndex = GlobalFunctions.servers.size();
-                        GlobalFunctions.servers.add(new ServerList.SplashSource(name, url));
+                        GlobalFunctions.servers.add(source);
                         sourcesAdapter.notifyItemInserted(index);
                     } else {
-                        GlobalFunctions.servers.get(correctIndex).setName(name);
-                        GlobalFunctions.servers.get(correctIndex).setUrl(url);
+                        GlobalFunctions.servers.set(index, source);
                         sourcesAdapter.notifyItemChanged(index);
                     }
                     new GlobalFunctions.CheckSource(SourcesManagerActivity.this).execute(correctIndex);

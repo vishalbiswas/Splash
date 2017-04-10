@@ -26,7 +26,8 @@
     <Preference
         android:key="source"
         android:title="@string/strSource">
-        <intent android:action="vishal.chetan.splash.SourcesManagerActivity" />
+        <intent
+            android:action="vishal.chetan.splash.android.SourcesManagerActivity" />
     </Preference>
     <PreferenceCategory
         android:key="defaultIdentity"

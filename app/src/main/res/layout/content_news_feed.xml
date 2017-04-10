@@ -14,9 +14,4 @@
         android:layout_height="match_parent"
         tools:listitem="@layout/list_item_thread" />
 
-    <include
-        android:id="@+id/includeSnack"
-        layout="@layout/snack_layout" />
-
-
 </android.support.design.widget.CoordinatorLayout>

@@ -78,4 +78,6 @@
     <string name="strFilterSource">Filter by Sources</string>
     <string name="strCloseSources">Return to threads view</string>
     <string name="strAskLogin">Do you want to login now?</string>
+    <string name="title_activity_view_thread">ViewThreadActivity</string>
+    <string name="strSrcExists">A source with the same name already exists!</string>
 </resources>

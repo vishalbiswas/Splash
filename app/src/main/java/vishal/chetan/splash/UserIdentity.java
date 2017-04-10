@@ -3,7 +3,7 @@ package vishal.chetan.splash;
 import android.graphics.Bitmap;
 
 public class UserIdentity {
-    private int uid = -1;
+    private long uid = -1;
     private String username = null;
     private String firstname = "";
     private String lastname = "";
@@ -60,11 +60,11 @@ public class UserIdentity {
         this.profpic = profpic;
     }
 
-    public int getUid() {
+    public long getUid() {
         return uid;
     }
 
-    public void setUid(int uid) {
+    public void setUid(long uid) {
         this.uid = uid;
     }
 }

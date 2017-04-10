@@ -138,7 +138,7 @@ public class LoginActivity extends AppCompatActivity {
                                 } else {
                                     identity.setProfpic(null);
                                 }
-                                identity.setUid(jsonObject.getInt("uid"));
+                                identity.setUid(jsonObject.getLong("uid"));
                                 identity.setUsername(jsonObject.getString("user"));
                                 identity.setEmail(jsonObject.getString("email"));
 
