@@ -79,6 +79,19 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         newsDrawer.closeDrawers();
 
         updateOptionsMenu();
+
+        nav_view.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (previousItemId == -1) {
+                    return;
+                } else if (GlobalFunctions.identities.get(previousItemId) == null) {
+                    startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", previousItemId), login_result_id);
+                } else {
+                    startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId));
+                }
+            }
+        });
     }
 
     private void updateOptionsMenu() {
@@ -88,7 +101,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         nav_menu.add(Menu.NONE, -1, Menu.NONE, "All").setCheckable(true);
         onNavigationItemSelected(nav_menu.findItem(-1));
         for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
-            if (!GlobalFunctions.servers.get(i).isDisabled()) {
+            if (GlobalFunctions.servers.get(i).isEnabled()) {
                 nav_menu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true);
             }
         }
@@ -141,7 +154,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
             identity = GlobalFunctions.identities.get(itemId);
         }
         if (identity == null) { // user has not logged in to the selected server
-            Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_LONG)
                     .setAction(getString(R.string.login), new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {

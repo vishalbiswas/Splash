@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
         final String password = pass.trim();
 
         if (!(username.isEmpty() || password.isEmpty() || serverIndex < 0)) {
-            String postMessage = "user=" + username +"&password=" + password;
+            String postMessage = "user=" + username +"&pass=" + password;
 
             new AsyncHelper(serverIndex, "login", postMessage) {
                 @Override

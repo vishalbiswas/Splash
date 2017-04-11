@@ -132,7 +132,7 @@ public class GlobalFunctions extends Application {
 
     public static class CheckSource extends AsyncTask<Integer, Void, Void> {
         protected ServerList.SplashSource source;
-        Activity activity;
+        final Activity activity;
 
         public CheckSource(Activity activity) {
             this.activity = activity;

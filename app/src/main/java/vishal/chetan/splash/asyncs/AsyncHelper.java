@@ -52,6 +52,7 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                 webservice.setConnectTimeout(3000);
                 if (postMessage != null) {
                     webservice.setRequestMethod("POST");
+                    webservice.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                     webservice.setDoOutput(true);
                     OutputStream outputStream = webservice.getOutputStream();
                     outputStream.write(postMessage.getBytes());

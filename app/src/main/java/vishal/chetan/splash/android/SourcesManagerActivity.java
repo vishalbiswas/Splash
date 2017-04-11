@@ -13,12 +13,10 @@ import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import vishal.chetan.splash.GlobalFunctions;
@@ -26,7 +24,7 @@ import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
 
 public class SourcesManagerActivity extends AppCompatActivity {
-    final SourcesAdapter sourcesAdapter =  new SourcesAdapter();
+    final SourcesAdapter sourcesAdapter = new SourcesAdapter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,25 +59,23 @@ public class SourcesManagerActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(final SourceViewHolder holder, final int position) {
             final ServerList.SplashSource source = GlobalFunctions.servers.get(position);
-            holder.sourceEnabled.setChecked(!source.isDisabled());
+            holder.sourceEnabled.setChecked(source.isEnabled());
             holder.sourceEnabled.setOnCheckedChangeListener(new SwitchCompat.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     int position = holder.getAdapterPosition();
                     if (position >= 0) {
                         GlobalFunctions.servers.setDisabled(position, !isChecked);
+                        if (isChecked) {
+                            new GlobalFunctions.CheckSource(SourcesManagerActivity.this).execute(position);
+                        }
                     }
                 }
             });
             GlobalFunctions.servers.addListener(new ServerList.OnServerDisabledListener() {
                 @Override
                 public void onDisabled() {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            holder.sourceEnabled.setChecked(!source.isDisabled());
-                        }
-                    });
+                    holder.sourceEnabled.setChecked(source.isEnabled());
                 }
             });
             holder.itemSourceName.setText(source.getName());
@@ -118,11 +114,11 @@ public class SourcesManagerActivity extends AppCompatActivity {
 
             SourceViewHolder(View view) {
                 super(view);
-                sourceEnabled = (SwitchCompat)view.findViewById(R.id.sourceEnabled);
-                itemSourceName = (TextView)view.findViewById(R.id.itemSourceName);
-                itemSourceUrl = (TextView)view.findViewById(R.id.itemSourceUrl);
-                editButton = (ImageButton)view.findViewById(R.id.editButton);
-                deleteButton = (ImageButton)view.findViewById(R.id.deleteButton);
+                sourceEnabled = (SwitchCompat) view.findViewById(R.id.sourceEnabled);
+                itemSourceName = (TextView) view.findViewById(R.id.itemSourceName);
+                itemSourceUrl = (TextView) view.findViewById(R.id.itemSourceUrl);
+                editButton = (ImageButton) view.findViewById(R.id.editButton);
+                deleteButton = (ImageButton) view.findViewById(R.id.deleteButton);
             }
         }
     }
@@ -153,7 +149,7 @@ public class SourcesManagerActivity extends AppCompatActivity {
                     if (index == -1) {
                         correctIndex = GlobalFunctions.servers.size();
                         GlobalFunctions.servers.add(source);
-                        sourcesAdapter.notifyItemInserted(index);
+                        sourcesAdapter.notifyItemInserted(correctIndex);
                     } else {
                         GlobalFunctions.servers.set(index, source);
                         sourcesAdapter.notifyItemChanged(index);

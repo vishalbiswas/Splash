@@ -25,9 +25,9 @@
     </PreferenceCategory>
     <Preference
         android:key="source"
+        android:summary="@string/strSourcesSummary"
         android:title="@string/strSource">
-        <intent
-            android:action="vishal.chetan.splash.android.SourcesManagerActivity" />
+        <intent android:action="vishal.chetan.splash.android.SourcesManagerActivity" />
     </Preference>
     <PreferenceCategory
         android:key="defaultIdentity"
@@ -39,12 +39,15 @@
             android:summary="@string/strDefUserSummary" />
         <EditTextPreference
             android:key="defaultFname"
-            android:title="@string/defaultFname" />
+            android:title="@string/defaultFname"
+            android:summary="@string/strDefFnameSummary"/>
         <EditTextPreference
             android:key="defaultLname"
-            android:title="@string/defaultLname" />
+            android:title="@string/defaultLname"
+            android:summary="@string/strDefLnameSummary"/>
         <EditTextPreference
             android:key="defaultEmail"
-            android:title="@string/defaultEmail" />
+            android:title="@string/defaultEmail"
+            android:summary="@string/strDefEmailSummary"/>
     </PreferenceCategory>
 </PreferenceScreen>

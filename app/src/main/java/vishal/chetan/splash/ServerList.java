@@ -25,14 +25,14 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         }
 
 
-        public boolean isDisabled() {
-            return disabled;
+        public boolean isEnabled() {
+            return !disabled;
         }
 
         private String name;
         private String url;
         protected boolean disabled = false;
-        private SparseArray<String> topics = new SparseArray<>();
+        private final SparseArray<String> topics = new SparseArray<>();
 
         public SplashSource(String name, String url) {
             this.name = name;

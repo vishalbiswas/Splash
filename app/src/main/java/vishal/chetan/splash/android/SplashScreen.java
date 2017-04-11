@@ -1,10 +1,6 @@
 package vishal.chetan.splash.android;
 
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -14,9 +10,6 @@ import vishal.chetan.splash.BuildConfig;
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
 
 public class SplashScreen extends AppCompatActivity {
 
@@ -42,9 +35,8 @@ public class SplashScreen extends AppCompatActivity {
             return;
         }
 
-        final GlobalFunctions.CheckSource checkSource = new GlobalFunctions.CheckSource(this);
         for(int i = 0; i < GlobalFunctions.servers.size(); ++i) {
-            checkSource.execute(i);
+            new GlobalFunctions.CheckSource(this).execute(i);
         }
 
         startActivity(new Intent(SplashScreen.this, NewsFeed.class));

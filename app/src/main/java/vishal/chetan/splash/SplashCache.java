@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Stack;
@@ -105,8 +104,8 @@ public class SplashCache {
         }
 
         private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
-        private static ArrayList<Thread> allThreads = new ArrayList<>();
-        private static List<OnThreadAddedListener> addListeners = new ArrayList<>();
+        private static final ArrayList<Thread> allThreads = new ArrayList<>();
+        private static final List<OnThreadAddedListener> addListeners = new ArrayList<>();
         private static OnThreadFilteredListener filterListener;
 
         public static ArrayList<Thread> getAllForIndex(final int filterIndex) {

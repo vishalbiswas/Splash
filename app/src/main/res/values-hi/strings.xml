@@ -63,4 +63,9 @@
     <string name="strAskLogin">क्या अाप अभी लॉगिन करना चाहते है?</string>
     <string name="strCloseSources">पोस्ट देखे</string>
     <string name="strFilterSource">फ़िल्टर करें</string>
+    <string name="strSrcExists">यह नाम पहले ही छयन कर लिया गाया है</string>
+    <string name="strSourcesSummary">सुत्र प्रबंधन करें</string>
+    <string name="strDefEmailSummary">ईमेल फ़ील्ड को स्वत: भरण के लिए ईमेल</string>
+    <string name="strDefFnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला पहला नाम</string>
+    <string name="strDefLnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला आखरी नाम</string>
 </resources>

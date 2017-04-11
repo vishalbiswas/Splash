@@ -78,6 +78,10 @@
     <string name="strFilterSource">Filter by Sources</string>
     <string name="strCloseSources">Return to threads view</string>
     <string name="strAskLogin">Do you want to login now?</string>
-    <string name="title_activity_view_thread">ViewThreadActivity</string>
+    <string name="title_activity_view_thread" translatable="false">ViewThreadActivity</string>
     <string name="strSrcExists">A source with the same name already exists!</string>
+    <string name="strSourcesSummary">Manage forum sites</string>
+    <string name="strDefFnameSummary">First name to be used as default for new registration</string>
+    <string name="strDefLnameSummary">Last name to be used as default for new registration</string>
+    <string name="strDefEmailSummary">Use this email to autofill email field</string>
 </resources>

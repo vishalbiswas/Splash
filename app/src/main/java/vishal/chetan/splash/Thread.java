@@ -56,7 +56,7 @@ public class Thread {
         return comments;
     }
 
-    private ArrayList<String> comments = new ArrayList<>();
+    private final ArrayList<String> comments = new ArrayList<>();
 
     public String getTitle() {
         return title;
