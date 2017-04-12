@@ -19,6 +19,12 @@ android {
     }
     productFlavors {
     }
+    splits {
+        abi {
+            enable true
+            universalApk true
+        }
+    }
 }
 
 dependencies {

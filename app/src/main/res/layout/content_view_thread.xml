@@ -30,7 +30,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Very very long thread content. It can be as long as you want it. Currently, we don't have any restrictions on it."
-                android:textAppearance="@android:style/TextAppearance.Medium" />
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:linksClickable="true"
+                android:autoLink="web"/>
 
             <LinearLayout
                 android:layout_width="match_parent"

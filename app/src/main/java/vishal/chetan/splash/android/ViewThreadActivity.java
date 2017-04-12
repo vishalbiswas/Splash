@@ -10,6 +10,7 @@ import android.text.format.DateUtils;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
@@ -58,7 +59,7 @@ public class ViewThreadActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
-            holder.comment.setText(thread.getComments().get(position));
+            holder.comment.setText(GlobalFunctions.mdBypass.markdownToSpannable(thread.getComments().get(position)));
         }
 
         @Override

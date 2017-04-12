@@ -1,8 +1,12 @@
 package vishal.chetan.splash;
 
+import android.text.Spannable;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+
+import in.uncod.android.bypass.Bypass;
 
 public class Thread {
     public int getTopicId() {
@@ -23,7 +27,7 @@ public class Thread {
 
     private final long threadId;
     private final String title;
-    private final String content;
+    private final CharSequence content;
     private final long creator_id;
     private final Date ctime;
     private final Date mtime;
@@ -45,7 +49,7 @@ public class Thread {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
-        this.content = content;
+        this.content = GlobalFunctions.mdBypass.markdownToSpannable(content);
         this.creator_id = creator_id;
         this.ctime = ctime;
         this.mtime = mtime;
@@ -62,7 +66,7 @@ public class Thread {
         return title;
     }
 
-    public String getContent() {
+    public CharSequence getContent() {
         return content;
     }
 

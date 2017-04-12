@@ -110,7 +110,7 @@ public class SplashCache {
 
         public static ArrayList<Thread> getAllForIndex(final int filterIndex) {
             //// FIXME: 3/13/17 demo code to be removed
-            add(new Thread(0, 0, "Hello", "Welcome to Splash app! Have fun!", 1, new Date(), new Date(), 0));
+            add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
             if (filterIndex == -1) {
                 Collections.sort(allThreads, new Thread.ModificationTimeComparator());
                 return allThreads;

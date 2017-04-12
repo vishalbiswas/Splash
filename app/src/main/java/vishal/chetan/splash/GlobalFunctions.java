@@ -15,6 +15,7 @@ import android.support.design.widget.Snackbar;
 import android.util.SparseArray;
 import android.widget.Toast;
 
+import in.uncod.android.bypass.Bypass;
 import vishal.chetan.splash.android.SettingsActivity;
 
 import java.net.HttpURLConnection;
@@ -34,6 +35,8 @@ public class GlobalFunctions extends Application {
     public static final ServerList servers = ServerList.getInstance();
     public static final SparseArray<UserIdentity> identities = new SparseArray<>();
     public static UserIdentity defaultIdentity;
+
+    public static Bypass mdBypass;
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -128,6 +131,7 @@ public class GlobalFunctions extends Application {
             }
         });
 
+        mdBypass = new Bypass(getApplicationContext());
     }
 
     public static class CheckSource extends AsyncTask<Integer, Void, Void> {
