@@ -8,6 +8,16 @@ import java.util.List;
 
 public class ServerList extends ArrayList<ServerList.SplashSource> {
     public static class SplashSource {
+        public class SplashTopic {
+            public int topicid;
+            public String name;
+
+            public SplashTopic(int topicid, String name) {
+                this.topicid = topicid;
+                this.name = name;
+            }
+        }
+
         public String getName() {
             return name;
         }
@@ -24,6 +34,22 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             this.url = url;
         }
 
+        public String getTopic(int topicid) {
+            for (SplashTopic topic : this.topics) {
+                if (topic.topicid == topicid) {
+                    return topic.name;
+                }
+            }
+            return null;
+        }
+
+        public ArrayList<String> getTopics() {
+            ArrayList<String> topics = new ArrayList<>();
+            for (SplashTopic topic : this.topics) {
+                topics.add(topic.name);
+            }
+            return topics;
+        }
 
         public boolean isEnabled() {
             return !disabled;
@@ -32,7 +58,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         private String name;
         private String url;
         protected boolean disabled = false;
-        private final SparseArray<String> topics = new SparseArray<>();
+        public final ArrayList<SplashTopic> topics = new ArrayList<>();
 
         public SplashSource(String name, String url) {
             this.name = name;
@@ -40,7 +66,11 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         }
 
         public void addTopic(int topicId, String topicName) {
-            topics.append(topicId, topicName);
+            topics.add(new SplashTopic(topicId, topicName));
+        }
+
+        public void addTopic(SplashTopic topic) {
+            topics.add(topic);
         }
     }
 

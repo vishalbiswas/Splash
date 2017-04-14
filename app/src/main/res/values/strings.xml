@@ -84,4 +84,9 @@
     <string name="strDefFnameSummary">First name to be used as default for new registration</string>
     <string name="strDefLnameSummary">Last name to be used as default for new registration</string>
     <string name="strDefEmailSummary">Use this email to autofill email field</string>
+    <string name="strSubmit">Submit</string>
+    <string name="strApacheLicense" translatable="false">Bypass <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></string>
+    <string name="strOSL" translatable="false">Open Source Licenses</string>
+    <string name="strMITLicense" translatable="false"><a href="https://github.com/vishalbiswas/Splash/blob/master/LICENSE">MIT License</a></string>
+    <string name="strAbout">About</string>
 </resources>

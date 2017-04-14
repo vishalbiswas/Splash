@@ -2,7 +2,10 @@ package vishal.chetan.splash;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,7 +57,11 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     public void onBindViewHolder(final ThreadViewHolder holder, final int position) {
         final Thread thread = threadList.get(position);
         holder.title.setText(thread.getTitle());
-        holder.content.setText(thread.getContent());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            holder.content.setText(Html.fromHtml(thread.getContent(), Html.FROM_HTML_MODE_LEGACY));
+        } else {
+            holder.content.setText(Html.fromHtml(thread.getContent()));
+        }
         String name = SplashCache.UsernameCache.getUser(thread.getServerIndex(), thread.getCreatorID());
         if (name == null) {
             SplashCache.UsernameCache.addGetUserListener(thread.getServerIndex(), new SplashCache.UsernameCache.OnGetUserListener() {
@@ -79,7 +86,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
 
     @Override
     public long getItemId(int i) {
-        return i;
+        return threadList.get(i).getThreadId();
     }
 
     @Override

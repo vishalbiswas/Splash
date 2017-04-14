@@ -8,7 +8,7 @@
     <application
         android:name=".GlobalFunctions"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_news"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
@@ -79,6 +79,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.NewsFeed" />
         </activity>
+        <activity android:name=".android.CreatePostActivity" />
+        <activity android:name=".android.AboutActivity"></activity>
     </application>
 
 </manifest>

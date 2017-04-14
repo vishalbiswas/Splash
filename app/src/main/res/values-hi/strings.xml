@@ -68,4 +68,5 @@
     <string name="strDefEmailSummary">ईमेल फ़ील्ड को स्वत: भरण के लिए ईमेल</string>
     <string name="strDefFnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला पहला नाम</string>
     <string name="strDefLnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला आखरी नाम</string>
+    <string name="strSubmit">सन्चित करे</string>
 </resources>

@@ -17,7 +17,7 @@
             android:layout_height="32dp"
             android:layout_gravity="start|top"
             android:contentDescription="@string/tipProfpic"
-            android:src="@mipmap/ic_launcher" />
+            android:src="@mipmap/ic_news" />
 
         <TextView
             android:id="@+id/headerUser"

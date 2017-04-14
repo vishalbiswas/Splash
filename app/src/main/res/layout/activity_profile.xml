@@ -18,7 +18,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="36dp"
         android:contentDescription="@string/tipProfpic"
-        android:src="@mipmap/ic_launcher" />
+        android:src="@mipmap/ic_news" />
 
     <EditText
         android:id="@+id/editFName"

@@ -38,10 +38,11 @@
             tools:context="vishal.chetan.splash.android.NewsFeed"
             tools:openDrawer="start">
 
-            <include
-                layout="@layout/content_news_feed"
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/threadsListView"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                tools:listitem="@layout/list_item_thread"/>
 
             <android.support.design.widget.NavigationView
                 android:id="@+id/nav_view"

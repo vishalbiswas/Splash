@@ -22,9 +22,9 @@ public class SplashScreen extends AppCompatActivity {
 
         if (BuildConfig.BUILD_TYPE.equals("debug") && GlobalFunctions.servers.size() == 0) {
             if (Build.PRODUCT.startsWith("sdk")) {
-                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1"));
+                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
             } else {
-                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2"));
+                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));
             }
         }
 

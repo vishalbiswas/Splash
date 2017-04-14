@@ -1,5 +1,6 @@
 package vishal.chetan.splash.android;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
@@ -8,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import vishal.chetan.splash.GlobalFunctions;
@@ -15,7 +17,7 @@ import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
 
-public class ViewThreadActivity extends AppCompatActivity {
+public class ViewThreadActivity extends BaseActivity {
     int serverIndex;
     long threadId;
     Thread thread;
@@ -24,19 +26,21 @@ public class ViewThreadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_thread);
+        serverIndex = getIntent().getIntExtra("serverIndex", -1);
+        threadId = getIntent().getLongExtra("threadId", -1);
+        thread = SplashCache.ThreadCache.getThread(serverIndex, threadId);
+        WebView content = (WebView) findViewById(R.id.threadContent);
+        content.loadData(thread.getContent(), "text/html; charset=utf-8", "utf-8");
+        content.setBackgroundColor(Color.TRANSPARENT);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        serverIndex = getIntent().getIntExtra("serverIndex", -1);
-        threadId = getIntent().getLongExtra("threadId", -1);
-        thread = SplashCache.ThreadCache.getThread(serverIndex, threadId);
         setTitle(thread.getTitle());
-        ((TextView) findViewById(R.id.threadContent)).setText(thread.getContent());
         ((TextView) findViewById(R.id.threadCreator)).setText(SplashCache.UsernameCache.getUser(serverIndex, thread.getCreatorID()));
         ((TextView) findViewById(R.id.threadTime)).setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
-        ((TextView) findViewById(R.id.threadSubforum)).setText(Integer.toString(thread.getTopicId()));
+        ((TextView) findViewById(R.id.threadSubforum)).setText(GlobalFunctions.servers.get(serverIndex).getTopic(thread.getTopicId()));
         RecyclerView comments = (RecyclerView) findViewById(R.id.comments);
         comments.setLayoutManager(new LinearLayoutManager(this));
         comments.setAdapter(new CommentsAdapter());

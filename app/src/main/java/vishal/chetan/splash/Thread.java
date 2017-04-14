@@ -27,7 +27,7 @@ public class Thread {
 
     private final long threadId;
     private final String title;
-    private final CharSequence content;
+    private final String content;
     private final long creator_id;
     private final Date ctime;
     private final Date mtime;
@@ -45,11 +45,11 @@ public class Thread {
      * @param mtime Thread modification time
      * @param topicId Sub forum id
      */
-    Thread (long threadId, int serverIndex, String title, String content, long creator_id, Date ctime, Date mtime, int topicId) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, Date ctime, Date mtime, int topicId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
-        this.content = GlobalFunctions.mdBypass.markdownToSpannable(content);
+        this.content = GlobalFunctions.andDown.markdownToHtml(content);
         this.creator_id = creator_id;
         this.ctime = ctime;
         this.mtime = mtime;
@@ -66,7 +66,7 @@ public class Thread {
         return title;
     }
 
-    public CharSequence getContent() {
+    public String getContent() {
         return content;
     }
 

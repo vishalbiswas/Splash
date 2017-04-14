@@ -1,5 +1,6 @@
 package vishal.chetan.splash;
 
+import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.util.Log;
 import android.util.SparseArray;
@@ -108,6 +109,7 @@ public class SplashCache {
         private static final List<OnThreadAddedListener> addListeners = new ArrayList<>();
         private static OnThreadFilteredListener filterListener;
 
+        @Nullable
         public static ArrayList<Thread> getAllForIndex(final int filterIndex) {
             //// FIXME: 3/13/17 demo code to be removed
             add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
@@ -121,7 +123,7 @@ public class SplashCache {
                 LongSparseArray<Thread> threadList = threads.get(filterIndex, new LongSparseArray<Thread>());
                 ArrayList<Thread> returnList = new ArrayList<>();
                 for(int i = 0; i < threadList.size(); ++i) {
-                    returnList.add(threadList.get(i));
+                    returnList.add(threadList.valueAt(i));
                 }
                 Collections.sort(returnList, new Thread.ModificationTimeComparator());
                 return returnList;

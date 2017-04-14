@@ -11,7 +11,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="vishal.chetan.splash.android.RegisterActivity"
-    tools:showIn="@layout/activity_register">
+    tools:showIn="@layout/activity_register"
+    android:id="@+id/frag">
 
     <android.support.design.widget.TextInputLayout
         android:id="@+id/regUserInputLayout"
@@ -60,7 +61,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/regButton" />
-
-    <include layout="@layout/snack_layout" />
 
 </LinearLayout>

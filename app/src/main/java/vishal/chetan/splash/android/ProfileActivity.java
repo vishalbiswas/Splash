@@ -31,7 +31,7 @@ public class ProfileActivity extends AppCompatActivity {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 0:
-                    ((UserDisplayFragment) getFragmentManager().findFragmentById(R.id.fragUser)).updateViews();
+                    ///FIXME: On identity details updated
                     finish();
                     return;
                 case 1:

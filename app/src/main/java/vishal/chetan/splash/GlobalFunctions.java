@@ -15,9 +15,16 @@ import android.support.design.widget.Snackbar;
 import android.util.SparseArray;
 import android.widget.Toast;
 
+import com.commonsware.cwac.anddown.AndDown;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import in.uncod.android.bypass.Bypass;
 import vishal.chetan.splash.android.SettingsActivity;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
@@ -37,6 +44,7 @@ public class GlobalFunctions extends Application {
     public static UserIdentity defaultIdentity;
 
     public static Bypass mdBypass;
+    public static AndDown andDown = new AndDown();
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -101,7 +109,7 @@ public class GlobalFunctions extends Application {
                 preferences.getString("defaultFname", ""),
                 preferences.getString("defaultLname", ""),
                 preferences.getString("defaultEmail", ""));
-        defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));
+        defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_news));
         servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
             public void onAdd(ServerList.SplashSource source) {
@@ -151,14 +159,28 @@ public class GlobalFunctions extends Application {
                 URL urlServer;
                 HttpURLConnection urlConn;
                 try {
-                    urlServer = new URL(source.getUrl());
+                    urlServer = new URL(source.getUrl() + "/topics");
                     urlConn = (HttpURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
                     urlConn.connect();
                     if (urlConn.getResponseCode() != 200) {
                         throw new Exception();
+                    } else {
+                        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+                        String line;
+                        StringBuilder response = new StringBuilder();
+
+                        while ((line = bufferedReader.readLine()) != null) {
+                            response.append(line);
+                        }
+                        bufferedReader.close();
+                        JSONArray data = new JSONArray(response.toString());
+                        for(int i = 0; i < data.length(); ++i) {
+                            JSONObject topic = data.getJSONObject(i);
+                            source.addTopic(topic.getInt("topicid"), topic.getString("name"));
+                        }
+                        result = true;
                     }
-                    result = true;
                 } catch (Exception e) {
                     result = false;
                 }

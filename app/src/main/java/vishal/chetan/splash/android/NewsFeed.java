@@ -2,14 +2,14 @@ package vishal.chetan.splash.android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -25,12 +25,14 @@ import vishal.chetan.splash.ServerList;
 import vishal.chetan.splash.ThreadsAdapter;
 import vishal.chetan.splash.UserIdentity;
 
-public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class NewsFeed extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView threadsListView;
     private DrawerLayout newsDrawer;
     private NavigationView nav_view;
-    private int previousItemId = -2;
+    private FloatingActionButton fab;
+    private int previousItemId;
     private final static int login_result_id = 1;
+    private final static int create_thread_result_id = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,9 +45,18 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         newsDrawer = (DrawerLayout) findViewById(R.id.newsDrawer);
         nav_view = (NavigationView) findViewById(R.id.nav_view);
 
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (previousItemId != -1) {
+                    startActivityForResult(new Intent(NewsFeed.this, CreatePostActivity.class).putExtra("serverIndex", previousItemId), create_thread_result_id);
+                }
+            }
+        });
+
         setSupportActionBar(toolbar);
         threadsListView.setLayoutManager(new LinearLayoutManager(this));
-        threadsListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         threadsListView.setHasFixedSize(true);
 
         nav_view.setNavigationItemSelectedListener(this);
@@ -95,6 +106,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
     }
 
     private void updateOptionsMenu() {
+        previousItemId = -2;
         Menu nav_menu = nav_view.getMenu();
         nav_menu.setGroupCheckable(Menu.NONE, true, true);
         nav_menu.clear();
@@ -117,9 +129,13 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_settings) {
-            GlobalFunctions.launchSettings(NewsFeed.this);
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                GlobalFunctions.launchSettings(NewsFeed.this);
+                return true;
+            case R.id.action_about:
+                startActivity(new Intent(NewsFeed.this, AboutActivity.class));
+                break;
         }
 
         return super.onOptionsItemSelected(item);
@@ -137,7 +153,7 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
                 actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
             }
             updateNavHeader(ItemId);
-            threadsListView.setAdapter(new ThreadsAdapter(this, ItemId));
+            threadsListView.swapAdapter(new ThreadsAdapter(this, ItemId), false);
             nav_view.setCheckedItem(ItemId);
             item.setChecked(true);
             previousItemId = ItemId;
@@ -150,23 +166,32 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
         UserIdentity identity;
         if (itemId == -1) {
             identity = GlobalFunctions.defaultIdentity;
+            fab.setVisibility(View.INVISIBLE);
         } else {
             identity = GlobalFunctions.identities.get(itemId);
-        }
-        if (identity == null) { // user has not logged in to the selected server
-            Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_LONG)
-                    .setAction(getString(R.string.login), new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
-                        }
-                    }).show();
-            return;
+            if (identity != null) {
+                fab.setVisibility(View.VISIBLE);
+            } else {
+                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
+                    if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
+                        startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
+                    } else {
+                        Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_LONG)
+                                .setAction(getString(R.string.login), new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
+                                    }
+                                }).show();
+                    }
+                }
+                return;
+            }
         }
         View header = nav_view.getHeaderView(0);
-        ((ImageView)header.findViewById(R.id.headerPic)).setImageBitmap(identity.getProfpic());
-        ((TextView)header.findViewById(R.id.headerUser)).setText(identity.getUsername());
-        ((TextView)header.findViewById(R.id.headerEmail)).setText(identity.getEmail());
+        ((ImageView) header.findViewById(R.id.headerPic)).setImageBitmap(identity.getProfpic());
+        ((TextView) header.findViewById(R.id.headerUser)).setText(identity.getUsername());
+        ((TextView) header.findViewById(R.id.headerEmail)).setText(identity.getEmail());
         if (itemId != -1) {
             header.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -183,6 +208,12 @@ public class NewsFeed extends AppCompatActivity implements NavigationView.OnNavi
             case login_result_id:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
                     updateNavHeader(previousItemId);
+                }
+                break;
+            case create_thread_result_id:
+                if (resultCode == RESULT_OK && (previousItemId == -1 || data.getIntExtra("serverIndex", -2) == previousItemId)) {
+                    threadsListView.swapAdapter(new ThreadsAdapter(this, previousItemId), false);
+                    startActivity(new Intent(NewsFeed.this, ViewThreadActivity.class).putExtras(data));
                 }
         }
     }
