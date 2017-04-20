@@ -10,6 +10,15 @@ public class UserIdentity {
     private String email = "";
     private Bitmap profpic = null;
 
+    UserIdentity(long uid, String username, String firstname, String lastname, String email, Bitmap profpic) {
+        this.uid = uid;
+        this.username = username;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.profpic = profpic;
+    }
+
     UserIdentity(String username, String firstname, String lastname, String email) {
         this.username = username;
         this.firstname = firstname;

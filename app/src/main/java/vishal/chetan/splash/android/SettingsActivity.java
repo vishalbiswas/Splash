@@ -11,7 +11,7 @@ import android.support.v7.widget.Toolbar;
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends BaseActivity {
 
     private static void bindSummary(Preference preference, String newValue) {
         if (preference instanceof ListPreference) {

@@ -11,7 +11,7 @@ import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
 
-public class SplashScreen extends AppCompatActivity {
+public class SplashScreen extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

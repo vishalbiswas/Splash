@@ -23,8 +23,8 @@ import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
 
-public class SourcesManagerActivity extends AppCompatActivity {
-    final SourcesAdapter sourcesAdapter = new SourcesAdapter();
+public class SourcesManagerActivity extends BaseActivity {
+    private final SourcesAdapter sourcesAdapter = new SourcesAdapter();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +123,7 @@ public class SourcesManagerActivity extends AppCompatActivity {
         }
     }
 
-    void modifySource(final int index, final CharSequence initialName, final CharSequence initialUrl) {
+    private void modifySource(final int index, final CharSequence initialName, final CharSequence initialUrl) {
         final LinearLayout layout = new LinearLayout(SourcesManagerActivity.this);
         layout.setOrientation(LinearLayout.VERTICAL);
 

@@ -9,15 +9,21 @@
     tools:context="vishal.chetan.splash.android.ViewThreadActivity"
     tools:showIn="@layout/activity_view_thread">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/imgAttach"
+        android:visibility="gone"/>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:baselineAligned="false"
-        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:orientation="horizontal"
+        android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingEnd="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin">
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,19 +31,19 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <WebView
+            <org.sufficientlysecure.htmltextview.HtmlTextView
                 android:id="@+id/threadContent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:linksClickable="true"
+                android:autoLink="web"
                 android:text="Very very long thread content. It can be as long as you want it. Currently, we don't have any restrictions on it."
                 android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/threadCreator"
@@ -48,9 +54,9 @@
                 <View
                     android:layout_width="1dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="5dp"
                     android:layout_marginEnd="5dp"
-                    android:background="@android:color/darker_gray"/>
+                    android:layout_marginStart="5dp"
+                    android:background="@android:color/darker_gray" />
 
                 <TextView
                     android:id="@+id/threadTime"
@@ -63,8 +69,8 @@
                 android:id="@+id/threadSubforum"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Name of sub forum"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_gravity="center_horizontal"
+                android:text="Name of sub forum" />
         </LinearLayout>
 
         <LinearLayout
@@ -77,6 +83,16 @@
             android:padding="5dp">
 
             <ImageButton
+                android:id="@+id/threadEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="10dp"
+                android:visibility="gone"
+                app:srcCompat="@drawable/ic_edit" />
+
+            <ImageButton
+                android:id="@+id/threadReply"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
@@ -84,6 +100,7 @@
                 app:srcCompat="@drawable/ic_reply" />
 
             <ImageButton
+                android:id="@+id/threadInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@null"
@@ -92,9 +109,18 @@
         </LinearLayout>
     </LinearLayout>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/comments"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refreshComments"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:overScrollMode="always">
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/comments"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:listitem="@layout/list_item_comment" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 
 </LinearLayout>

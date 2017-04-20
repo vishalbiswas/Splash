@@ -4,8 +4,6 @@
 /build
 .idea/
 app/libs/
-app/src/main/res/drawable/
-app/src/main/res/values-as/
 projectFilesBackup/
 *.apk
 app/src/androidTest/

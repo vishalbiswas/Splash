@@ -37,7 +37,7 @@
         android:padding="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/myLicense"
         android:layout_centerHorizontal="true"
         android:orientation="vertical">
 
@@ -48,10 +48,16 @@
             android:text="@string/strOSL" />
 
         <TextView
-            android:id="@+id/bypassLicense"
+            android:id="@+id/anddownLicense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/strApacheLicense" />
+            android:text="@string/strAnddownLicense" />
+
+        <TextView
+            android:id="@+id/htmltvLicense"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/strHtmltvLicense" />
     </LinearLayout>
 
 </RelativeLayout>

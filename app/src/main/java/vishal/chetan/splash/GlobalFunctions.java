@@ -20,7 +20,6 @@ import com.commonsware.cwac.anddown.AndDown;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import in.uncod.android.bypass.Bypass;
 import vishal.chetan.splash.android.SettingsActivity;
 
 import java.io.BufferedReader;
@@ -43,8 +42,13 @@ public class GlobalFunctions extends Application {
     public static final SparseArray<UserIdentity> identities = new SparseArray<>();
     public static UserIdentity defaultIdentity;
 
-    public static Bypass mdBypass;
-    public static AndDown andDown = new AndDown();
+    private static final AndDown andDown = new AndDown();
+    private static final int andDownExts = AndDown.HOEDOWN_EXT_AUTOLINK |
+            AndDown.HOEDOWN_EXT_FENCED_CODE | AndDown.HOEDOWN_EXT_TABLES |
+            AndDown.HOEDOWN_EXT_QUOTE | AndDown.HOEDOWN_EXT_STRIKETHROUGH |
+            AndDown.HOEDOWN_EXT_SUPERSCRIPT | AndDown.HOEDOWN_EXT_UNDERLINE |
+            AndDown.HOEDOWN_EXT_FOOTNOTES | AndDown.HOEDOWN_EXT_HIGHLIGHT |
+            AndDown.HOEDOWN_EXT_NO_INTRA_EMPHASIS;
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;
@@ -138,12 +142,14 @@ public class GlobalFunctions extends Application {
                 onAdd(updatedSource);
             }
         });
+    }
 
-        mdBypass = new Bypass(getApplicationContext());
+    public static String parseMarkdown(String data) {
+        return andDown.markdownToHtml(data, andDownExts, 0);
     }
 
     public static class CheckSource extends AsyncTask<Integer, Void, Void> {
-        protected ServerList.SplashSource source;
+        ServerList.SplashSource source;
         final Activity activity;
 
         public CheckSource(Activity activity) {

@@ -1,7 +1,5 @@
 package vishal.chetan.splash;
 
-import android.util.SparseArray;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +7,8 @@ import java.util.List;
 public class ServerList extends ArrayList<ServerList.SplashSource> {
     public static class SplashSource {
         public class SplashTopic {
-            public int topicid;
-            public String name;
+            public final int topicid;
+            public final String name;
 
             public SplashTopic(int topicid, String name) {
                 this.topicid = topicid;
@@ -57,7 +55,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
 
         private String name;
         private String url;
-        protected boolean disabled = false;
+        boolean disabled = false;
         public final ArrayList<SplashTopic> topics = new ArrayList<>();
 
         public SplashSource(String name, String url) {

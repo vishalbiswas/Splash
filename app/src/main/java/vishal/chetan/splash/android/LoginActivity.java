@@ -28,7 +28,7 @@ import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.GlobalFunctions;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
     private SharedPreferences sharedPreferences;
     private EditText txtUsername, txtPassword;
     private int serverIndex;

@@ -17,9 +17,6 @@
             android:label="@string/app_name"
             android:parentActivityName=".android.NewsFeed"
             android:theme="@style/AppTheme.NoActionBar">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="vishal.chetan.splash.android.SplashScreen" />
         </activity>
         <activity
             android:name=".android.SplashScreen"
@@ -34,10 +31,14 @@
         <activity
             android:name=".android.NewsFeed"
             android:label="@string/title_activity_news_feed"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop">
             <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="vishal.chetan.splash.android.LoginActivity" />
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".android.SettingsActivity"
@@ -52,9 +53,7 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.LoginActivity" />
         </activity>
-        <activity
-            android:name=".android.ProfileActivity"
-            android:parentActivityName=".android.NewsFeed" />
+        <activity android:name=".android.ProfileActivity" />
         <activity
             android:name=".android.SourcesManagerActivity"
             android:label="@string/title_activity_sources_manager"
@@ -79,8 +78,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="vishal.chetan.splash.android.NewsFeed" />
         </activity>
-        <activity android:name=".android.CreatePostActivity" />
-        <activity android:name=".android.AboutActivity"></activity>
+        <activity android:name=".android.PostActivity" />
+        <activity android:name=".android.AboutActivity" />
+        <activity android:name=".ThreadInfoActivity" />
+        <activity android:name=".android.CommentActivity" />
     </application>
 
 </manifest>

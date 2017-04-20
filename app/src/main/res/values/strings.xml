@@ -1,7 +1,6 @@
 <resources>
     <string name="app_name">News App</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_splash_screen" translatable="false">Splash Screen</string>
     <string name="wait">Please wait…</string>
     <string name="username">Username or Email</string>
     <string name="password">Password</string>
@@ -57,12 +56,9 @@
     <string name="errPartialData">Server received incomplete data</string>
     <string name="tipProfpic">Profile Icon</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
     <string name="txtFName">First Name</string>
     <string name="txtLName">Last Name</string>
     <string name="txtSave">Save</string>
-    <string name="skip">Skip Login</string>
     <string name="title_activity_sources_manager">Manage Forum Sources</string>
     <string name="warnConfigServer">No servers configured! Taking you to server configuration…</string>
     <string name="strEnterUrl">Enter URL..</string>
@@ -84,9 +80,20 @@
     <string name="strDefFnameSummary">First name to be used as default for new registration</string>
     <string name="strDefLnameSummary">Last name to be used as default for new registration</string>
     <string name="strDefEmailSummary">Use this email to autofill email field</string>
-    <string name="strSubmit">Submit</string>
-    <string name="strApacheLicense" translatable="false">Bypass <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></string>
+    <string name="strSubmit">Save</string>
+    <string name="strAnddownLicense" translatable="false"><a href="https://github.com/commonsguy/cwac-anddown">CWAC AndDown</a> <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></string>
+    <string name="strHtmltvLicense" translatable="false"><a href="https://github.com/SufficientlySecure/html-textview">HtmlTextView</a> <a href="https://www.apache.org/licenses/LICENSE-2.0.html">Apache 2.0</a></string>
     <string name="strOSL" translatable="false">Open Source Licenses</string>
     <string name="strMITLicense" translatable="false"><a href="https://github.com/vishalbiswas/Splash/blob/master/LICENSE">MIT License</a></string>
     <string name="strAbout">About</string>
+    <string name="errPassNoMatch">Passwords do not match!</string>
+    <string name="errUserData">Unable to retrieve userdata!</string>
+    <string name="strEditThread">Edit Thread</string>
+    <string name="strEditComment">Edit Comment</string>
+    <string name="labelSearch">Search Threads</string>
+    <string name="strAttach">Attach Image</string>
+    <string name="strChangeAttach">Change Image</string>
+    <string name="strCommentFetchFailed">Unable to fetch comments</string>
+    <string name="errPost">An error occurred while posting</string>
+    <string name="errAttach">An error occurred while uploading attachment</string>
 </resources>

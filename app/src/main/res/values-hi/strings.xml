@@ -52,7 +52,6 @@
     <string name="defaultIdentity">मुख्य पहचान</string>
     <string name="defaultLname">मुख्य उपनाम</string>
     <string name="defaultUser">मुख्य उपयोगकर्ता नाम</string>
-    <string name="skip">लॉगिन छोड़ दें</string>
     <string name="strDefUserSummary">लोगिन करने के लिये मुख्य नाम</string>
     <string name="strEnterUrl">URL डाले…</string>
     <string name="warnConfigServer">कोई सरवर उपलब्ध नही है…</string>
@@ -69,4 +68,5 @@
     <string name="strDefFnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला पहला नाम</string>
     <string name="strDefLnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला आखरी नाम</string>
     <string name="strSubmit">सन्चित करे</string>
+    <string name="strAbout">अधिक जानें</string>
 </resources>

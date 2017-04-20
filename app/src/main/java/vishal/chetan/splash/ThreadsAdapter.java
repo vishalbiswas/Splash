@@ -2,15 +2,19 @@ package vishal.chetan.splash;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.format.DateUtils;
+import android.text.method.ArrowKeyMovementMethod;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
+import android.text.util.Linkify;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.util.ArrayList;
 
@@ -19,23 +23,33 @@ import vishal.chetan.splash.android.ViewThreadActivity;
 public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadViewHolder> {
     class ThreadViewHolder extends RecyclerView.ViewHolder {
         final TextView title;
-        final TextView content;
+        final HtmlTextView content;
         final TextView creator;
         final TextView mtime;
 
         ThreadViewHolder(View view) {
             super(view);
             title = (TextView) view.findViewById(R.id.threadTitle);
-            content = (TextView) view.findViewById(R.id.threadPreview);
+            content = (HtmlTextView) view.findViewById(R.id.threadPreview);
             creator = (TextView) view.findViewById(R.id.creator);
             mtime = (TextView) view.findViewById(R.id.mtime);
         }
     }
 
+    private class ThreadWithImageViewHolder extends ThreadViewHolder {
+        final ImageView imgAttach;
+
+        ThreadWithImageViewHolder(View view) {
+            super(view);
+            imgAttach = (ImageView) view.findViewById(R.id.imgAttach);
+        }
+    }
+
+    private final static int NORMAL = 0, IMAGE = 1;
     private final ArrayList<Thread> threadList;
     private final Context context;
 
-    public ThreadsAdapter(Context context, int filter) {
+    public ThreadsAdapter(Context context, final int filter) {
         threadList = SplashCache.ThreadCache.getAllForIndex(filter);
         if (filter == -1) {
             SplashCache.ThreadCache.setFilterListener(new SplashCache.ThreadCache.OnThreadFilteredListener() {
@@ -46,35 +60,54 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
             });
         }
         this.context = context;
+        SplashCache.ThreadCache.setOnThreadModifyListener(new SplashCache.ThreadCache.OnThreadModifiedListener() {
+            @Override
+            public void onModify(Thread thread) {
+                if (thread != null) {
+                    if (filter == -1 || thread.getServerIndex() == filter) {
+                        notifyDataSetChanged();
+                    }
+                }
+            }
+        });
+    }
+
+    public ThreadsAdapter(Context context, final ArrayList<Thread> threadList) {
+        this.context = context;
+        this.threadList = threadList;
     }
 
     @Override
     public ThreadViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ThreadViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread, parent, false));
+        switch (viewType) {
+            case NORMAL:
+                return new ThreadViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread, parent, false));
+            case IMAGE:
+                return new ThreadWithImageViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread_with_image, parent, false));
+            default:
+                return null;
+        }
     }
 
     @Override
     public void onBindViewHolder(final ThreadViewHolder holder, final int position) {
         final Thread thread = threadList.get(position);
+        switch (holder.getItemViewType()) {
+            case IMAGE:
+                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap(SplashCache.ImageCache.get(thread.getServerIndex(), thread.getAttachId()));
+                break;
+        }
         holder.title.setText(thread.getTitle());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            holder.content.setText(Html.fromHtml(thread.getContent(), Html.FROM_HTML_MODE_LEGACY));
-        } else {
-            holder.content.setText(Html.fromHtml(thread.getContent()));
+        holder.content.setHtml(thread.getContent());
+        UserIdentity user = SplashCache.UsersCache.getUser(thread.getServerIndex(), thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
+            @Override
+            public void onGetUser(UserIdentity user) {
+                holder.creator.setText(user.getUsername());
+            }
+        });
+        if (user == null) {
+            holder.creator.setText("UID:" + thread.getCreatorID());
         }
-        String name = SplashCache.UsernameCache.getUser(thread.getServerIndex(), thread.getCreatorID());
-        if (name == null) {
-            SplashCache.UsernameCache.addGetUserListener(thread.getServerIndex(), new SplashCache.UsernameCache.OnGetUserListener() {
-                @Override
-                public void onGetUser(long uid) {
-                    if (uid == thread.getCreatorID()) {
-                        notifyItemChanged(holder.getAdapterPosition());
-                    }
-                }
-            });
-            name = "UID:" + thread.getCreatorID();
-        }
-        holder.creator.setText(name);
         holder.mtime.setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,4 +127,12 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         return threadList.size();
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        if (threadList.get(position).getAttachId() >= 0) {
+            return IMAGE;
+        } else {
+            return NORMAL;
+        }
+    }
 }

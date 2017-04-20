@@ -14,7 +14,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         onLeaveThisActivity();
     }
 
-    protected void onLeaveThisActivity() {
+    private void onLeaveThisActivity() {
         overridePendingTransition(R.anim.slide_in_from_left, R.anim.slide_out_from_left);
     }
 
@@ -34,7 +34,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         onStartNewActivity();
     }
 
-    protected void onStartNewActivity() {
+    private void onStartNewActivity() {
         overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_from_right);
     }
 }
