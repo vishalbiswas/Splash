@@ -1,6 +1,7 @@
 package vishal.chetan.splash;
 
 import android.content.Context;
+import android.support.annotation.Px;
 import android.util.AttributeSet;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -19,7 +20,7 @@ public class NoScrollHtmlTextView extends HtmlTextView {
     }
 
     @Override
-    public void scrollTo(int x, int y) {
+    public void scrollTo(@Px int x, @Px int y) {
         //do nothing
     }
 }

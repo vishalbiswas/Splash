@@ -2,6 +2,8 @@ package vishal.chetan.splash.android;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.ActionBar;
 import android.support.v7.widget.Toolbar;
@@ -21,8 +23,6 @@ import vishal.chetan.splash.FieldValidator;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.GlobalFunctions;
-
-import java.util.regex.Pattern;
 
 public class RegisterActivity extends BaseActivity {
     private EditText viewUsername;
@@ -64,7 +64,7 @@ public class RegisterActivity extends BaseActivity {
 
         new AsyncHelper(serverIndex, "register", postMessage) {
             @Override
-            protected void onPostExecute(JSONObject jsonObject) {
+            protected void onPostExecute(@Nullable JSONObject jsonObject) {
                 if (jsonObject != null) {
                     try {
                         int status = jsonObject.getInt("status");
@@ -116,7 +116,7 @@ public class RegisterActivity extends BaseActivity {
 
         viewUsername.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
+            public void onFocusChange(@NonNull View v, boolean hasFocus) {
                 if (!hasFocus) {
                     fieldValidator.validateUsername(((EditText) v).getText().toString());
                 }
@@ -125,7 +125,7 @@ public class RegisterActivity extends BaseActivity {
 
         viewEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
+            public void onFocusChange(@NonNull View v, boolean hasFocus) {
                 if (!hasFocus) {
                     fieldValidator.validateEmail(((EditText) v).getText().toString());
                 }
@@ -134,7 +134,7 @@ public class RegisterActivity extends BaseActivity {
 
         viewPassword.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
+            public void onFocusChange(@NonNull View v, boolean hasFocus) {
                 if (!hasFocus) {
                     fieldValidator.validatePassword(((EditText) v).getText().toString());
                 }
@@ -165,7 +165,7 @@ public class RegisterActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {
@@ -177,20 +177,20 @@ public class RegisterActivity extends BaseActivity {
     }
 
     private class RegisterErrorProvider implements FieldValidator.ErrorProvider {
-        public void setErrorUsername(int resId) {
+        public void setErrorUsername(@StringRes int resId) {
             viewUsername.setError(getString(resId));
         }
 
-        public void setErrorEmail(int resId) {
+        public void setErrorEmail(@StringRes int resId) {
             viewEmail.setError(getString(resId));
         }
 
-        public void setErrorPassword(int resId) {
+        public void setErrorPassword(@StringRes int resId) {
             viewPassword.setError(getString(resId));
         }
 
         @Override
-        public void setErrorSnack(int resId) {
+        public void setErrorSnack(@StringRes int resId) {
             Snackbar.make(snackLayout, resId, Snackbar.LENGTH_LONG).show();
         }
     }

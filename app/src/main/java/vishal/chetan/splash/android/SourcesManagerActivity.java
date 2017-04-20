@@ -2,10 +2,10 @@ package vishal.chetan.splash.android;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -51,13 +51,14 @@ public class SourcesManagerActivity extends BaseActivity {
     }
 
     class SourcesAdapter extends RecyclerView.Adapter<SourcesAdapter.SourceViewHolder> {
+        @NonNull
         @Override
         public SourceViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new SourceViewHolder(getLayoutInflater().inflate(R.layout.list_item_source, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(final SourceViewHolder holder, final int position) {
+        public void onBindViewHolder(@NonNull final SourceViewHolder holder, final int position) {
             final ServerList.SplashSource source = GlobalFunctions.servers.get(position);
             holder.sourceEnabled.setChecked(source.isEnabled());
             holder.sourceEnabled.setOnCheckedChangeListener(new SwitchCompat.OnCheckedChangeListener() {
@@ -106,13 +107,18 @@ public class SourcesManagerActivity extends BaseActivity {
         }
 
         class SourceViewHolder extends RecyclerView.ViewHolder {
+            @NonNull
             final SwitchCompat sourceEnabled;
+            @NonNull
             final TextView itemSourceName;
+            @NonNull
             final TextView itemSourceUrl;
+            @NonNull
             final ImageButton editButton;
+            @NonNull
             final ImageButton deleteButton;
 
-            SourceViewHolder(View view) {
+            SourceViewHolder(@NonNull View view) {
                 super(view);
                 sourceEnabled = (SwitchCompat) view.findViewById(R.id.sourceEnabled);
                 itemSourceName = (TextView) view.findViewById(R.id.itemSourceName);

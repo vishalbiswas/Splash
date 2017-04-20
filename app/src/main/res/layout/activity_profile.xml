@@ -50,7 +50,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Email Address"
+        android:hint="@string/regEmail"
         android:inputType="textEmailAddress" />
 
     <EditText
@@ -58,7 +58,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Password"
+        android:hint="@string/regPassword"
         android:inputType="textPassword" />
 
     <EditText
@@ -66,6 +66,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
-        android:hint="Confirm Password"
+        android:hint="@string/strConfirmPass"
         android:inputType="textPassword" />
 </LinearLayout>

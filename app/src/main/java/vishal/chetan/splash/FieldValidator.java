@@ -1,8 +1,8 @@
 package vishal.chetan.splash;
 
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.view.View;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,25 +13,24 @@ import vishal.chetan.splash.asyncs.AsyncHelper;
 
 public class FieldValidator {
     public interface ErrorProvider {
-        void setErrorUsername(int resId);
-        void setErrorEmail(int resId);
-        void setErrorPassword(int resId);
-        void setErrorSnack(int resId);
+        void setErrorUsername(@StringRes int resId);
+        void setErrorEmail(@StringRes int resId);
+        void setErrorPassword(@StringRes int resId);
+        void setErrorSnack(@StringRes int resId);
     }
 
     public final ErrorProvider errorProvider;
-    final int serverIndex;
-    String username;
-    String email;
-    String password;
-    View snackView;
+    private final int serverIndex;
+    private String username;
+    private String email;
+    private String password;
 
     public FieldValidator(int serverIndex, ErrorProvider errorProvider) {
         this.errorProvider = errorProvider;
         this.serverIndex = serverIndex;
     }
 
-    public void validateUsername(final String username) {
+    public void validateUsername(@NonNull final String username) {
         if (this.username == null || !(username.equals(this.username))) {
             if (username.isEmpty()) {
                 errorProvider.setErrorUsername(R.string.errEmpty);
@@ -44,7 +43,7 @@ public class FieldValidator {
         }
     }
 
-    public void validateEmail(final String email) {
+    public void validateEmail(@NonNull final String email) {
         if (this.email == null || !email.equals(this.email)) {
             if (email.isEmpty()) {
                 errorProvider.setErrorEmail(R.string.errEmpty);
@@ -63,7 +62,7 @@ public class FieldValidator {
         }
     }
 
-    public void validatePassword(final String password) {
+    public void validatePassword(@NonNull final String password) {
         if (this.password == null || !password.equals(this.password)) {
             if (password.isEmpty()) {
                 errorProvider.setErrorPassword(R.string.errEmpty);
@@ -80,9 +79,10 @@ public class FieldValidator {
 
 
     private class CheckAvailable extends AsyncHelper {
+        @NonNull
         private Boolean checkForUser = true;
 
-        CheckAvailable(int serverIndex, String pageUrl) {
+        CheckAvailable(int serverIndex, @NonNull String pageUrl) {
             super(serverIndex, pageUrl);
             if (pageUrl.contains("@")) {
                 checkForUser = false;
@@ -90,7 +90,7 @@ public class FieldValidator {
         }
 
         @Override
-        protected void onPostExecute(JSONObject jsonObject) {
+        protected void onPostExecute(@Nullable JSONObject jsonObject) {
             GlobalFunctions.HTTP_CODE status = GlobalFunctions.HTTP_CODE.UNKNOWN;
             if (jsonObject != null) {
                 try {

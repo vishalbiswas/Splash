@@ -25,16 +25,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:padding="5dp"
-            android:text="Source Name" />
+            android:padding="5dp" />
 
         <TextView
             android:id="@+id/itemSourceUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:padding="5dp"
-            android:text="Source URL" />
+            android:padding="5dp" />
     </LinearLayout>
 
     <ImageButton

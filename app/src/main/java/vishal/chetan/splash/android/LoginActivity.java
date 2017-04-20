@@ -7,8 +7,9 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.view.Menu;
@@ -33,7 +34,7 @@ public class LoginActivity extends BaseActivity {
     private EditText txtUsername, txtPassword;
     private int serverIndex;
 
-    private void setError(int resId) {
+    private void setError(@StringRes int resId) {
         Snackbar.make(findViewById(R.id.frag), getString(resId), Snackbar.LENGTH_SHORT).show();
     }
 
@@ -77,7 +78,7 @@ public class LoginActivity extends BaseActivity {
         if (btnLogin != null) {
             btnLogin.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View v) {
+                public void onClick(@NonNull View v) {
                     if (checkEmpty()) {
                         doLogin(txtUsername.getText().toString(),
                                 txtPassword.getText().toString());
@@ -108,7 +109,7 @@ public class LoginActivity extends BaseActivity {
 
             new AsyncHelper(serverIndex, "login", postMessage) {
                 @Override
-                protected void onPostExecute(JSONObject jsonObject) {
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             int status = jsonObject.getInt("status");
@@ -176,7 +177,7 @@ public class LoginActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_settings) {

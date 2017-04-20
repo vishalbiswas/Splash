@@ -36,7 +36,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:autoLink="web"
-                android:text="Very very long thread content. It can be as long as you want it. Currently, we don't have any restrictions on it."
                 android:textAppearance="@android:style/TextAppearance.Medium" />
 
             <LinearLayout
@@ -48,8 +47,7 @@
                 <TextView
                     android:id="@+id/threadCreator"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Creator" />
+                    android:layout_height="wrap_content" />
 
                 <View
                     android:layout_width="1dp"
@@ -61,16 +59,14 @@
                 <TextView
                     android:id="@+id/threadTime"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Last Modified Time" />
+                    android:layout_height="wrap_content" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/threadSubforum"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:text="Name of sub forum" />
+                android:layout_gravity="center_horizontal" />
         </LinearLayout>
 
         <LinearLayout

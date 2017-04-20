@@ -11,6 +11,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.util.SparseArray;
 import android.widget.Toast;
@@ -32,14 +34,14 @@ import java.util.Set;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
+    @Nullable
     private static Locale locale;
     private static HTTP_CODE regNameStatus;
     private static HTTP_CODE regEmailStatus;
-    /**
-     * Run updateServerList after adding or deleting from it
-     */
+
     public static final ServerList servers = ServerList.getInstance();
     public static final SparseArray<UserIdentity> identities = new SparseArray<>();
+    @Nullable
     public static UserIdentity defaultIdentity;
 
     private static final AndDown andDown = new AndDown();
@@ -58,24 +60,25 @@ public class GlobalFunctions extends Application {
         GlobalFunctions.regNameStatus = regNameStatus;
     }
 
-    public static void lookupLocale(Context con) {
+    public static void lookupLocale(@NonNull Context con) {
         if (locale == null) initializeData(con);
         final Configuration config = new Configuration();
         config.locale = locale;
         ((Activity) con).getBaseContext().getResources().updateConfiguration(config, ((Activity) con).getBaseContext().getResources().getDisplayMetrics());
     }
 
-    public static void initializeData(Context context) {
+    public static void initializeData(@NonNull Context context) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         locale = new Locale(preferences.getString("locale", "en"));
     }
 
-    public static void launchSettings(Context context) {
+    public static void launchSettings(@NonNull Context context) {
         final Intent intent = new Intent(context, SettingsActivity.class);
         context.startActivity(intent);
     }
 
-    public static void showSnack(Context context) {
+    public static void showSnack(@NonNull Context context) {
+        assert locale != null;
         if (!PreferenceManager.getDefaultSharedPreferences(context).getString("locale", "en").equals(locale.getLanguage())) {
             Snackbar.make(((Activity) context).findViewById(R.id.frag), R.string.restartNotify, Snackbar.LENGTH_LONG).show();
         }
@@ -116,7 +119,7 @@ public class GlobalFunctions extends Application {
         defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_news));
         servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
-            public void onAdd(ServerList.SplashSource source) {
+            public void onAdd(@NonNull ServerList.SplashSource source) {
                 Set<String> sourceKeys = new HashSet<>(getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>()));
                 if (!sourceKeys.contains(source.getName())) {
                     sourceKeys.add(source.getName());
@@ -129,7 +132,7 @@ public class GlobalFunctions extends Application {
             }
 
             @Override
-            public void onRemove(ServerList.SplashSource source) {
+            public void onRemove(@NonNull ServerList.SplashSource source) {
                 Set<String> sourceKeys = new HashSet<>(getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>()));
                 sourceKeys.remove(source.getName());
                 getSharedPreferences("settings", Context.MODE_PRIVATE).edit().putStringSet("sourceKeys", sourceKeys).apply();
@@ -137,7 +140,7 @@ public class GlobalFunctions extends Application {
             }
 
             @Override
-            public void onUpdate(ServerList.SplashSource previousSource, ServerList.SplashSource updatedSource) {
+            public void onUpdate(@NonNull ServerList.SplashSource previousSource, @NonNull ServerList.SplashSource updatedSource) {
                 onRemove(previousSource);
                 onAdd(updatedSource);
             }
@@ -156,6 +159,7 @@ public class GlobalFunctions extends Application {
             this.activity = activity;
         }
 
+        @Nullable
         @Override
         protected Void doInBackground(final Integer... params) {
             source = GlobalFunctions.servers.get(params[0]);

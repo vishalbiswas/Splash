@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -35,7 +36,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -50,7 +50,6 @@ import vishal.chetan.splash.Thread;
 import vishal.chetan.splash.ThreadsAdapter;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncArrayHelper;
-import vishal.chetan.splash.asyncs.AsyncHelper;
 
 public class NewsFeed extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView threadsListView;
@@ -63,6 +62,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private final static int login_result_id = 1;
     private final static int create_thread_result_id = 2;
     private final static int update_user_result_id = 3;
+    private final static int NUMBER_OF_THREADS=50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,19 +120,6 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
 
         updateOptionsMenu();
 
-        nav_view.getHeaderView(0).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (previousItemId < 0) {
-                    return;
-                } else if (GlobalFunctions.identities.get(previousItemId) == null) {
-                    startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", previousItemId), login_result_id);
-                } else {
-                    startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId));
-                }
-            }
-        });
-
         refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refreshThreads);
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -140,13 +127,13 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 if (previousItemId == -1) {
                     for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                         if (i == GlobalFunctions.servers.size() - 1) {
-                            new FetchThreads(i, 50).execute();
+                            new FetchThreads(i, NUMBER_OF_THREADS).execute();
                         } else {
-                            new FetchThreads(i, 50, false).execute();
+                            new FetchThreads(i, NUMBER_OF_THREADS, false).execute();
                         }
                     }
                 } else {
-                    new FetchThreads(previousItemId, 50).execute();
+                    new FetchThreads(previousItemId, NUMBER_OF_THREADS).execute();
                 }
             }
         });
@@ -169,7 +156,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         getMenuInflater().inflate(R.menu.menu_news_feed, menu);
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
@@ -181,7 +168,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
 
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
@@ -189,7 +176,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 String query = intent.getStringExtra(SearchManager.QUERY);
                 new AsyncArrayHelper(serverIndex, "search/" + query) {
                     @Override
-                    protected void onPostExecute(JSONArray jsonArray) {
+                    protected void onPostExecute(@Nullable JSONArray jsonArray) {
                         if (jsonArray == null) {
                             Snackbar.make(nav_view, R.string.errUnknown, Snackbar.LENGTH_SHORT).show();
                             return;
@@ -218,7 +205,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         switch (id) {
@@ -260,12 +247,20 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
 
     private void updateNavHeader(final int itemId) {
         UserIdentity identity;
+        View header = nav_view.getHeaderView(0);
         if (itemId < 0) {
+            header.setOnClickListener(null);
             identity = GlobalFunctions.defaultIdentity;
             fab.setVisibility(View.GONE);
         } else {
             identity = GlobalFunctions.identities.get(itemId);
             if (identity != null) {
+                header.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId));
+                    }
+                });
                 fab.setVisibility(View.VISIBLE);
             } else {
                 if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
@@ -281,11 +276,17 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 }).show();
                     }
                 }
+                header.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
+                    }
+                });
                 return;
             }
         }
-        View header = nav_view.getHeaderView(0);
         ImageView profpic = (ImageView) header.findViewById(R.id.headerPic);
+        assert identity != null;
         if (identity.getProfpic() != null) {
             profpic.setImageBitmap(circleCrop(identity.getProfpic()));
         } else {
@@ -293,20 +294,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         }
         ((TextView) header.findViewById(R.id.headerUser)).setText(identity.getUsername());
         ((TextView) header.findViewById(R.id.headerEmail)).setText(identity.getEmail());
-        if (itemId >= 0) {
-            header.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivityForResult(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", itemId), update_user_result_id);
-                }
-            });
-        } else {
-            header.setOnClickListener(null);
-        }
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
         switch (requestCode) {
             case login_result_id:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
@@ -327,7 +318,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         }
     }
 
-    private static Bitmap circleCrop(Bitmap source) {
+    @Nullable
+    private static Bitmap circleCrop(@Nullable Bitmap source) {
         if (source == null) return null;
 
         int size = Math.min(source.getWidth(), source.getHeight());
@@ -347,8 +339,9 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     }
 
     private class FetchThreads extends AsyncTask<Void, Void, Void> {
-        int serverIndex;
-        String path;
+        final int serverIndex;
+        @NonNull
+        final String path;
         boolean refreshStatus = true;
 
         FetchThreads(int serverIndex, int numberOfThreads) {
@@ -362,6 +355,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             this.refreshStatus = resetRefreshStatus;
         }
 
+        @Nullable
         @Override
         protected Void doInBackground(Void... params) {
             ServerList.SplashSource source = GlobalFunctions.servers.get(serverIndex);

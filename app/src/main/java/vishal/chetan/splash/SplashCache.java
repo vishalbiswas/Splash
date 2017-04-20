@@ -2,6 +2,7 @@ package vishal.chetan.splash;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 import android.util.Base64;
@@ -28,9 +29,9 @@ public class SplashCache {
         }
 
         private static final SparseArray<LongSparseArray<UserIdentity>> usernames = new SparseArray<>();
-        private static final SparseArray<Stack<OnGetUserListener>> listeners = new SparseArray<>();
 
-        public static UserIdentity getUser(final int serverIndex, final long uid, final OnGetUserListener listener) {
+        @Nullable
+        public static UserIdentity getUser(final int serverIndex, final long uid, @Nullable final OnGetUserListener listener) {
             Log.e(TAG, String.format("getting uid:%s server=%s", uid, serverIndex));
             LongSparseArray<UserIdentity> serverArray = usernames.get(serverIndex);
             UserIdentity user = null;
@@ -43,7 +44,7 @@ public class SplashCache {
             if (user == null) {
                 new AsyncHelper(serverIndex, "getuser/" + uid) {
                     @Override
-                    protected void onPostExecute(JSONObject jsonObject) {
+                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
                         if (jsonObject != null) {
                             try {
                                 byte[] blob = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
@@ -69,53 +70,33 @@ public class SplashCache {
             return user;
         }
 
-        public static void setUser(int serverIndex, UserIdentity user) {
+        static void setUser(int serverIndex, @NonNull UserIdentity user) {
             LongSparseArray<UserIdentity> serverArray = usernames.get(serverIndex);
             if (serverArray == null) {
                 serverArray = new LongSparseArray<>();
                 usernames.append(serverIndex, serverArray);
             }
             serverArray.append(user.getUid(), user);
-            /*while (!listeners.get(serverIndex).isEmpty()) {
-                listeners.get(serverIndex).pop().onGetUser(user.getUid(), user);
-            }*/
-        }
-
-        public static void addGetUserListener(int serverIndex, OnGetUserListener listener) {
-            Stack<OnGetUserListener> serverListener = listeners.get(serverIndex);
-            if (serverListener == null) {
-                serverListener = new Stack<>();
-                listeners.append(serverIndex, serverListener);
-            }
-            serverListener.add(listener);
         }
     }
 
     public static class ThreadCache {
-        public static void setFilterListener(OnThreadFilteredListener filterListener) {
-            ThreadCache.filterListener = filterListener;
-        }
-
         public interface OnThreadModifiedListener {
             void onModify(Thread thread);
         }
 
-        public interface OnThreadFilteredListener {
-            // always adds an item to start
-            void onFilter(int position);
-        }
-
         private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
+        @Nullable
         private static OnThreadModifiedListener modifyListener;
-        private static OnThreadFilteredListener filterListener;
 
         @Nullable
-        public static ArrayList<Thread> getAllForIndex(final int filterIndex) {
+        static ArrayList<Thread> getAllForIndex(final int filterIndex) {
             //// FIXME: 3/13/17 demo code to be removed
             add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
             if (filterIndex == -1) {
                 ArrayList<Thread> allThreads = new ArrayList<>();
                 for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    //noinspection ConstantConditions
                     allThreads.addAll(getAllForIndex(i));
                 }
                 Collections.sort(allThreads, new Thread.ModificationTimeComparator());
@@ -134,14 +115,14 @@ public class SplashCache {
             }
         }
 
-        public static void add(final Thread thread) {
+        public static void add(@NonNull final Thread thread) {
             String postMessage = String.format("title=%s&content=%s&author=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
             new AsyncHelper(thread.getServerIndex(), "post", postMessage) {
                 @Override
-                protected void onPostExecute(JSONObject jsonObject) {
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     Thread newThread = null;
                     if (jsonObject != null) {
                         try {
@@ -171,14 +152,14 @@ public class SplashCache {
             }.execute();
         }
 
-        public static void set(final Thread thread) {
+        public static void set(@NonNull final Thread thread) {
             String postMessage = String.format("threadid=%s&title=%s&content=%s&author=%s&topicid=%s", thread.getThreadId(), thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
             new AsyncHelper(thread.getServerIndex(), "editpost", postMessage) {
                 @Override
-                protected void onPostExecute(JSONObject jsonObject) {
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     Thread newThread = null;
                     if (jsonObject != null) {
                         newThread = thread;
@@ -218,7 +199,7 @@ public class SplashCache {
             void onUpload(long attachId);
         }
 
-        private static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
+        private final static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
 
         public static Bitmap get(int serverIndex, long attachId) {
             if (attachId < 0) {
@@ -241,7 +222,7 @@ public class SplashCache {
         static private void loadImage(final int serverIndex, final long attachId) {
             new AsyncHelper(serverIndex, "attachment/" + attachId) {
                 @Override
-                protected void onPostExecute(JSONObject jsonObject) {
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             byte[] blob = Base64.decode(jsonObject.getString("image"), Base64.DEFAULT);
@@ -257,7 +238,7 @@ public class SplashCache {
             }.execute();
         }
 
-        public static void setImage(int serverIndex, long attachId, Bitmap image) {
+        static void setImage(int serverIndex, long attachId, Bitmap image) {
             if (attachId < 0) {
                 return;
             }
@@ -270,12 +251,12 @@ public class SplashCache {
         }
 
 
-        public static void upload(final int serverIndex, final Bitmap image, final OnUploadCompleteListener listener) {
+        public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             image.compress(Bitmap.CompressFormat.PNG, 90, out);
             new AsyncHelper(serverIndex, "upload", "attach=" + Base64.encodeToString(out.toByteArray(), Base64.DEFAULT)) {
                 @Override
-                protected void onPostExecute(JSONObject jsonObject) {
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     long attachId = -1;
                     if (jsonObject != null) {
                         try {

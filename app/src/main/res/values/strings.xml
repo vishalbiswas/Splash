@@ -96,4 +96,18 @@
     <string name="strCommentFetchFailed">Unable to fetch comments</string>
     <string name="errPost">An error occurred while posting</string>
     <string name="errAttach">An error occurred while uploading attachment</string>
+    <string name="strContent">Content</string>
+    <string name="strTitle">Title</string>
+    <string name="strAttachImage">Attach Image</string>
+    <string name="strConfirmPass">Confirm Password</string>
+    <string name="strForum">Forum</string>
+    <string name="strAuthor">Author</string>
+    <string name="strThreadDate">Thread Date</string>
+    <string name="strCreated">Created:</string>
+    <string name="strModified">Last Modified:</string>
+    <string name="strThreadId">Thread ID</string>
+    <string name="strComments">Comments</string>
+    <string name="strCreator">Creator</string>
+    <string name="strModifiedTime">Last Modified Time</string>
+    <string name="strSearch">Search</string>
 </resources>

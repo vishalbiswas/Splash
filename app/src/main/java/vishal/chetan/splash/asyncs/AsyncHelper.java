@@ -2,6 +2,8 @@ package vishal.chetan.splash.asyncs;
 
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +20,7 @@ import vishal.chetan.splash.GlobalFunctions;
 public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
     private final int serverIndex;
     private final String pageUrl;
+    @Nullable
     private String postMessage = null;
 
     @Override
@@ -28,12 +31,13 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
         this.pageUrl = pageUrl;
     }
 
-    public AsyncHelper(int serverIndex, String pageUrl, String postMessage) {
+    public AsyncHelper(int serverIndex, String pageUrl, @Nullable String postMessage) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
         this.postMessage = postMessage;
     }
 
+    @Nullable
     @Override
     protected JSONObject doInBackground(Void... params) {
         String serverAddress;
@@ -75,7 +79,7 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                     return new JSONObject("{status:5,msg:\"Internal error");
                 }
 
-            } catch (IOException | JSONException e) {
+            } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();
             }
         } else {

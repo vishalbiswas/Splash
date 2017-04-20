@@ -2,6 +2,8 @@ package vishal.chetan.splash.android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
@@ -9,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
-import android.text.util.Linkify;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -48,6 +49,7 @@ public class ViewThreadActivity extends BaseActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //noinspection ConstantConditions
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
@@ -97,7 +99,7 @@ public class ViewThreadActivity extends BaseActivity {
     private void fetchComments() {
         new AsyncArrayHelper(serverIndex, "comments/" + threadId) {
             @Override
-            protected void onPostExecute(JSONArray jsonArray) {
+            protected void onPostExecute(@Nullable JSONArray jsonArray) {
                 if (jsonArray != null) {
                     thread.clearComments();
                     for(int i = 0; i < jsonArray.length(); ++i) {
@@ -127,7 +129,7 @@ public class ViewThreadActivity extends BaseActivity {
         ((HtmlTextView) findViewById(R.id.threadContent)).setHtml(thread.getContent());
         UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
             @Override
-            public void onGetUser(UserIdentity user) {
+            public void onGetUser(@NonNull UserIdentity user) {
                 ((TextView) findViewById(R.id.threadCreator)).setText(user.getUsername());
             }
         });
@@ -146,7 +148,7 @@ public class ViewThreadActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
         switch (requestCode) {
             case edit_thread_code:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == serverIndex && data.getLongExtra("threadId", -1) == threadId) {
@@ -163,27 +165,30 @@ public class ViewThreadActivity extends BaseActivity {
 
     class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
         class ViewHolder extends RecyclerView.ViewHolder {
+            @NonNull
             final HtmlTextView txtComment;
+            @NonNull
             final TextView txtCommenter;
-            ViewHolder(View view) {
+            ViewHolder(@NonNull View view) {
                 super(view);
                 txtComment = (HtmlTextView) view.findViewById(R.id.txtComment);
                 txtCommenter = (TextView) view.findViewById(R.id.txtCommenter);
             }
         }
 
+        @NonNull
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             return new ViewHolder(getLayoutInflater().inflate(R.layout.list_item_comment, parent, false));
         }
 
         @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
             Thread.Comment comment = thread.getComments().valueAt(position);
             holder.txtComment.setHtml(GlobalFunctions.parseMarkdown(comment.getText()));
             UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, comment.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
                 @Override
-                public void onGetUser(UserIdentity user) {
+                public void onGetUser(@NonNull UserIdentity user) {
                     holder.txtCommenter.setText(user.getUsername());
                 }
             });

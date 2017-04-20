@@ -16,7 +16,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="top"
-        android:hint="Content"
+        android:hint="@string/strContent"
         android:inputType="textMultiLine" />
 
     <org.sufficientlysecure.htmltextview.HtmlTextView

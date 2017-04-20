@@ -1,5 +1,8 @@
 package vishal.chetan.splash;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +35,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             this.url = url;
         }
 
+        @Nullable
         public String getTopic(int topicid) {
             for (SplashTopic topic : this.topics) {
                 if (topic.topicid == topicid) {
@@ -41,6 +45,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             return null;
         }
 
+        @NonNull
         public ArrayList<String> getTopics() {
             ArrayList<String> topics = new ArrayList<>();
             for (SplashTopic topic : this.topics) {

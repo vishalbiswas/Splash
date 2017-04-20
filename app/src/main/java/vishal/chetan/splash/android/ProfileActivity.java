@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.util.Base64;
 import android.view.Menu;
@@ -36,13 +39,14 @@ public class ProfileActivity extends BaseActivity {
     private FieldValidator fieldValidator;
 
     private ImageView imgPic;
+    @Nullable
     private Bitmap profPic;
     private TextView FName;
     private TextView LName;
     private TextView Email;
     private EditText editPass, editPass2;
 
-    private void setError(int resId) {
+    private void setError(@StringRes int resId) {
         View view = findViewById(android.R.id.content);
         assert view != null;
         Snackbar.make(view, getString(resId), Snackbar.LENGTH_SHORT).show();
@@ -100,7 +104,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
         if (requestCode == this.requestCode && resultCode == Activity.RESULT_OK)
             try {
                 InputStream stream = getContentResolver().openInputStream(data.getData());
@@ -124,7 +128,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         final int id = item.getItemId();
 
         switch (id) {
@@ -132,7 +136,7 @@ public class ProfileActivity extends BaseActivity {
                 GlobalFunctions.launchSettings(ProfileActivity.this);
                 break;
             case R.id.menuSave:
-                if (Email.getText().toString() != GlobalFunctions.identities.get(serverIndex).getEmail()) {
+                if (!Email.getText().toString().equals(GlobalFunctions.identities.get(serverIndex).getEmail())) {
                     fieldValidator.validateEmail(Email.getText().toString());
                 }
                 if (GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
@@ -145,7 +149,7 @@ public class ProfileActivity extends BaseActivity {
                 }
                 String pass = editPass.getText().toString();
                 String pass2 = editPass2.getText().toString();
-                String postMessage = String.format("uid=%s&fname=%s&lname=%s&email=%s", GlobalFunctions.identities.get(serverIndex).getUid(), FName.getText(), LName.getText(), Email.getText());;
+                String postMessage = String.format("uid=%s&fname=%s&lname=%s&email=%s", GlobalFunctions.identities.get(serverIndex).getUid(), FName.getText(), LName.getText(), Email.getText());
                 if (!pass.isEmpty()) {
                     if (!pass.equals(pass2)) {
                         setError(R.string.errPassNoMatch);
@@ -164,7 +168,7 @@ public class ProfileActivity extends BaseActivity {
                 }
                 new AsyncHelper(serverIndex, "update", postMessage) {
                     @Override
-                    protected void onPostExecute(JSONObject jsonObject) {
+                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
                         if (jsonObject != null) {
                             try {
                                 switch (jsonObject.getInt("status")) {
@@ -211,22 +215,22 @@ public class ProfileActivity extends BaseActivity {
 
     private class ProfileErrorProvider implements FieldValidator.ErrorProvider {
         @Override
-        public void setErrorUsername(int resId) {
+        public void setErrorUsername(@StringRes int resId) {
             //Don't need it
         }
 
         @Override
-        public void setErrorEmail(int resId) {
+        public void setErrorEmail(@StringRes int resId) {
             Email.setError(getString(resId));
         }
 
         @Override
-        public void setErrorPassword(int resId) {
+        public void setErrorPassword(@StringRes int resId) {
             editPass.setError(getString(resId));
         }
 
         @Override
-        public void setErrorSnack(int resId) {
+        public void setErrorSnack(@StringRes int resId) {
             setError(resId);
         }
     }

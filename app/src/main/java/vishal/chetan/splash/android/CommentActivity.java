@@ -17,10 +17,10 @@ import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
 
 public class CommentActivity extends BaseActivity {
-    int serverIndex;
-    long threadId;
-    HtmlTextView previewPost;
-    EditText editPost;
+    private int serverIndex;
+    private long threadId;
+    private HtmlTextView previewPost;
+    private EditText editPost;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

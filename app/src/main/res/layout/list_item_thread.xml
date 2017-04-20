@@ -29,7 +29,6 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:lines="1"
-            android:text="Demo Title"
             android:textSize="24sp"
             android:textStyle="bold" />
 
@@ -38,8 +37,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
-            android:lines="2"
-            android:text="Demo Content that will span multiple lines. This will show content of the thread upto a few lines." />
+            android:lines="2" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,7 +49,6 @@
                 android:id="@+id/creator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Username"
                 android:textStyle="italic" />
 
             <TextView
@@ -59,8 +56,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:gravity="end"
-                android:text="Last Modified Time" />
+                android:gravity="end" />
         </LinearLayout>
 
     </LinearLayout>

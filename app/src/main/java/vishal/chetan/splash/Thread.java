@@ -1,8 +1,9 @@
 package vishal.chetan.splash;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
@@ -13,7 +14,7 @@ public class Thread {
 
     final static class ModificationTimeComparator implements Comparator<Thread> {
         @Override
-        public int compare(Thread o1, Thread o2) {
+        public int compare(@NonNull Thread o1, @NonNull Thread o2) {
             return o1.getMtime().compareTo(o2.getMtime());
         }
     }
@@ -46,12 +47,14 @@ public class Thread {
 
     private String rawContent;
     private final long creator_id;
+    @Nullable
     private final Date ctime;
 
-    public void setMtime(Date mtime) {
+    public void setMtime(@Nullable Date mtime) {
         this.mtime = mtime;
     }
 
+    @Nullable
     private Date mtime;
     private final int serverIndex;
     private int topicId;
@@ -66,7 +69,7 @@ public class Thread {
 
     private long attachId;
 
-    public Thread(long threadId, String title, String content, long creator_id, Date ctime, Date mtime, int serverIndex, int topicId, long attachId) {
+    public Thread(long threadId, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int serverIndex, int topicId, long attachId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
@@ -109,7 +112,7 @@ public class Thread {
         this.attachId = -1;
     }
 
-    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, Date ctime, Date mtime, int topicId) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int topicId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
@@ -122,6 +125,7 @@ public class Thread {
         this.attachId = -1;
     }
 
+    @NonNull
     public LongSparseArray<Comment> getComments() {
         return comments;
     }
@@ -130,13 +134,13 @@ public class Thread {
         return comments.get(commentId);
     }
 
-    public void setComment(Comment comment) {
+    public void setComment(@NonNull Comment comment) {
         if (comment.getServerIndex() == serverIndex && comment.getThreadId() == threadId) {
             comments.put(comment.getCommentId(), comment);
         }
     }
 
-    public void addComment(Comment comment) {
+    public void addComment(@NonNull Comment comment) {
         if (comment.getServerIndex() == serverIndex && comment.getThreadId() == threadId) {
             comments.append(comment.getCommentId(), comment);
         }
@@ -160,10 +164,12 @@ public class Thread {
         return creator_id;
     }
 
+    @Nullable
     public Date getCtime() {
         return ctime;
     }
 
+    @Nullable
     public Date getMtime() {
         return mtime;
     }
@@ -193,7 +199,7 @@ public class Thread {
             return mtime;
         }
 
-        public long getThreadId() {
+        long getThreadId() {
             return threadId;
         }
 
@@ -202,9 +208,9 @@ public class Thread {
         }
 
         private String text;
-        private long creator_id;
-        private long commentId;
-        private Date ctime;
+        final private long creator_id;
+        final private long commentId;
+        final private Date ctime;
 
         public void setText(String text) {
             this.text = text;
@@ -215,8 +221,8 @@ public class Thread {
         }
 
         private Date mtime;
-        private long threadId;
-        private int serverIndex;
+        final private long threadId;
+        final private int serverIndex;
 
         public Comment(String text, long creator_id, long commentId, Date ctime, Date mtime, long threadId, int serverIndex) {
             this.text = text;

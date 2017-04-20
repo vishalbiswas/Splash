@@ -2,6 +2,7 @@ package vishal.chetan.splash;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
@@ -27,7 +28,7 @@ public class ThreadInfoActivity extends BaseActivity {
         final TextView author = (TextView) findViewById(R.id.txtAuthor);
         UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
             @Override
-            public void onGetUser(UserIdentity user) {
+            public void onGetUser(@NonNull UserIdentity user) {
                 author.setText(user.getUsername());
             }
         });

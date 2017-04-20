@@ -20,7 +20,7 @@
         android:id="@+id/editPostTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Title"
+        android:hint="@string/strTitle"
         android:inputType="text"
         android:maxLines="1" />
 
@@ -30,7 +30,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:gravity="top"
-        android:hint="Content"
+        android:hint="@string/strContent"
         android:inputType="textMultiLine" />
 
     <org.sufficientlysecure.htmltextview.HtmlTextView
@@ -46,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="Attach Image"
+        android:text="@string/strAttachImage"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <android.support.v7.widget.AppCompatButton

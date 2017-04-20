@@ -2,15 +2,15 @@ package vishal.chetan.splash.asyncs;
 
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -28,6 +28,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
         this.pageUrl = pageUrl;
     }
 
+    @Nullable
     @Override
     protected JSONArray doInBackground(Void... params) {
         String serverAddress;
@@ -56,7 +57,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
                     bufferedReader.close();
                     return (new JSONArray(response.toString()));
                 }
-            } catch (IOException | JSONException e) {
+            } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
