@@ -93,6 +93,17 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
 
     private ServerList() {}
 
+
+    public ArrayList<SplashSource> getEnabled() {
+        ArrayList<SplashSource> enabledSources = new ArrayList<>();
+        for(SplashSource source : instance) {
+            if (source.isEnabled()) {
+                enabledSources.add(source);
+            }
+        }
+        return enabledSources;
+    }
+
     @Override
     public SplashSource set(int index, SplashSource element) {
         SplashSource previousElement = super.set(index, element);

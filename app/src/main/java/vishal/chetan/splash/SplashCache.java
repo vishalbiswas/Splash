@@ -91,8 +91,7 @@ public class SplashCache {
 
         @Nullable
         static ArrayList<Thread> getAllForIndex(final int filterIndex) {
-            //// FIXME: 3/13/17 demo code to be removed
-            add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
+            //add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
             if (filterIndex == -1) {
                 ArrayList<Thread> allThreads = new ArrayList<>();
                 for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
@@ -116,6 +115,17 @@ public class SplashCache {
         }
 
         public static void add(@NonNull final Thread thread) {
+            LongSparseArray<Thread> threadList = threads.get(thread.getServerIndex());
+            if (threadList == null) {
+                threadList = new LongSparseArray<>();
+                threadList.append(thread.getThreadId(), thread);
+                threads.append(thread.getServerIndex(), threadList);
+            } else {
+                threadList.append(thread.getThreadId(), thread);
+            }
+        }
+
+        public static void create(@NonNull final Thread thread) {
             String postMessage = String.format("title=%s&content=%s&author=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
@@ -127,17 +137,10 @@ public class SplashCache {
                     if (jsonObject != null) {
                         try {
                             newThread = new Thread(jsonObject.getLong("threadid"), thread.getTitle(),
-                                    thread.getRawContent(), thread.getCreatorID(), new Date(jsonObject.getString("ctime")),
-                                    new Date(jsonObject.getString("mtime")), thread.getServerIndex(),
+                                    thread.getRawContent(), thread.getCreatorID(), GlobalFunctions.parseDate(jsonObject.getString("ctime")),
+                                    GlobalFunctions.parseDate(jsonObject.getString("mtime")), thread.getServerIndex(),
                                     thread.getTopicId(), thread.getAttachId());
-                            LongSparseArray<Thread> threadList = threads.get(thread.getServerIndex());
-                            if (threadList == null) {
-                                threadList = new LongSparseArray<>();
-                                threadList.append(newThread.getThreadId(), newThread);
-                                threads.append(newThread.getServerIndex(), threadList);
-                            } else {
-                                threadList.append(newThread.getThreadId(), newThread);
-                            }
+                            add(newThread);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -164,7 +167,7 @@ public class SplashCache {
                     if (jsonObject != null) {
                         newThread = thread;
                         try {
-                            newThread.setMtime(new Date(jsonObject.getString("mtime")));
+                            newThread.setMtime(GlobalFunctions.parseDate(jsonObject.getString("mtime")));
                             LongSparseArray<Thread> threadList = threads.get(newThread.getServerIndex());
                             if (threadList == null) {
                                 threadList = new LongSparseArray<>();
@@ -229,7 +232,7 @@ public class SplashCache {
                             Bitmap image = BitmapFactory.decodeByteArray(blob, 0, blob.length);
                             setImage(serverIndex, attachId, image);
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, "error decoding image");
                         }
                     } else {
                         Log.e(TAG, "Unknown error");
@@ -252,9 +255,11 @@ public class SplashCache {
 
 
         public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            image.compress(Bitmap.CompressFormat.PNG, 90, out);
-            new AsyncHelper(serverIndex, "upload", "attach=" + Base64.encodeToString(out.toByteArray(), Base64.DEFAULT)) {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream.toByteArray();
+            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            new AsyncHelper(serverIndex, "upload", "attach=" + encoded) {
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     long attachId = -1;

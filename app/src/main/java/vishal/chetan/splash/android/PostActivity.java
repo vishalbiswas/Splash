@@ -117,12 +117,12 @@ public class PostActivity extends BaseActivity {
                                         Snackbar.make(btnSubmit, R.string.errAttach, Snackbar.LENGTH_LONG).show();
                                     } else {
                                         thread.setAttachId(attachId);
-                                        SplashCache.ThreadCache.add(thread);
+                                        SplashCache.ThreadCache.create(thread);
                                     }
                                 }
                             });
                         } else {
-                            SplashCache.ThreadCache.add(thread);
+                            SplashCache.ThreadCache.create(thread);
                         }
                     }
 

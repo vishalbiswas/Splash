@@ -42,6 +42,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.microedition.khronos.opengles.GL;
+
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
@@ -62,7 +64,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private final static int login_result_id = 1;
     private final static int create_thread_result_id = 2;
     private final static int update_user_result_id = 3;
-    private final static int NUMBER_OF_THREADS=50;
+    private final static int NUMBER_OF_THREADS = 50;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,14 +128,12 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             public void onRefresh() {
                 if (previousItemId == -1) {
                     for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
-                        if (i == GlobalFunctions.servers.size() - 1) {
+                        if (GlobalFunctions.servers.get(i).isEnabled()) {
                             new FetchThreads(i, NUMBER_OF_THREADS).execute();
-                        } else {
-                            new FetchThreads(i, NUMBER_OF_THREADS, false).execute();
                         }
                     }
                 } else {
-                    new FetchThreads(previousItemId, NUMBER_OF_THREADS).execute();
+                    new FetchThreads(serverIndex, NUMBER_OF_THREADS).execute();
                 }
             }
         });
@@ -184,8 +184,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         final ArrayList<Thread> threads = new ArrayList<>();
                         for (int i = 0; i < jsonArray.length(); ++i) {
                             try {
-                            JSONObject thread = jsonArray.getJSONObject(i);
-                                threads.add(new Thread(thread.getLong("threadId"), serverIndex, thread.getString("title"), thread.getString("content"), thread.getLong("author"), new Date(thread.getString("ctime")), new Date(thread.getString("mtime")), thread.getInt("topicid")));
+                                JSONObject thread = jsonArray.getJSONObject(i);
+                                threads.add(new Thread(thread.getLong("threadId"), serverIndex,
+                                        thread.getString("title"), thread.getString("content"),
+                                        thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
+                                        GlobalFunctions.parseDate(thread.getString("mtime")), thread.getInt("topicid")));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -342,22 +345,21 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         final int serverIndex;
         @NonNull
         final String path;
-        boolean refreshStatus = true;
 
         FetchThreads(int serverIndex, int numberOfThreads) {
             this.serverIndex = serverIndex;
-            path = "threads/" + numberOfThreads;
-        }
-
-        FetchThreads(int serverIndex, int numberOfThreads, boolean resetRefreshStatus) {
-            this.serverIndex = serverIndex;
-            path = "threads/" + numberOfThreads;
-            this.refreshStatus = resetRefreshStatus;
+            path = "/threads/" + numberOfThreads;
         }
 
         @Nullable
         @Override
         protected Void doInBackground(Void... params) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    refreshLayout.setRefreshing(true);
+                }
+            });
             ServerList.SplashSource source = GlobalFunctions.servers.get(serverIndex);
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
@@ -382,13 +384,17 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         JSONArray data = new JSONArray(response.toString());
                         for (int i = 0; i < data.length(); ++i) {
                             JSONObject thread = data.getJSONObject(i);
-                            SplashCache.ThreadCache.add(new Thread(thread.getLong("threadId"), serverIndex, thread.getString("title"), thread.getString("content"), thread.getLong("author"), new Date(thread.getString("ctime")), new Date(thread.getString("mtime")), thread.getInt("topicid")));
+                            SplashCache.ThreadCache.add(new Thread(thread.getLong("threadid"),
+                                    thread.getString("title"), thread.getString("content"),
+                                    thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
+                                    GlobalFunctions.parseDate(thread.getString("mtime")), serverIndex,
+                                    thread.getInt("topicid"), thread.getLong("attachid")));
                         }
                         if (previousItemId == -1 || previousItemId == serverIndex) {
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    threadsListView.getAdapter().notifyDataSetChanged();
+                                    threadsListView.swapAdapter(new ThreadsAdapter(NewsFeed.this, serverIndex), false);
                                 }
                             });
                         }
@@ -400,9 +406,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (refreshStatus) {
-                        refreshLayout.setRefreshing(false);
-                    }
+                    refreshLayout.setRefreshing(false);
                 }
             });
             return null;

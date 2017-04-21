@@ -28,6 +28,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -149,6 +152,17 @@ public class GlobalFunctions extends Application {
 
     public static String parseMarkdown(String data) {
         return andDown.markdownToHtml(data, andDownExts, 0);
+    }
+
+    public static Date parseDate(String date) {
+        assert locale != null;
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", locale);
+        try {
+            return format.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static class CheckSource extends AsyncTask<Integer, Void, Void> {
