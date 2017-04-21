@@ -13,12 +13,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Stack;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
+import vishal.chetan.splash.asyncs.AsyncRawHelper;
 
 import static android.content.ContentValues.TAG;
 
@@ -223,16 +227,24 @@ public class SplashCache {
         }
 
         static private void loadImage(final int serverIndex, final long attachId) {
-            new AsyncHelper(serverIndex, "attachment/" + attachId) {
+            new AsyncRawHelper(serverIndex, "attachment/" + attachId, false) {
+                @Override
+                protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
+                    Bitmap image = BitmapFactory.decodeStream(rawInputStream);
+                    Log.e(TAG, rawInputStream.toString());
+                    setImage(serverIndex, attachId, image);
+                    return new JSONObject("{status:0}");
+                }
+
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
-                            byte[] blob = Base64.decode(jsonObject.getString("image"), Base64.DEFAULT);
-                            Bitmap image = BitmapFactory.decodeByteArray(blob, 0, blob.length);
-                            setImage(serverIndex, attachId, image);
+                            if (jsonObject.getInt("status") != 0) {
+                                Log.e(TAG, "Fetch image failed");
+                            }
                         } catch (JSONException e) {
-                            Log.e(TAG, "error decoding image");
+                            e.printStackTrace();
                         }
                     } else {
                         Log.e(TAG, "Unknown error");
@@ -255,11 +267,17 @@ public class SplashCache {
 
 
         public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            image.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream.toByteArray();
-            String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            new AsyncHelper(serverIndex, "upload", "attach=" + encoded) {
+            new AsyncRawHelper(serverIndex, "upload", true) {
+                @Override
+                protected void workOutput(OutputStream rawOutputStream) throws IOException {
+                    rawOutputStream.write("Content-Disposition: form-data; name=\"attach\"; filename=\"attach.png\"\r\n".getBytes());
+                    rawOutputStream.write("Content-Type: image/png\r\n".getBytes());
+                    rawOutputStream.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());
+                    image.compress(Bitmap.CompressFormat.PNG, 100, rawOutputStream);
+                    rawOutputStream.write("\r\n".getBytes());
+                    rawOutputStream.flush();
+                }
+
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     long attachId = -1;

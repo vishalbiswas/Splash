@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -17,24 +18,17 @@ import java.net.URL;
 
 import vishal.chetan.splash.GlobalFunctions;
 
-public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
+public abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
+    public static final String boundary = "mainBoundary";
+
     private final int serverIndex;
     private final String pageUrl;
-    @Nullable
-    private String postMessage = null;
+    private boolean isPost = false;
 
-    @Override
-    protected abstract void onPostExecute(JSONObject jsonObject);
-
-    public AsyncHelper(int serverIndex, String pageUrl) {
+    public AsyncRawHelper(int serverIndex, String pageUrl, boolean isPost) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
-    }
-
-    public AsyncHelper(int serverIndex, String pageUrl, @Nullable String postMessage) {
-        this.serverIndex = serverIndex;
-        this.pageUrl = pageUrl;
-        this.postMessage = postMessage;
+        this.isPost = isPost;
     }
 
     @Nullable
@@ -54,28 +48,23 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                 URL url = new URL(completeUrl);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setConnectTimeout(3000);
-                if (postMessage != null) {
+                if (isPost) {
                     webservice.setRequestMethod("POST");
-                    webservice.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    webservice.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                     webservice.setDoOutput(true);
                     OutputStream outputStream = webservice.getOutputStream();
-                    outputStream.write(postMessage.getBytes());
+                    outputStream.write(("--" + boundary + "\r\n").getBytes());
+                    workOutput(outputStream);
+                    outputStream.write(("\r\n--" + boundary + "--\r\n").getBytes());
                     outputStream.flush();
                     outputStream.close();
                 } else {
                     webservice.setRequestMethod("GET");
                 }
                 if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
-                    String line;
-                    StringBuilder response = new StringBuilder();
-
-                    while ((line = bufferedReader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    bufferedReader.close();
+                    JSONObject returnObject = workInput(webservice.getInputStream());
                     webservice.disconnect();
-                    return (new JSONObject(response.toString()));
+                    return returnObject;
                 } else {
                     return new JSONObject("{status:5,msg:\"Internal error");
                 }
@@ -92,4 +81,24 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
         }
         return null;
     }
+
+    protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rawInputStream));
+        String line;
+        StringBuilder response = new StringBuilder();
+
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                response.append(line);
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new JSONObject(response.toString());
+    }
+
+    protected void workOutput(OutputStream rawOutputStream) throws IOException {
+    }
+
 }
