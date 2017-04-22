@@ -20,17 +20,18 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
     protected final int serverIndex;
     private final String pageUrl;
 
-    @Override
-    protected abstract void onPostExecute(JSONArray jsonArray);
-
     public AsyncArrayHelper(int serverIndex, String pageUrl) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
     }
 
+    @Override
+    protected abstract void onPostExecute(JSONArray jsonArray);
+
     @Nullable
     @Override
     protected JSONArray doInBackground(Void... params) {
+        JSONArray result = null;
         String serverAddress;
         try {
             serverAddress = GlobalFunctions.servers.get(serverIndex).getUrl();
@@ -55,13 +56,12 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
                         response.append(line);
                     }
                     bufferedReader.close();
-                    webservice.disconnect();
-                    return (new JSONArray(response.toString()));
+                    result = new JSONArray(response.toString());
                 }
             } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();
             }
         }
-        return null;
+        return result;
     }
 }

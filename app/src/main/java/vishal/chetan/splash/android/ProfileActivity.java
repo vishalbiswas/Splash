@@ -37,6 +37,7 @@ public class ProfileActivity extends BaseActivity {
     private int serverIndex;
     private long uid = -1;
     private FieldValidator fieldValidator;
+    private UserIdentity identity;
 
     private ImageView imgPic;
     @Nullable
@@ -56,7 +57,6 @@ public class ProfileActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        UserIdentity identity;
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
         uid = getIntent().getLongExtra("uid", -1);
         if (uid == -1) {
@@ -79,9 +79,18 @@ public class ProfileActivity extends BaseActivity {
         LName = (TextView) findViewById(R.id.LName);
         Email = (TextView) findViewById(R.id.Email);
 
-        if (identity.getProfpic() != null) {
-            profPic = identity.getProfpic();
-            imgPic.setImageBitmap(profPic);
+        if (identity.getProfpic() >= 0) {
+            SplashCache.ImageCache.get(serverIndex, identity.getProfpic(), new SplashCache.ImageCache.OnGetImageListener() {
+                @Override
+                public void onGetImage(final Bitmap image) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            imgPic.setImageBitmap(image);
+                        }
+                    });
+                }
+            });
         }
         FName.setText(identity.getFirstname());
         LName.setText(identity.getLastname());
@@ -115,7 +124,6 @@ public class ProfileActivity extends BaseActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -149,68 +157,72 @@ public class ProfileActivity extends BaseActivity {
                 }
                 String pass = editPass.getText().toString();
                 String pass2 = editPass2.getText().toString();
-                String postMessage = String.format("uid=%s&fname=%s&lname=%s&email=%s", GlobalFunctions.identities.get(serverIndex).getUid(), FName.getText(), LName.getText(), Email.getText());
+                String postMessage = String.format("fname=%s&lname=%s&email=%s", FName.getText(), LName.getText(), Email.getText());
                 if (!pass.isEmpty()) {
                     if (!pass.equals(pass2)) {
                         setError(R.string.errPassNoMatch);
                         break;
                     } else {
                         fieldValidator.validatePassword(editPass.getText().toString());
-                        if (editPass.getError() != null) {
-                            postMessage = String.format("%s&pass=%s", postMessage, editPass.getText());
+                        if (editPass.getError() == null) {
+                            postMessage = String.format("%s&password=%s", postMessage, editPass.getText());
                         }
                     }
                 }
+                final String notFinalPostMessage = postMessage;
                 if (profPic != null) {
-                    ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    profPic.compress(Bitmap.CompressFormat.PNG, 90, out);
-                    postMessage = String.format("%s&profpic=%s", postMessage, Base64.encodeToString(out.toByteArray(), Base64.DEFAULT));
-                }
-                new AsyncHelper(serverIndex, "update", postMessage) {
-                    @Override
-                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                        if (jsonObject != null) {
-                            try {
-                                switch (jsonObject.getInt("status")) {
-                                    case 0:
-                                        UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
-                                        if (jsonObject.has("fname")) {
-                                            identity.setFirstname(jsonObject.getString("fname"));
-                                        }
-                                        if (jsonObject.has("lname")) {
-                                            identity.setLastname(jsonObject.getString("lname"));
-                                        }
-                                        if (jsonObject.has("email")) {
-                                            identity.setEmail(jsonObject.getString("email"));
-                                        }
-
-                                        if (jsonObject.has("profpic")) {
-                                            Bitmap profpic = (Bitmap) jsonObject.get("profpic");
-                                            GlobalFunctions.identities.get(serverIndex).setProfpic(profpic);
-                                        }
-                                        setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
-                                        break;
-                                    case 1:
-                                        setError(R.string.errUnknown);
-                                        break;
-                                    case 2:
-                                        setError(R.string.errPartialData);
-                                        break;
-                                    case 3:
-                                        setError(R.string.errRequest);
-                                        break;
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            setError(R.string.errNoAccess);
+                    SplashCache.ImageCache.upload(serverIndex, profPic, new SplashCache.ImageCache.OnUploadCompleteListener() {
+                        @Override
+                        public void onUpload(long attachId) {
+                            doUpdate(String.format("%s&profpic=%s", notFinalPostMessage, attachId));
                         }
-                    }
-                }.execute();
+                    });
+                } else {
+                    doUpdate(String.format("%s&profpic=%s", postMessage, -1));
+                }
                 break;
         }
         return true;
+    }
+
+    private void doUpdate(String postMessage) {
+        new AsyncHelper(serverIndex, "update/" + identity.getUid(), postMessage) {
+            @Override
+            protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                if (jsonObject != null) {
+                    try {
+                        switch (jsonObject.getInt("status")) {
+                            case 0:
+                                UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
+                                identity.setFirstname(jsonObject.getString("fname"));
+                                identity.setLastname(jsonObject.getString("lname"));
+
+                                if (jsonObject.has("email")) {
+                                    identity.setEmail(jsonObject.getString("email"));
+                                }
+                                if (jsonObject.has("profpic")) {
+                                    identity.setProfpic(jsonObject.getLong("profPic"));
+                                }
+                                setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
+                                break;
+                            case 1:
+                                setError(R.string.errUnknown);
+                                break;
+                            case 2:
+                                setError(R.string.errPartialData);
+                                break;
+                            case 3:
+                                setError(R.string.errRequest);
+                                break;
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    setError(R.string.errNoAccess);
+                }
+            }
+        }.execute();
     }
 
     private class ProfileErrorProvider implements FieldValidator.ErrorProvider {

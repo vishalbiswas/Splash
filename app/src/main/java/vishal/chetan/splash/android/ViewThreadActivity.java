@@ -1,6 +1,7 @@
 package vishal.chetan.splash.android;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -138,9 +139,19 @@ public class ViewThreadActivity extends BaseActivity {
         }
         ((TextView) findViewById(R.id.threadTime)).setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
         ((TextView) findViewById(R.id.threadSubforum)).setText(GlobalFunctions.servers.get(serverIndex).getTopic(thread.getTopicId()));
-        ImageView imgAttach = (ImageView) findViewById(R.id.imgAttach);
+        final ImageView imgAttach = (ImageView) findViewById(R.id.imgAttach);
         if (thread.getAttachId() >= 0) {
-            imgAttach.setImageBitmap(SplashCache.ImageCache.get(serverIndex, thread.getAttachId()));
+            SplashCache.ImageCache.get(serverIndex, thread.getAttachId(), new SplashCache.ImageCache.OnGetImageListener() {
+                @Override
+                public void onGetImage(final Bitmap image) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            imgAttach.setImageBitmap(image);
+                        }
+                    });
+                }
+            });
             imgAttach.setVisibility(View.VISIBLE);
         } else {
             imgAttach.setVisibility(View.GONE);

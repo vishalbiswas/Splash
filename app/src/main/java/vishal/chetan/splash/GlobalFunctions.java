@@ -119,7 +119,6 @@ public class GlobalFunctions extends Application {
                 preferences.getString("defaultFname", ""),
                 preferences.getString("defaultLname", ""),
                 preferences.getString("defaultEmail", ""));
-        defaultIdentity.setProfpic(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_news));
         servers.addListener(new ServerList.OnServerListChangeListener() {
             @Override
             public void onAdd(@NonNull ServerList.SplashSource source) {

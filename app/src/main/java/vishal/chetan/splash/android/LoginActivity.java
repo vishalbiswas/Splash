@@ -25,6 +25,7 @@ import org.json.JSONObject;
 
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList.SplashSource;
+import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.GlobalFunctions;
@@ -133,11 +134,7 @@ public class LoginActivity extends BaseActivity {
                                 }
 
                                 if (jsonObject.has("profpic")) {
-                                    byte[] picBytes = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
-                                    Bitmap profpic = BitmapFactory.decodeByteArray(picBytes, 0, picBytes.length);
-                                    identity.setProfpic(profpic);
-                                } else {
-                                    identity.setProfpic(null);
+                                    identity.setProfpic(jsonObject.getLong("profpic"));
                                 }
                                 identity.setUid(jsonObject.getLong("uid"));
                                 identity.setUsername(jsonObject.getString("user"));

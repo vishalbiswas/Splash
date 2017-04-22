@@ -23,25 +23,19 @@
         android:orientation="vertical"
         android:padding="15dp">
 
-        <RelativeLayout
+        <TextView
+            android:id="@+id/threadTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:lines="1"
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/threadTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:lines="1"
-                android:textSize="24sp"
-                android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/imgAttach"
-                android:layout_width="match_parent"
-                android:layout_height="192dp" />
-
-        </RelativeLayout>
+        <ImageView
+            android:id="@+id/imgAttach"
+            android:layout_width="match_parent"
+            android:layout_height="192dp" />
 
         <vishal.chetan.splash.NoScrollHtmlTextView
             android:id="@+id/threadPreview"

@@ -2,8 +2,10 @@ package vishal.chetan.splash;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -92,7 +94,17 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         final Thread thread = threadList.get(position);
         switch (holder.getItemViewType()) {
             case IMAGE:
-                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap(SplashCache.ImageCache.get(thread.getServerIndex(), thread.getAttachId()));
+                SplashCache.ImageCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.ImageCache.OnGetImageListener() {
+                    @Override
+                    public void onGetImage(final Bitmap image) {
+                        ((AppCompatActivity)context).runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap(image);
+                            }
+                        });
+                    }
+                });
                 break;
         }
         holder.title.setText(thread.getTitle());

@@ -15,7 +15,8 @@ public class Thread {
     final static class ModificationTimeComparator implements Comparator<Thread> {
         @Override
         public int compare(@NonNull Thread o1, @NonNull Thread o2) {
-            return o1.getMtime().compareTo(o2.getMtime());
+            //descending order
+            return o2.getMtime().compareTo(o1.getMtime());
         }
     }
 
@@ -67,7 +68,7 @@ public class Thread {
         this.attachId = attachId;
     }
 
-    private long attachId;
+    private long attachId = -1;
 
     public Thread(long threadId, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int serverIndex, int topicId, long attachId) {
         this.threadId = threadId;

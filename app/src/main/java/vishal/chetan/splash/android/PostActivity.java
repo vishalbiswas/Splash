@@ -104,6 +104,7 @@ public class PostActivity extends BaseActivity {
                                 }
                             });
                         } else {
+                            thread.setAttachId(-1);
                             SplashCache.ThreadCache.set(thread);
                         }
                     } else {
@@ -134,7 +135,6 @@ public class PostActivity extends BaseActivity {
             Thread thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
             editPostTitle.setText(thread.getTitle());
             editPost.setText(thread.getRawContent());
-            attach = SplashCache.ImageCache.get(serverIndex, thread.getAttachId());
             btnImage.setText(R.string.strChangeAttach);
             setTitle(getString(R.string.strEditThread));
             updatePreview();

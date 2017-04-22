@@ -11,9 +11,9 @@ public class UserIdentity {
     private String lastname = "";
     private String email = "";
     @Nullable
-    private Bitmap profpic = null;
+    private long profpic = -1;
 
-    UserIdentity(long uid, @Nullable String username, String firstname, String lastname, String email, @Nullable Bitmap profpic) {
+    UserIdentity(long uid, @Nullable String username, String firstname, String lastname, String email, long profpic) {
         this.uid = uid;
         this.username = username;
         this.firstname = firstname;
@@ -30,6 +30,14 @@ public class UserIdentity {
     }
 
     public UserIdentity() {
+    }
+
+    public UserIdentity(long uid, @Nullable String username, String firstname, String lastname, String email) {
+        this.uid = uid;
+        this.username = username;
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
     }
 
     @Nullable
@@ -66,11 +74,11 @@ public class UserIdentity {
     }
 
     @Nullable
-    public Bitmap getProfpic() {
+    public long getProfpic() {
         return profpic;
     }
 
-    public void setProfpic(@Nullable Bitmap profpic) {
+    public void setProfpic(long profpic) {
         this.profpic = profpic;
     }
 
@@ -81,4 +89,5 @@ public class UserIdentity {
     public void setUid(long uid) {
         this.uid = uid;
     }
+
 }

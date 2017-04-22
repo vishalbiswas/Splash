@@ -23,9 +23,6 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
     @Nullable
     private String postMessage = null;
 
-    @Override
-    protected abstract void onPostExecute(JSONObject jsonObject);
-
     public AsyncHelper(int serverIndex, String pageUrl) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
@@ -37,9 +34,13 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
         this.postMessage = postMessage;
     }
 
+    @Override
+    protected abstract void onPostExecute(JSONObject jsonObject);
+
     @Nullable
     @Override
     protected JSONObject doInBackground(Void... params) {
+        JSONObject result = null;
         String serverAddress;
         try {
             serverAddress = GlobalFunctions.servers.get(serverIndex).getUrl();
@@ -74,10 +75,9 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                         response.append(line);
                     }
                     bufferedReader.close();
-                    webservice.disconnect();
-                    return (new JSONObject(response.toString()));
+                    result = new JSONObject(response.toString());
                 } else {
-                    return new JSONObject("{status:5,msg:\"Internal error");
+                    result = new JSONObject("{status:5,msg:\"Internal error");
                 }
 
             } catch (@NonNull IOException | JSONException e) {
@@ -85,11 +85,11 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
             }
         } else {
             try {
-                return (new JSONObject("{status:6,msg:\"No Access\"}"));
+                result = new JSONObject("{status:6,msg:\"No Access\"}");
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-        return null;
+        return result;
     }
 }

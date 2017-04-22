@@ -2,6 +2,7 @@ package vishal.chetan.splash;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Stack;
+import java.util.concurrent.ExecutionException;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.asyncs.AsyncRawHelper;
@@ -46,32 +48,37 @@ public class SplashCache {
                 user = serverArray.get(uid);
             }
             if (user == null) {
-                new AsyncHelper(serverIndex, "getuser/" + uid) {
-                    @Override
-                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                        if (jsonObject != null) {
-                            try {
-                                byte[] blob = Base64.decode(jsonObject.getString("profpic"), Base64.DEFAULT);
-                                Bitmap profpic = BitmapFactory.decodeByteArray(blob, 0, blob.length);
-                                UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
-                                        jsonObject.getString("username"), jsonObject.getString("firstname"),
-                                        jsonObject.getString("lastname"), jsonObject.getString("email"), profpic);
-                                setUser(serverIndex, fetcheduser);
-                                if (listener != null) {
-                                    listener.onGetUser(fetcheduser);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            Log.e(TAG, "Unknown error");
-                        }
-                    }
-                }.execute();
+                loadUser(serverIndex, uid, listener);
             } else if (listener != null) {
                 listener.onGetUser(user);
             }
             return user;
+        }
+
+        private static void loadUser(final int serverIndex, long uid, final OnGetUserListener listener) {
+            new AsyncHelper(serverIndex, "user/" + uid) {
+                @Override
+                protected void onPostExecute(@Nullable  JSONObject jsonObject) {
+                    if (jsonObject != null) {
+                        try {
+                            UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
+                                    jsonObject.getString("username"), jsonObject.getString("firstname"),
+                                    jsonObject.getString("lastname"), jsonObject.getString("email"));
+                            if (jsonObject.has("profpic")) {
+                                fetcheduser.setProfpic(jsonObject.getLong("profpic"));
+                            }
+                            setUser(serverIndex, fetcheduser);
+                            if (listener != null) {
+                                listener.onGetUser(fetcheduser);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.e(TAG, "Unknown error");
+                    }
+                }
+            }.execute();
         }
 
         static void setUser(int serverIndex, @NonNull UserIdentity user) {
@@ -206,9 +213,13 @@ public class SplashCache {
             void onUpload(long attachId);
         }
 
+        public interface OnGetImageListener {
+            void onGetImage(final Bitmap image);
+        }
+
         private final static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
 
-        public static Bitmap get(int serverIndex, long attachId) {
+        public static Bitmap get(int serverIndex, long attachId, @Nullable OnGetImageListener listener) {
             if (attachId < 0) {
                 return null;
             }
@@ -221,17 +232,21 @@ public class SplashCache {
                 image = serverArray.get(attachId);
             }
             if (image == null) {
-                loadImage(serverIndex, attachId);
+                loadImage(serverIndex, attachId, listener);
+                image = serverArray.get(attachId);
+            } else if (listener != null) {
+                listener.onGetImage(image);
             }
             return image;
         }
 
-        static private void loadImage(final int serverIndex, final long attachId) {
-            new AsyncRawHelper(serverIndex, "attachment/" + attachId, false) {
+        static private void loadImage(final int serverIndex, final long attachId, @Nullable final OnGetImageListener listener) {
+            AsyncTask helper = new AsyncRawHelper(serverIndex, "attachment/" + attachId, false) {
+                Bitmap image = null;
+
                 @Override
                 protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
-                    Bitmap image = BitmapFactory.decodeStream(rawInputStream);
-                    Log.e(TAG, rawInputStream.toString());
+                    image = BitmapFactory.decodeStream(rawInputStream);
                     setImage(serverIndex, attachId, image);
                     return new JSONObject("{status:0}");
                 }
@@ -249,8 +264,20 @@ public class SplashCache {
                     } else {
                         Log.e(TAG, "Unknown error");
                     }
+                    if (listener != null) {
+                        listener.onGetImage(image);
+                    }
                 }
             }.execute();
+            if (listener == null) {
+                try {
+                    helper.get();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         static void setImage(int serverIndex, long attachId, Bitmap image) {

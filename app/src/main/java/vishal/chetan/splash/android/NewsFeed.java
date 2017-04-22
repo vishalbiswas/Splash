@@ -126,17 +126,24 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                if (previousItemId == -1) {
-                    for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
-                        if (GlobalFunctions.servers.get(i).isEnabled()) {
-                            new FetchThreads(i, NUMBER_OF_THREADS).execute();
-                        }
-                    }
-                } else {
-                    new FetchThreads(serverIndex, NUMBER_OF_THREADS).execute();
-                }
+                refreshLayout.setRefreshing(false);
+                fillThreadCache(NUMBER_OF_THREADS);
             }
         });
+
+        fillThreadCache(NUMBER_OF_THREADS);
+    }
+
+    private void fillThreadCache(final int quantity) {
+        if (previousItemId == -1) {
+            for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                if (GlobalFunctions.servers.get(i).isEnabled()) {
+                    new FetchThreads(i, quantity).execute();
+                }
+            }
+        } else {
+            new FetchThreads(serverIndex, quantity).execute();
+        }
     }
 
     private void updateOptionsMenu() {
@@ -249,7 +256,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     }
 
     private void updateNavHeader(final int itemId) {
-        UserIdentity identity;
+        final UserIdentity identity;
         View header = nav_view.getHeaderView(0);
         if (itemId < 0) {
             header.setOnClickListener(null);
@@ -288,10 +295,20 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 return;
             }
         }
-        ImageView profpic = (ImageView) header.findViewById(R.id.headerPic);
+        final ImageView profpic = (ImageView) header.findViewById(R.id.headerPic);
         assert identity != null;
-        if (identity.getProfpic() != null) {
-            profpic.setImageBitmap(circleCrop(identity.getProfpic()));
+        if (identity.getProfpic() >= 0) {
+            SplashCache.ImageCache.get(serverIndex, identity.getProfpic(), new SplashCache.ImageCache.OnGetImageListener() {
+                @Override
+                public void onGetImage(final Bitmap image) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            profpic.setImageBitmap(circleCrop(image));
+                        }
+                    });
+                }
+            });
         } else {
             profpic.setImageResource(R.mipmap.ic_news);
         }
