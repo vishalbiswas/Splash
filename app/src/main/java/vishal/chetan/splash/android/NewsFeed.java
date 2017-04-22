@@ -59,8 +59,12 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private NavigationView nav_view;
     private FloatingActionButton fab;
     private SwipeRefreshLayout refreshLayout;
+
+    private MenuItem app_bar_menu_logout;
+
     private int previousItemId;
     private int serverIndex = -1;
+
     private final static int login_result_id = 1;
     private final static int create_thread_result_id = 2;
     private final static int update_user_result_id = 3;
@@ -107,12 +111,6 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 updateOptionsMenu();
             }
         });
-        GlobalFunctions.servers.addListener(new ServerList.OnServerDisabledListener() {
-            @Override
-            public void onDisabled() {
-                updateOptionsMenu();
-            }
-        });
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, newsDrawer, toolbar, R.string.strFilterSource, R.string.strCloseSources);
@@ -128,6 +126,15 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             public void onRefresh() {
                 refreshLayout.setRefreshing(false);
                 fillThreadCache(NUMBER_OF_THREADS);
+            }
+        });
+
+
+        GlobalFunctions.servers.addListener(new ServerList.OnServerEnabledListener() {
+            @Override
+            public void onEnabledChanged(int serverIndex, boolean enabled) {
+                fillThreadCache(NUMBER_OF_THREADS);
+                updateOptionsMenu();
             }
         });
 
@@ -170,6 +177,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        app_bar_menu_logout = menu.findItem(R.id.logout);
 
         return true;
     }
@@ -225,6 +234,16 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             case R.id.action_about:
                 startActivity(new Intent(NewsFeed.this, AboutActivity.class));
                 break;
+            case R.id.refresh:
+                fillThreadCache(NUMBER_OF_THREADS);
+                break;
+            case R.id.logout:
+                if (previousItemId >= 0) {
+                    GlobalFunctions.identities.remove(previousItemId);
+                    GlobalFunctions.sessionState = GlobalFunctions.SessionState.DEAD;
+                    updateNavHeader(-3);
+                }
+                break;
         }
         return true;
     }
@@ -238,6 +257,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             if (ItemId < 0) {
                 actionBar.setTitle(getString(R.string.title_activity_news_feed));
             } else {
+
                 actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
             }
             if (ItemId < -1) {
@@ -252,6 +272,9 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             previousItemId = ItemId;
         }
         newsDrawer.closeDrawers();
+        if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.DEAD) {
+            GlobalFunctions.sessionState = GlobalFunctions.SessionState.UNKNOWN;
+        }
         return true;
     }
 
@@ -259,12 +282,27 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         final UserIdentity identity;
         View header = nav_view.getHeaderView(0);
         if (itemId < 0) {
-            header.setOnClickListener(null);
+            if (app_bar_menu_logout != null) {
+                app_bar_menu_logout.setVisible(false);
+            }
+            if (itemId == -3) {
+                header.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", serverIndex), login_result_id);
+                    }
+                });
+            } else {
+                header.setOnClickListener(null);
+            }
             identity = GlobalFunctions.defaultIdentity;
             fab.setVisibility(View.GONE);
         } else {
             identity = GlobalFunctions.identities.get(itemId);
             if (identity != null) {
+                if (app_bar_menu_logout != null) {
+                    app_bar_menu_logout.setVisible(true);
+                }
                 header.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -273,7 +311,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 });
                 fab.setVisibility(View.VISIBLE);
             } else {
-                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
+                if (app_bar_menu_logout != null) {
+                    app_bar_menu_logout.setVisible(false);
+                }
+                if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
                     if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
                         startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
                     } else {
@@ -321,6 +362,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         switch (requestCode) {
             case login_result_id:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
+                    GlobalFunctions.sessionState = GlobalFunctions.SessionState.ALIVE;
                     updateNavHeader(previousItemId);
                 }
                 break;

@@ -73,10 +73,12 @@ public class SourcesManagerActivity extends BaseActivity {
                     }
                 }
             });
-            GlobalFunctions.servers.addListener(new ServerList.OnServerDisabledListener() {
+            GlobalFunctions.servers.addListener(new ServerList.OnServerEnabledListener() {
                 @Override
-                public void onDisabled() {
-                    holder.sourceEnabled.setChecked(source.isEnabled());
+                public void onEnabledChanged(int serverIndex, boolean enabled) {
+                    if (holder.getAdapterPosition() == serverIndex) {
+                        holder.sourceEnabled.setChecked(enabled);
+                    }
                 }
             });
             holder.itemSourceName.setText(source.getName());

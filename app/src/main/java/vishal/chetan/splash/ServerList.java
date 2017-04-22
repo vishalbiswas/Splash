@@ -83,13 +83,13 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         void onUpdate(SplashSource previousSource, SplashSource updatedSource);
     }
 
-    public interface OnServerDisabledListener {
-        void onDisabled();
+    public interface OnServerEnabledListener {
+        void onEnabledChanged(int serverIndex, boolean enabled);
     }
 
     private static ServerList instance;
     private final List<OnServerListChangeListener> changeListeners = new ArrayList<>();
-    private final List<OnServerDisabledListener> disabledListeners = new ArrayList<>();
+    private final List<OnServerEnabledListener> enabledListeners = new ArrayList<>();
 
     private ServerList() {}
 
@@ -124,8 +124,8 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         changeListeners.add(changeListener);
     }
 
-    public void addListener(OnServerDisabledListener disabledListener) {
-        disabledListeners.add(disabledListener);
+    public void addListener(OnServerEnabledListener enabledListener) {
+        enabledListeners.add(enabledListener);
     }
 
     @Override
@@ -152,8 +152,8 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
     public void setDisabled(int index, boolean disabled) {
         if (super.get(index).disabled != disabled) {
             super.get(index).disabled = disabled;
-            for (OnServerDisabledListener listener : disabledListeners) {
-                listener.onDisabled();
+            for (OnServerEnabledListener listener : enabledListeners) {
+                listener.onEnabledChanged(index, !disabled);
             }
         }
     }

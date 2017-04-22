@@ -14,8 +14,11 @@ import vishal.chetan.splash.asyncs.AsyncHelper;
 public class FieldValidator {
     public interface ErrorProvider {
         void setErrorUsername(@StringRes int resId);
+
         void setErrorEmail(@StringRes int resId);
+
         void setErrorPassword(@StringRes int resId);
+
         void setErrorSnack(@StringRes int resId);
     }
 
@@ -38,7 +41,7 @@ public class FieldValidator {
             }
 
             GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
-            new CheckAvailable(serverIndex, "check/" + username).execute();
+            new CheckAvailable(serverIndex, username).execute();
             this.username = username;
         }
     }
@@ -57,7 +60,7 @@ public class FieldValidator {
             }
 
             GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
-            new CheckAvailable(serverIndex, "check/" + email).execute();
+            new CheckAvailable(serverIndex, email).execute();
             this.email = email;
         }
     }
@@ -80,43 +83,31 @@ public class FieldValidator {
 
     private class CheckAvailable extends AsyncHelper {
         @NonNull
-        private Boolean checkForUser = true;
+        private String data;
 
-        CheckAvailable(int serverIndex, @NonNull String pageUrl) {
-            super(serverIndex, pageUrl);
-            if (pageUrl.contains("@")) {
-                checkForUser = false;
-            }
+        CheckAvailable(int serverIndex, @NonNull String data) {
+            super(serverIndex, "check/" + data);
+            this.data = data;
         }
 
         @Override
         protected void onPostExecute(@Nullable JSONObject jsonObject) {
-            GlobalFunctions.HTTP_CODE status = GlobalFunctions.HTTP_CODE.UNKNOWN;
+            GlobalFunctions.HTTP_CODE status;
             if (jsonObject != null) {
                 try {
-                    Boolean isAvailable;
-                    if (checkForUser) {
-                        isAvailable = jsonObject.getBoolean("user");
-                    } else {
-                        isAvailable = jsonObject.getBoolean("email");
-                    }
-
-
-                    if (isAvailable) {
+                    if (jsonObject.getBoolean("available")) {
                         status = GlobalFunctions.HTTP_CODE.SUCCESS;
                     } else {
                         status = GlobalFunctions.HTTP_CODE.FAILED;
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
-                    if (checkForUser) {
-                        status = GlobalFunctions.HTTP_CODE.REQUEST_FAILED;
-                    }
+                    status = GlobalFunctions.HTTP_CODE.REQUEST_FAILED;
                 }
             } else {
                 status = GlobalFunctions.HTTP_CODE.NO_ACCESS;
             }
-            checkStatus(checkForUser, status);
+            checkStatus(!data.contains("@"), status);
         }
     }
 

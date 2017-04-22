@@ -52,6 +52,7 @@ public class RegisterActivity extends BaseActivity {
                 break;
             case 6:
                 errorMessageResId = R.string.errNoAccess;
+                break;
         }
         Snackbar.make(findViewById(R.id.frag), errorMessageResId, Snackbar.LENGTH_LONG).show();
     }

@@ -70,7 +70,7 @@ public class LoginActivity extends BaseActivity {
                 String pass = sharedPreferences.getString("password" + source.getName(), "");
                 txtUsername.setText(user);
                 txtPassword.setText(pass);
-                if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
+                if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
                     doLogin(user, pass);
                 }
             }

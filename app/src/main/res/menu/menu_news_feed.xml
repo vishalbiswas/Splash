@@ -7,4 +7,15 @@
         android:icon="@drawable/ic_search"
         android:title="@string/strSearch"
         app:showAsAction="collapseActionView|ifRoom" />
+    <item
+        android:id="@+id/refresh"
+        android:icon="@drawable/ic_refresh"
+        android:title="@string/strRefresh"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/ic_logout"
+        android:title="@string/strLogout"
+        app:showAsAction="ifRoom|withText"
+        android:visible="false" />
 </menu>

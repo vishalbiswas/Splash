@@ -110,4 +110,6 @@
     <string name="strCreator">Creator</string>
     <string name="strModifiedTime">Last Modified Time</string>
     <string name="strSearch">Search</string>
+    <string name="strRefresh">Refresh</string>
+    <string name="strLogout">Log out</string>
 </resources>

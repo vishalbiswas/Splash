@@ -41,6 +41,7 @@ public class GlobalFunctions extends Application {
     private static Locale locale;
     private static HTTP_CODE regNameStatus;
     private static HTTP_CODE regEmailStatus;
+    public static SessionState sessionState = SessionState.UNKNOWN;
 
     public static final ServerList servers = ServerList.getInstance();
     public static final SparseArray<UserIdentity> identities = new SparseArray<>();
@@ -227,6 +228,12 @@ public class GlobalFunctions extends Application {
         NO_ACCESS,
         REQUEST_FAILED,
         BUSY,
+        UNKNOWN
+    }
+
+    public enum SessionState {
+        ALIVE,
+        DEAD,
         UNKNOWN
     }
 }
