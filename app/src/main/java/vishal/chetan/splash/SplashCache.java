@@ -34,7 +34,6 @@ public class SplashCache {
 
         @Nullable
         public static UserIdentity getUser(final int serverIndex, final long uid, @Nullable final OnGetUserListener listener) {
-            Log.e(TAG, String.format("getting uid:%s server=%s", uid, serverIndex));
             LongSparseArray<UserIdentity> serverArray = usernames.get(serverIndex);
             UserIdentity user = null;
             if (serverArray == null) {
@@ -163,11 +162,11 @@ public class SplashCache {
         }
 
         public static void set(@NonNull final Thread thread) {
-            String postMessage = String.format("threadid=%s&title=%s&content=%s&author=%s&topicid=%s", thread.getThreadId(), thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
+            String postMessage = String.format("title=%s&content=%s&author=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
-            new AsyncHelper(thread.getServerIndex(), "editpost", postMessage) {
+            new AsyncHelper(thread.getServerIndex(), "editpost/" + thread.getThreadId(), postMessage) {
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     Thread newThread = null;

@@ -108,6 +108,8 @@
         </LinearLayout>
     </LinearLayout>
 
+    <!--FIXME: An image attachment (if large enough) won't leave space for this-->
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/refreshComments"
         android:layout_width="match_parent"

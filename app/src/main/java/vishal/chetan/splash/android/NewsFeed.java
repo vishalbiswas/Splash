@@ -11,6 +11,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.SearchRecentSuggestions;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -46,6 +47,7 @@ import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
+import vishal.chetan.splash.ThreadSearchSuggestionProvider;
 import vishal.chetan.splash.ThreadsAdapter;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncArrayHelper;
@@ -57,7 +59,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private FloatingActionButton fab;
     private SwipeRefreshLayout refreshLayout;
 
-    private MenuItem app_bar_menu_logout;
+    private MenuItem menu_logout;
+    private MenuItem menu_search;
 
     private int previousItemId;
     private int serverIndex = -1;
@@ -171,11 +174,12 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         getMenuInflater().inflate(R.menu.menu_news_feed, menu);
         getMenuInflater().inflate(R.menu.menu_main, menu);
 
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        menu_logout = menu.findItem(R.id.logout);
+        menu_search = menu.findItem(R.id.search);
 
-        app_bar_menu_logout = menu.findItem(R.id.logout);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu_search.getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
         return true;
     }
@@ -185,8 +189,12 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         super.onNewIntent(intent);
 
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            menu_search.collapseActionView();
             if (serverIndex != -1) {
-                String query = intent.getStringExtra(SearchManager.QUERY);
+                SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+                        ThreadSearchSuggestionProvider.AUTHORITY, ThreadSearchSuggestionProvider.MODE);
+                suggestions.saveRecentQuery(query, GlobalFunctions.servers.get(serverIndex).getName());
                 new AsyncArrayHelper(serverIndex, "search/" + query) {
                     @Override
                     protected void workInBackground(@Nullable JSONArray jsonArray) {
@@ -199,11 +207,17 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                             });
                             return;
                         }
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                onNavigationItemSelected(nav_view.getMenu().findItem(-2));
+                            }
+                        });
                         final ArrayList<Thread> threads = new ArrayList<>();
                         for (int i = 0; i < jsonArray.length(); ++i) {
                             try {
                                 JSONObject thread = jsonArray.getJSONObject(i);
-                                threads.add(new Thread(thread.getLong("threadId"), serverIndex,
+                                threads.add(new Thread(thread.getLong("threadid"), serverIndex,
                                         thread.getString("title"), thread.getString("content"),
                                         thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
                                         GlobalFunctions.parseDate(thread.getString("mtime")), thread.getInt("topicid")));
@@ -217,11 +231,6 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 threadsListView.setAdapter(new ThreadsAdapter(NewsFeed.this, threads));
                             }
                         });
-                    }
-
-                    @Override
-                    protected void onPostExecute(JSONArray jsonArray) {
-
                     }
                 }.execute();
             } else {
@@ -289,8 +298,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         final UserIdentity identity;
         View header = nav_view.getHeaderView(0);
         if (itemId < 0) {
-            if (app_bar_menu_logout != null) {
-                app_bar_menu_logout.setVisible(false);
+            if (menu_logout != null) {
+                menu_logout.setVisible(false);
             }
             if (itemId == -3) {
                 header.setOnClickListener(new View.OnClickListener() {
@@ -307,8 +316,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         } else {
             identity = GlobalFunctions.identities.get(itemId);
             if (identity != null) {
-                if (app_bar_menu_logout != null) {
-                    app_bar_menu_logout.setVisible(true);
+                if (menu_logout != null) {
+                    menu_logout.setVisible(true);
                 }
                 header.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -318,8 +327,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 });
                 fab.setVisibility(View.VISIBLE);
             } else {
-                if (app_bar_menu_logout != null) {
-                    app_bar_menu_logout.setVisible(false);
+                if (menu_logout != null) {
+                    menu_logout.setVisible(false);
                 }
                 if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
                     if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
