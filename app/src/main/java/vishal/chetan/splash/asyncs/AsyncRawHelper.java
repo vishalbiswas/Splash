@@ -82,7 +82,8 @@ public abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
         return null;
     }
 
-    protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
+    @NonNull
+    protected JSONObject workInput(@NonNull InputStream rawInputStream) throws JSONException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rawInputStream));
         String line;
         StringBuilder response = new StringBuilder();

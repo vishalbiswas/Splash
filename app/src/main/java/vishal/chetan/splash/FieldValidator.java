@@ -83,7 +83,7 @@ public class FieldValidator {
 
     private class CheckAvailable extends AsyncHelper {
         @NonNull
-        private String data;
+        private final String data;
 
         CheckAvailable(int serverIndex, @NonNull String data) {
             super(serverIndex, "check/" + data);

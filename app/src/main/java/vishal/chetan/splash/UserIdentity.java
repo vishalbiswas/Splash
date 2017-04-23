@@ -1,6 +1,5 @@
 package vishal.chetan.splash;
 
-import android.graphics.Bitmap;
 import android.support.annotation.Nullable;
 
 public class UserIdentity {
@@ -10,7 +9,6 @@ public class UserIdentity {
     private String firstname = "";
     private String lastname = "";
     private String email = "";
-    @Nullable
     private long profpic = -1;
 
     UserIdentity(long uid, @Nullable String username, String firstname, String lastname, String email, long profpic) {

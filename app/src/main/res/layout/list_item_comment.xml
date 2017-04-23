@@ -2,12 +2,12 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="5dp">
 
     <org.sufficientlysecure.htmltextview.HtmlTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:id="@+id/txtComment"/>
     <TextView

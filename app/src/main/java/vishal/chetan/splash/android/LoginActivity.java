@@ -2,8 +2,6 @@ package vishal.chetan.splash.android;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -11,7 +9,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +22,6 @@ import org.json.JSONObject;
 
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList.SplashSource;
-import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.GlobalFunctions;

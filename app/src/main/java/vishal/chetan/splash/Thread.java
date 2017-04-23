@@ -8,16 +8,16 @@ import java.util.Comparator;
 import java.util.Date;
 
 public class Thread {
-    public int getTopicId() {
-        return topicId;
-    }
-
     final static class ModificationTimeComparator implements Comparator<Thread> {
         @Override
         public int compare(@NonNull Thread o1, @NonNull Thread o2) {
             //descending order
             return o2.getMtime().compareTo(o1.getMtime());
         }
+    }
+
+    public int getTopicId() {
+        return topicId;
     }
 
     public long getThreadId() {
@@ -180,6 +180,14 @@ public class Thread {
     }
 
     public static class Comment {
+        final static class ModificationTimeComparator implements Comparator<Comment> {
+            @Override
+            public int compare(@NonNull Comment o1, @NonNull Comment o2) {
+                //ascending order
+                return o1.getMtime().compareTo(o2.getMtime());
+            }
+        }
+
         public String getText() {
             return text;
         }
@@ -192,10 +200,12 @@ public class Thread {
             return commentId;
         }
 
+        @Nullable
         public Date getCtime() {
             return ctime;
         }
 
+        @Nullable
         public Date getMtime() {
             return mtime;
         }
@@ -211,6 +221,7 @@ public class Thread {
         private String text;
         final private long creator_id;
         final private long commentId;
+        @Nullable
         final private Date ctime;
 
         public void setText(String text) {
@@ -221,16 +232,27 @@ public class Thread {
             this.mtime = mtime;
         }
 
-        private Date mtime;
+        @Nullable
+        private Date mtime = null;
         final private long threadId;
         final private int serverIndex;
 
-        public Comment(String text, long creator_id, long commentId, Date ctime, Date mtime, long threadId, int serverIndex) {
+        public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, Date ctime, Date mtime) {
             this.text = text;
             this.creator_id = creator_id;
             this.commentId = commentId;
             this.ctime = ctime;
             this.mtime = mtime;
+            this.threadId = threadId;
+            this.serverIndex = serverIndex;
+        }
+
+        public Comment(int serverIndex, long threadId, long creator_id, String text) {
+            this.text = text;
+            this.creator_id = creator_id;
+            this.commentId = -1;
+            this.ctime = null;
+            this.mtime = null;
             this.threadId = threadId;
             this.serverIndex = serverIndex;
         }

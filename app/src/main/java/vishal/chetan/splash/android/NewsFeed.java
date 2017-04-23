@@ -40,9 +40,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
-
-import javax.microedition.khronos.opengles.GL;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
@@ -192,9 +189,14 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 String query = intent.getStringExtra(SearchManager.QUERY);
                 new AsyncArrayHelper(serverIndex, "search/" + query) {
                     @Override
-                    protected void onPostExecute(@Nullable JSONArray jsonArray) {
+                    protected void workInBackground(@Nullable JSONArray jsonArray) {
                         if (jsonArray == null) {
-                            Snackbar.make(nav_view, R.string.errUnknown, Snackbar.LENGTH_SHORT).show();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Snackbar.make(nav_view, R.string.errUnknown, Snackbar.LENGTH_SHORT).show();
+                                }
+                            });
                             return;
                         }
                         final ArrayList<Thread> threads = new ArrayList<>();
@@ -215,6 +217,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 threadsListView.setAdapter(new ThreadsAdapter(NewsFeed.this, threads));
                             }
                         });
+                    }
+
+                    @Override
+                    protected void onPostExecute(JSONArray jsonArray) {
+
                     }
                 }.execute();
             } else {

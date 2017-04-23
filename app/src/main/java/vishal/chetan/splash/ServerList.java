@@ -94,6 +94,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
     private ServerList() {}
 
 
+    @NonNull
     public ArrayList<SplashSource> getEnabled() {
         ArrayList<SplashSource> enabledSources = new ArrayList<>();
         for(SplashSource source : instance) {

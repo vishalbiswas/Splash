@@ -14,7 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,8 +21,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
-
-import java.util.Date;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
@@ -62,12 +59,21 @@ public class ViewThreadActivity extends BaseActivity {
         comments.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
         if (GlobalFunctions.identities.get(serverIndex) != null && thread.getCreatorID() == GlobalFunctions.identities.get(serverIndex).getUid()) {
-            ImageButton threadEdit = (ImageButton) findViewById(R.id.threadEdit);
+            View threadEdit = findViewById(R.id.threadEdit);
             threadEdit.setVisibility(View.VISIBLE);
             threadEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivityForResult(new Intent(ViewThreadActivity.this, PostActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId), edit_thread_code);
+                }
+            });
+
+            View threadReply = findViewById(R.id.threadReply);
+            threadReply.setVisibility(View.VISIBLE);
+            threadReply.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivityForResult(new Intent(ViewThreadActivity.this, CommentActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId), reply_thread_code);
                 }
             });
         }
@@ -76,13 +82,6 @@ public class ViewThreadActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(ViewThreadActivity.this, ThreadInfoActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId));
-            }
-        });
-
-        findViewById(R.id.threadReply).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivityForResult(new Intent(ViewThreadActivity.this, CommentActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId), reply_thread_code);
             }
         });
 
@@ -100,23 +99,23 @@ public class ViewThreadActivity extends BaseActivity {
     private void fetchComments() {
         new AsyncArrayHelper(serverIndex, "comments/" + threadId) {
             @Override
-            protected void onPostExecute(@Nullable JSONArray jsonArray) {
+            protected void workInBackground(@Nullable JSONArray jsonArray) {
                 if (jsonArray != null) {
                     thread.clearComments();
                     for(int i = 0; i < jsonArray.length(); ++i) {
                         try {
                             JSONObject comment = jsonArray.getJSONObject(i);
-                            thread.addComment(new Thread.Comment(comment.getString("text"), comment.getLong("uid"), comment.getLong("commentid"), new Date(comment.getLong("ctime")), new Date(comment.getLong("mtime")), threadId, serverIndex));
+                            thread.addComment(new Thread.Comment(serverIndex, threadId, comment.getLong("author"), comment.getString("content"), comment.getLong("commentid"), GlobalFunctions.parseDate(comment.getString("ctime")), GlobalFunctions.parseDate(comment.getString("mtime"))));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
-                    refreshLayout.setRefreshing(false);
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             Snackbar.make(comments, getString(R.string.strCommentFetchFailed), Snackbar.LENGTH_LONG).show();
+                            refreshLayout.setRefreshing(false);
                         }
                     });
                 }
@@ -168,7 +167,7 @@ public class ViewThreadActivity extends BaseActivity {
                 break;
             case reply_thread_code:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == serverIndex && data.getLongExtra("threadId", -1) == threadId) {
-                    comments.getAdapter().notifyItemInserted(-1);
+                    comments.getAdapter().notifyItemInserted(0);
                 }
                 break;
         }
@@ -211,6 +210,11 @@ public class ViewThreadActivity extends BaseActivity {
         @Override
         public int getItemCount() {
             return thread.getComments().size();
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return thread.getComments().valueAt(position).getCommentId();
         }
     }
 }

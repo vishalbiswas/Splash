@@ -67,14 +67,19 @@ public class PostActivity extends BaseActivity {
         final Button btnSubmit = (Button) findViewById(R.id.btnSubmit);
         final SplashCache.ThreadCache.OnThreadModifiedListener modifiedListener = new SplashCache.ThreadCache.OnThreadModifiedListener() {
             @Override
-            public void onModify(@Nullable Thread thread) {
-                btnSubmit.setEnabled(true);
-                if (thread != null) {
-                    setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", thread.getThreadId()));
-                    finish();
-                } else {
-                    Snackbar.make(btnSubmit, getString(R.string.errPost), Snackbar.LENGTH_LONG).show();
-                }
+            public void onModify(@Nullable final Thread thread) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        btnSubmit.setEnabled(true);
+                        if (thread != null) {
+                            setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", thread.getThreadId()));
+                            finish();
+                        } else {
+                            Snackbar.make(btnSubmit, getString(R.string.errPost), Snackbar.LENGTH_LONG).show();
+                        }
+                    }
+                });
             }
         };
         btnSubmit.setOnClickListener(new View.OnClickListener() {

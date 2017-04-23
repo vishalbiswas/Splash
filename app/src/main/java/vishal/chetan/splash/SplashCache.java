@@ -6,21 +6,17 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
-import android.util.Base64;
 import android.util.Log;
 import android.util.SparseArray;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
@@ -55,15 +51,15 @@ public class SplashCache {
             return user;
         }
 
-        private static void loadUser(final int serverIndex, long uid, final OnGetUserListener listener) {
+        private static void loadUser(final int serverIndex, long uid, @Nullable final OnGetUserListener listener) {
             new AsyncHelper(serverIndex, "user/" + uid) {
                 @Override
                 protected void onPostExecute(@Nullable  JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
-                                    jsonObject.getString("username"), jsonObject.getString("firstname"),
-                                    jsonObject.getString("lastname"), jsonObject.getString("email"));
+                                    jsonObject.getString("username"), jsonObject.getString("fname"),
+                                    jsonObject.getString("lname"), jsonObject.getString("email"));
                             if (jsonObject.has("profpic")) {
                                 fetcheduser.setProfpic(jsonObject.getLong("profpic"));
                             }
@@ -242,8 +238,10 @@ public class SplashCache {
 
         static private void loadImage(final int serverIndex, final long attachId, @Nullable final OnGetImageListener listener) {
             AsyncTask helper = new AsyncRawHelper(serverIndex, "attachment/" + attachId, false) {
+                @Nullable
                 Bitmap image = null;
 
+                @NonNull
                 @Override
                 protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
                     image = BitmapFactory.decodeStream(rawInputStream);
@@ -272,9 +270,7 @@ public class SplashCache {
             if (listener == null) {
                 try {
                     helper.get();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
+                } catch (@NonNull InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             }
@@ -296,7 +292,7 @@ public class SplashCache {
         public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
             new AsyncRawHelper(serverIndex, "upload", true) {
                 @Override
-                protected void workOutput(OutputStream rawOutputStream) throws IOException {
+                protected void workOutput(@NonNull OutputStream rawOutputStream) throws IOException {
                     rawOutputStream.write("Content-Disposition: form-data; name=\"attach\"; filename=\"attach.png\"\r\n".getBytes());
                     rawOutputStream.write("Content-Type: image/png\r\n".getBytes());
                     rawOutputStream.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());

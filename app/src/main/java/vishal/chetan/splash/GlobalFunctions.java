@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -41,6 +40,7 @@ public class GlobalFunctions extends Application {
     private static Locale locale;
     private static HTTP_CODE regNameStatus;
     private static HTTP_CODE regEmailStatus;
+    @NonNull
     public static SessionState sessionState = SessionState.UNKNOWN;
 
     public static final ServerList servers = ServerList.getInstance();

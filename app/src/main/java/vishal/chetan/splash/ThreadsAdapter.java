@@ -1,5 +1,6 @@
 package vishal.chetan.splash;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -111,8 +112,13 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         holder.content.setHtml(thread.getContent());
         UserIdentity user = SplashCache.UsersCache.getUser(thread.getServerIndex(), thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
             @Override
-            public void onGetUser(@NonNull UserIdentity user) {
-                holder.creator.setText(user.getUsername());
+            public void onGetUser(@NonNull final UserIdentity user) {
+                ((Activity)context).runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        holder.creator.setText(user.getUsername());
+                    }
+                });
             }
         });
         if (user == null) {

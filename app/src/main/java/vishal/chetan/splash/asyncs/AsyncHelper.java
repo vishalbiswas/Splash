@@ -34,9 +34,6 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
         this.postMessage = postMessage;
     }
 
-    @Override
-    protected abstract void onPostExecute(JSONObject jsonObject);
-
     @Nullable
     @Override
     protected JSONObject doInBackground(Void... params) {

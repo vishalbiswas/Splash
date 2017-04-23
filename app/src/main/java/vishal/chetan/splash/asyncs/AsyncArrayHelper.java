@@ -25,8 +25,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
         this.pageUrl = pageUrl;
     }
 
-    @Override
-    protected abstract void onPostExecute(JSONArray jsonArray);
+    protected void workInBackground(JSONArray jsonArray) {}
 
     @Nullable
     @Override
@@ -62,6 +61,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
                 e.printStackTrace();
             }
         }
+        workInBackground(result);
         return result;
     }
 }
