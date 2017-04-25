@@ -39,6 +39,7 @@ public class ProfileActivity extends BaseActivity {
     @Nullable
     private UserIdentity identity;
     private AsyncTask updateTask = null;
+    private MenuItem menu_save = null;
 
     private ImageView imgPic;
     @Nullable
@@ -133,6 +134,7 @@ public class ProfileActivity extends BaseActivity {
             getMenuInflater().inflate(R.menu.menu_profile, menu);
         }
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        menu_save = menu.findItem(R.id.menuSave);
         return true;
     }
 
@@ -149,7 +151,7 @@ public class ProfileActivity extends BaseActivity {
                     fieldValidator.validateEmail(Email.getText().toString());
                 }
                 if (GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    if (Email.getError() != null || GlobalFunctions.getRegEmailStatus() == GlobalFunctions.HTTP_CODE.SUCCESS) {
+                    if (Email.getError() != null || GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.SUCCESS) {
                         break;
                     }
                 } else {
@@ -171,6 +173,7 @@ public class ProfileActivity extends BaseActivity {
                     }
                 }
                 final String notFinalPostMessage = postMessage;
+                menu_save.setEnabled(false);
                 if (profPic != null) {
                     SplashCache.ImageCache.upload(serverIndex, profPic, new SplashCache.ImageCache.OnUploadCompleteListener() {
                         @Override
@@ -206,6 +209,7 @@ public class ProfileActivity extends BaseActivity {
                                         identity.setProfpic(jsonObject.getLong("profPic"));
                                     }
                                     setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
+                                    finish();
                                     break;
                                 case 1:
                                     setError(R.string.errUnknown);
@@ -223,6 +227,7 @@ public class ProfileActivity extends BaseActivity {
                     } else {
                         setError(R.string.errNoAccess);
                     }
+                    menu_save.setEnabled(true);
                 }
             }.execute();
         } else {

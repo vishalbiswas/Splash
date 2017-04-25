@@ -70,7 +70,7 @@ public class Thread {
 
     private long attachId = -1;
 
-    public Thread(long threadId, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int serverIndex, int topicId, long attachId) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int topicId, long attachId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
@@ -228,7 +228,7 @@ public class Thread {
             this.text = text;
         }
 
-        public void setMtime(Date mtime) {
+        public void setMtime(@Nullable Date mtime) {
             this.mtime = mtime;
         }
 
@@ -237,7 +237,7 @@ public class Thread {
         final private long threadId;
         final private int serverIndex;
 
-        public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, Date ctime, Date mtime) {
+        public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, @Nullable Date ctime, @Nullable Date mtime) {
             this.text = text;
             this.creator_id = creator_id;
             this.commentId = commentId;

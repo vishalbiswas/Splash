@@ -64,18 +64,19 @@ public abstract class ThreadHelper implements Runnable {
                 if (postMessage != null || rawPost) {
                     webservice.setRequestMethod("POST");
                     webservice.setDoOutput(true);
-                    OutputStream outputStream = webservice.getOutputStream();
+                    OutputStream outputStream;
                     if (postMessage != null) {
                         webservice.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                        outputStream = webservice.getOutputStream();
                         outputStream.write(postMessage.getBytes());
                     } else {
                         webservice.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                        outputStream = webservice.getOutputStream();
                         outputStream.write(("--" + boundary + "\r\n").getBytes());
                         workOutput(outputStream);
                         outputStream.write(("\r\n--" + boundary + "--\r\n").getBytes());
                     }
                     outputStream.flush();
-                    workOutput(outputStream);
                     outputStream.close();
                 } else {
                     webservice.setRequestMethod("GET");
@@ -101,15 +102,19 @@ public abstract class ThreadHelper implements Runnable {
 
     abstract protected void doWork(JSONObject jsonObject);
 
-    protected JSONObject workInput(InputStream rawInputStream) throws JSONException, IOException {
+    protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rawInputStream));
         String line;
         StringBuilder response = new StringBuilder();
 
-        while ((line = bufferedReader.readLine()) != null) {
-            response.append(line);
+        try {
+            while ((line = bufferedReader.readLine()) != null) {
+                response.append(line);
+            }
+            bufferedReader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        bufferedReader.close();
         return new JSONObject(response.toString());
     }
 

@@ -8,13 +8,13 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_view_thread">
 
-    <android.support.v4.widget.NestedScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <ImageView
@@ -116,7 +116,6 @@
                 </LinearLayout>
 
             </LinearLayout>
-            <!--FIXME: An image attachment (if large enough) won't leave space for this-->
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/comments"
@@ -126,6 +125,6 @@
 
         </LinearLayout>
 
-    </android.support.v4.widget.NestedScrollView>
+    </ScrollView>
 
 </android.support.v4.widget.SwipeRefreshLayout>

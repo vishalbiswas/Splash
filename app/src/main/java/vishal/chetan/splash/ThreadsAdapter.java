@@ -54,24 +54,29 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     private final static int NORMAL = 0, IMAGE = 1;
     @Nullable
     private final ArrayList<Thread> threadList;
-    private final Context context;
+    private final Activity context;
 
-    public ThreadsAdapter(Context context, final int filter) {
+    public ThreadsAdapter(final Activity context, final int filter) {
         threadList = SplashCache.ThreadCache.getAllForIndex(filter);
         this.context = context;
-        SplashCache.ThreadCache.setOnThreadModifyListener(new SplashCache.ThreadCache.OnThreadModifiedListener() {
+        SplashCache.ThreadCache.adapterListener = new SplashCache.ThreadCache.OnThreadModifiedListener() {
             @Override
             public void onModify(@Nullable Thread thread) {
                 if (thread != null) {
                     if (filter == -1 || thread.getServerIndex() == filter) {
-                        notifyDataSetChanged();
+                        context.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                notifyDataSetChanged();
+                            }
+                        });
                     }
                 }
             }
-        });
+        };
     }
 
-    public ThreadsAdapter(Context context, @Nullable final ArrayList<Thread> threadList) {
+    public ThreadsAdapter(Activity context, @Nullable final ArrayList<Thread> threadList) {
         this.context = context;
         this.threadList = threadList;
     }

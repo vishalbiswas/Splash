@@ -110,6 +110,12 @@ public class ViewThreadActivity extends BaseActivity {
                             e.printStackTrace();
                         }
                     }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            refreshLayout.setRefreshing(false);
+                        }
+                    });
                 } else {
                     runOnUiThread(new Runnable() {
                         @Override

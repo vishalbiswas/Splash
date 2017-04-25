@@ -145,11 +145,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         if (previousItemId == -1) {
             for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                 if (GlobalFunctions.servers.get(i).isEnabled()) {
-                    new FetchThreads(NUMBER_OF_THREADS).execute();
+                    new FetchThreads(NUMBER_OF_THREADS).execute(i);
                 }
             }
         } else {
-            new FetchThreads(NUMBER_OF_THREADS).execute();;
+            new FetchThreads(NUMBER_OF_THREADS).execute(serverIndex);;
         }
     }
 
@@ -220,7 +220,9 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 threads.add(new Thread(thread.getLong("threadid"), serverIndex,
                                         thread.getString("title"), thread.getString("content"),
                                         thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
-                                        GlobalFunctions.parseDate(thread.getString("mtime")), thread.getInt("topicid")));
+                                        GlobalFunctions.parseDate(thread.getString("mtime")), thread.getInt("topicid"),
+                                        thread.getLong("attachid")));
+
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -322,7 +324,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 header.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId));
+                        startActivityForResult(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId), update_user_result_id);
                     }
                 });
                 fab.setVisibility(View.VISIBLE);
@@ -460,9 +462,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         for (int i = 0; i < data.length(); ++i) {
                             JSONObject thread = data.getJSONObject(i);
                             SplashCache.ThreadCache.add(new Thread(thread.getLong("threadid"),
-                                    thread.getString("title"), thread.getString("content"),
-                                    thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
-                                    GlobalFunctions.parseDate(thread.getString("mtime")), serverIndex,
+                                    serverIndex, thread.getString("title"),
+                                    thread.getString("content"), thread.getLong("author"),
+                                    GlobalFunctions.parseDate(thread.getString("ctime")),
+                                    GlobalFunctions.parseDate(thread.getString("mtime")),
                                     thread.getInt("topicid"), thread.getLong("attachid")));
                         }
                         if (previousItemId == -1 || previousItemId == serverIndex) {

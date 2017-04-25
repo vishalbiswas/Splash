@@ -34,6 +34,7 @@ public class PostActivity extends BaseActivity {
     private Button btnImage;
     @Nullable
     private Bitmap attach = null;
+    private long attachid = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +89,7 @@ public class PostActivity extends BaseActivity {
                 if (!(editPostTitle.getText().toString().isEmpty() || editPost.getText().toString().isEmpty())) {
                     final Thread thread;
                     v.setEnabled(false);
-                    SplashCache.ThreadCache.setOnThreadModifyListener(modifiedListener);
+                    SplashCache.ThreadCache.postListener = modifiedListener;
                     if (getIntent().getLongExtra("threadId", -1) != -1) {
                         thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
                         thread.setMtime(new Date());
@@ -100,8 +101,13 @@ public class PostActivity extends BaseActivity {
                                 @Override
                                 public void onUpload(long attachId) {
                                     if (attachId < 0) {
-                                        v.setEnabled(true);
-                                        Snackbar.make(btnSubmit, R.string.errAttach, Snackbar.LENGTH_LONG).show();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                v.setEnabled(true);
+                                                Snackbar.make(btnSubmit, R.string.errAttach, Snackbar.LENGTH_LONG).show();
+                                            }
+                                        });
                                     } else {
                                         thread.setAttachId(attachId);
                                         SplashCache.ThreadCache.set(thread);
@@ -109,7 +115,7 @@ public class PostActivity extends BaseActivity {
                                 }
                             });
                         } else {
-                            thread.setAttachId(-1);
+                            thread.setAttachId(attachid);
                             SplashCache.ThreadCache.set(thread);
                         }
                     } else {
@@ -140,7 +146,10 @@ public class PostActivity extends BaseActivity {
             Thread thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
             editPostTitle.setText(thread.getTitle());
             editPost.setText(thread.getRawContent());
-            btnImage.setText(R.string.strChangeAttach);
+            if (thread.getAttachId() >= 0) {
+                btnImage.setText(R.string.strChangeAttach);
+                attachid = thread.getAttachId();
+            }
             setTitle(getString(R.string.strEditThread));
             updatePreview();
         }
@@ -161,6 +170,7 @@ public class PostActivity extends BaseActivity {
                 btnImage.setText(R.string.strChangeAttach);
             } else {
                 attach = null;
+                attachid = -1;
                 btnImage.setText(R.string.strAttach);
             }
         }

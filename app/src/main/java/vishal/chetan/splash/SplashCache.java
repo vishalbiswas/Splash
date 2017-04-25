@@ -12,11 +12,14 @@ import android.util.SparseArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
@@ -95,11 +98,12 @@ public class SplashCache {
 
         private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
         @Nullable
-        private static OnThreadModifiedListener modifyListener;
+        static OnThreadModifiedListener adapterListener = null;
+        @Nullable
+        public static OnThreadModifiedListener postListener = null;
 
         @Nullable
         static ArrayList<Thread> getAllForIndex(final int filterIndex) {
-            //add(new Thread(0, 0, "Hello", "Welcome to `Splash app`! Visit https://github.com/vishalbiswas/splash to know more.\n\n Have fun!", 1, new Date(), new Date(), 0));
             if (filterIndex == -1) {
                 ArrayList<Thread> allThreads = new ArrayList<>();
                 for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
@@ -144,9 +148,10 @@ public class SplashCache {
                     Thread newThread = null;
                     if (jsonObject != null) {
                         try {
-                            newThread = new Thread(jsonObject.getLong("threadid"), thread.getTitle(),
-                                    thread.getRawContent(), thread.getCreatorID(), GlobalFunctions.parseDate(jsonObject.getString("ctime")),
-                                    GlobalFunctions.parseDate(jsonObject.getString("mtime")), thread.getServerIndex(),
+                            newThread = new Thread(jsonObject.getLong("threadid"), thread.getServerIndex(),
+                                    thread.getTitle(), thread.getRawContent(), thread.getCreatorID(),
+                                    GlobalFunctions.parseDate(jsonObject.getString("ctime")),
+                                    GlobalFunctions.parseDate(jsonObject.getString("mtime")),
                                     thread.getTopicId(), thread.getAttachId());
                             add(newThread);
                         } catch (JSONException e) {
@@ -155,9 +160,12 @@ public class SplashCache {
                     } else {
                         Log.d(TAG, "Unable to add thread");
                     }
-                    if (modifyListener != null) {
-                        modifyListener.onModify(newThread);
-                        modifyListener = null;
+                    if (adapterListener != null) {
+                        adapterListener.onModify(thread);
+                    }
+                    if (postListener != null) {
+                        postListener.onModify(thread);
+                        postListener = null;
                     }
                 }
             };
@@ -189,9 +197,12 @@ public class SplashCache {
                             e.printStackTrace();
                         }
                     }
-                    if (modifyListener != null) {
-                        modifyListener.onModify(newThread);
-                        modifyListener = null;
+                    if (adapterListener != null) {
+                        adapterListener.onModify(thread);
+                    }
+                    if (postListener != null) {
+                        postListener.onModify(thread);
+                        postListener = null;
                     }
                 }
             };
@@ -200,10 +211,6 @@ public class SplashCache {
 
         public static Thread getThread(int serverIndex, long threadId) {
             return threads.get(serverIndex).get(threadId);
-        }
-
-        public static void setOnThreadModifyListener(OnThreadModifiedListener listener) {
-            modifyListener = listener;
         }
     }
 
@@ -244,14 +251,6 @@ public class SplashCache {
                 @Nullable
                 Bitmap image = null;
 
-                @NonNull
-                @Override
-                protected JSONObject workInput(@NonNull InputStream rawInputStream) throws JSONException {
-                    image = BitmapFactory.decodeStream(rawInputStream);
-                    setImage(serverIndex, attachId, image);
-                    return new JSONObject("{status:0}");
-                }
-
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
@@ -266,6 +265,13 @@ public class SplashCache {
                         Log.e(TAG, "Unknown error");
                     }
                     listener.onGetImage(image);
+                }
+
+                @Override
+                protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
+                    image = BitmapFactory.decodeStream(rawInputStream);
+                    setImage(serverIndex, attachId, image);
+                    return new JSONObject("{status:0}");
                 }
             };
             GlobalFunctions.executor.execute(loader);
@@ -285,7 +291,7 @@ public class SplashCache {
 
 
         public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
-            Runnable uploader = new ThreadHelper(serverIndex, "upload", true) {
+            ThreadHelper uploader = new ThreadHelper(serverIndex, "upload", true) {
                 @Override
                 protected void workOutput(@NonNull OutputStream rawOutputStream) throws IOException {
                     rawOutputStream.write("Content-Disposition: form-data; name=\"attach\"; filename=\"attach.png\"\r\n".getBytes());
