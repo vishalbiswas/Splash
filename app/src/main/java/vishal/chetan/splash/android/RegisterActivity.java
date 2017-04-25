@@ -1,5 +1,6 @@
 package vishal.chetan.splash.android;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -31,6 +32,7 @@ public class RegisterActivity extends BaseActivity {
     private View snackLayout;
     private FieldValidator fieldValidator;
     private int serverIndex;
+    private AsyncTask registerTask = null;
 
     private void failed(int errorCode) {
         int errorMessageResId = R.string.errUnknown;
@@ -63,26 +65,30 @@ public class RegisterActivity extends BaseActivity {
         String password = viewPassword.getText().toString().trim();
         String postMessage = "user=" + username + "&email=" + email + "&pass=" + password;
 
-        new AsyncHelper(serverIndex, "register", postMessage) {
-            @Override
-            protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                if (jsonObject != null) {
-                    try {
-                        int status = jsonObject.getInt("status");
-                        if (status == 0) {
-                            Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_LONG).show();
-                            finish();
-                        } else {
-                            failed(status);
+        if (registerTask == null || registerTask.getStatus() == AsyncTask.Status.FINISHED) {
+            registerTask = new AsyncHelper(serverIndex, "register", postMessage) {
+                @Override
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                    if (jsonObject != null) {
+                        try {
+                            int status = jsonObject.getInt("status");
+                            if (status == 0) {
+                                Toast.makeText(RegisterActivity.this, "Registration Successful", Toast.LENGTH_LONG).show();
+                                finish();
+                            } else {
+                                failed(status);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    } else {
+                        failed(-1);
                     }
-                } else {
-                    failed(-1);
                 }
-            }
-        }.execute();
+            }.execute();
+        } else {
+            fieldValidator.errorProvider.setErrorSnack(R.string.strAlreadyRunning);
+        }
     }
 
     @Override

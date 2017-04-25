@@ -112,4 +112,5 @@
     <string name="strSearch">Search</string>
     <string name="strRefresh">Refresh</string>
     <string name="strLogout">Log out</string>
+    <string name="strAlreadyRunning">Already in progress...</string>
 </resources>

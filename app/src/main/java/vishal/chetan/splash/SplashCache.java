@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.asyncs.AsyncRawHelper;
+import vishal.chetan.splash.asyncs.ThreadHelper;
 
 import static android.content.ContentValues.TAG;
 
@@ -51,9 +52,9 @@ public class SplashCache {
         }
 
         private static void loadUser(final int serverIndex, long uid, @Nullable final OnGetUserListener listener) {
-            new AsyncHelper(serverIndex, "user/" + uid) {
+            Runnable loader = new ThreadHelper(serverIndex, "user/" + uid) {
                 @Override
-                protected void onPostExecute(@Nullable  JSONObject jsonObject) {
+                protected void doWork(@Nullable  JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
@@ -73,7 +74,8 @@ public class SplashCache {
                         Log.e(TAG, "Unknown error");
                     }
                 }
-            }.execute();
+            };
+            GlobalFunctions.executor.execute(loader);
         }
 
         static void setUser(int serverIndex, @NonNull UserIdentity user) {
@@ -136,9 +138,9 @@ public class SplashCache {
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
-            new AsyncHelper(thread.getServerIndex(), "post", postMessage) {
+            Runnable creator = new ThreadHelper(thread.getServerIndex(), "post", postMessage) {
                 @Override
-                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                protected void doWork(@Nullable JSONObject jsonObject) {
                     Thread newThread = null;
                     if (jsonObject != null) {
                         try {
@@ -158,7 +160,8 @@ public class SplashCache {
                         modifyListener = null;
                     }
                 }
-            }.execute();
+            };
+            GlobalFunctions.executor.execute(creator);
         }
 
         public static void set(@NonNull final Thread thread) {
@@ -166,9 +169,9 @@ public class SplashCache {
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
-            new AsyncHelper(thread.getServerIndex(), "editpost/" + thread.getThreadId(), postMessage) {
+            Runnable setter = new ThreadHelper(thread.getServerIndex(), "editpost/" + thread.getThreadId(), postMessage) {
                 @Override
-                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                protected void doWork(@Nullable JSONObject jsonObject) {
                     Thread newThread = null;
                     if (jsonObject != null) {
                         newThread = thread;
@@ -191,7 +194,8 @@ public class SplashCache {
                         modifyListener = null;
                     }
                 }
-            }.execute();
+            };
+            GlobalFunctions.executor.execute(setter);
         }
 
         public static Thread getThread(int serverIndex, long threadId) {
@@ -214,7 +218,7 @@ public class SplashCache {
 
         private final static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
 
-        public static Bitmap get(int serverIndex, long attachId, @Nullable OnGetImageListener listener) {
+        public static Bitmap get(int serverIndex, long attachId, @NonNull OnGetImageListener listener) {
             if (attachId < 0) {
                 return null;
             }
@@ -229,27 +233,27 @@ public class SplashCache {
             if (image == null) {
                 loadImage(serverIndex, attachId, listener);
                 image = serverArray.get(attachId);
-            } else if (listener != null) {
+            } else {
                 listener.onGetImage(image);
             }
             return image;
         }
 
-        static private void loadImage(final int serverIndex, final long attachId, @Nullable final OnGetImageListener listener) {
-            AsyncTask helper = new AsyncRawHelper(serverIndex, "attachment/" + attachId, false) {
+        static private void loadImage(final int serverIndex, final long attachId, @NonNull final OnGetImageListener listener) {
+            Runnable loader = new ThreadHelper(serverIndex, "attachment/" + attachId) {
                 @Nullable
                 Bitmap image = null;
 
                 @NonNull
                 @Override
-                protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
+                protected JSONObject workInput(@NonNull InputStream rawInputStream) throws JSONException {
                     image = BitmapFactory.decodeStream(rawInputStream);
                     setImage(serverIndex, attachId, image);
                     return new JSONObject("{status:0}");
                 }
 
                 @Override
-                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                protected void doWork(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             if (jsonObject.getInt("status") != 0) {
@@ -261,18 +265,10 @@ public class SplashCache {
                     } else {
                         Log.e(TAG, "Unknown error");
                     }
-                    if (listener != null) {
-                        listener.onGetImage(image);
-                    }
+                    listener.onGetImage(image);
                 }
-            }.execute();
-            if (listener == null) {
-                try {
-                    helper.get();
-                } catch (@NonNull InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
+            };
+            GlobalFunctions.executor.execute(loader);
         }
 
         static void setImage(int serverIndex, long attachId, Bitmap image) {
@@ -289,7 +285,7 @@ public class SplashCache {
 
 
         public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
-            new AsyncRawHelper(serverIndex, "upload", true) {
+            Runnable uploader = new ThreadHelper(serverIndex, "upload", true) {
                 @Override
                 protected void workOutput(@NonNull OutputStream rawOutputStream) throws IOException {
                     rawOutputStream.write("Content-Disposition: form-data; name=\"attach\"; filename=\"attach.png\"\r\n".getBytes());
@@ -301,7 +297,7 @@ public class SplashCache {
                 }
 
                 @Override
-                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                protected void doWork(@Nullable JSONObject jsonObject) {
                     long attachId = -1;
                     if (jsonObject != null) {
                         try {
@@ -313,7 +309,8 @@ public class SplashCache {
                     }
                     listener.onUpload(attachId);
                 }
-            }.execute();
+            };
+            GlobalFunctions.executor.execute(uploader);
         }
     }
 }

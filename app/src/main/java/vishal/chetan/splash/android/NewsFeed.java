@@ -125,7 +125,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             @Override
             public void onRefresh() {
                 refreshLayout.setRefreshing(false);
-                fillThreadCache(NUMBER_OF_THREADS);
+                fillThreadCache();
             }
         });
 
@@ -133,23 +133,23 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         GlobalFunctions.servers.addListener(new ServerList.OnServerEnabledListener() {
             @Override
             public void onEnabledChanged(int serverIndex, boolean enabled) {
-                fillThreadCache(NUMBER_OF_THREADS);
+                fillThreadCache();
                 updateOptionsMenu();
             }
         });
 
-        fillThreadCache(NUMBER_OF_THREADS);
+        fillThreadCache();
     }
 
-    private void fillThreadCache(final int quantity) {
+    private void fillThreadCache() {
         if (previousItemId == -1) {
             for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                 if (GlobalFunctions.servers.get(i).isEnabled()) {
-                    new FetchThreads(i, quantity).execute();
+                    new FetchThreads(NUMBER_OF_THREADS).execute();
                 }
             }
         } else {
-            new FetchThreads(serverIndex, quantity).execute();
+            new FetchThreads(NUMBER_OF_THREADS).execute();;
         }
     }
 
@@ -251,7 +251,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 startActivity(new Intent(NewsFeed.this, AboutActivity.class));
                 break;
             case R.id.refresh:
-                fillThreadCache(NUMBER_OF_THREADS);
+                fillThreadCache();
                 break;
             case R.id.logout:
                 if (previousItemId >= 0) {
@@ -416,19 +416,19 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         return result;
     }
 
-    private class FetchThreads extends AsyncTask<Void, Void, Void> {
-        final int serverIndex;
+    private class FetchThreads extends AsyncTask<Integer, Void, Void> {
+        int serverIndex;
         @NonNull
         final String path;
 
-        FetchThreads(int serverIndex, int numberOfThreads) {
-            this.serverIndex = serverIndex;
+        FetchThreads(int numberOfThreads) {
             path = "/threads/" + numberOfThreads;
         }
 
         @Nullable
         @Override
-        protected Void doInBackground(Void... params) {
+        protected Void doInBackground(Integer... params) {
+            serverIndex = params[0];
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {

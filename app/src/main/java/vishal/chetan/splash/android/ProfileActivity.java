@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -37,6 +38,7 @@ public class ProfileActivity extends BaseActivity {
     private FieldValidator fieldValidator;
     @Nullable
     private UserIdentity identity;
+    private AsyncTask updateTask = null;
 
     private ImageView imgPic;
     @Nullable
@@ -185,43 +187,47 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void doUpdate(String postMessage) {
-        new AsyncHelper(serverIndex, "update/" + identity.getUid(), postMessage) {
-            @Override
-            protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                if (jsonObject != null) {
-                    try {
-                        switch (jsonObject.getInt("status")) {
-                            case 0:
-                                UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
-                                identity.setFirstname(jsonObject.getString("fname"));
-                                identity.setLastname(jsonObject.getString("lname"));
+        if (updateTask == null || updateTask.getStatus() == AsyncTask.Status.FINISHED) {
+            updateTask = new AsyncHelper(serverIndex, "update/" + identity.getUid(), postMessage) {
+                @Override
+                protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                    if (jsonObject != null) {
+                        try {
+                            switch (jsonObject.getInt("status")) {
+                                case 0:
+                                    UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
+                                    identity.setFirstname(jsonObject.getString("fname"));
+                                    identity.setLastname(jsonObject.getString("lname"));
 
-                                if (jsonObject.has("email")) {
-                                    identity.setEmail(jsonObject.getString("email"));
-                                }
-                                if (jsonObject.has("profpic")) {
-                                    identity.setProfpic(jsonObject.getLong("profPic"));
-                                }
-                                setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
-                                break;
-                            case 1:
-                                setError(R.string.errUnknown);
-                                break;
-                            case 2:
-                                setError(R.string.errPartialData);
-                                break;
-                            case 3:
-                                setError(R.string.errRequest);
-                                break;
+                                    if (jsonObject.has("email")) {
+                                        identity.setEmail(jsonObject.getString("email"));
+                                    }
+                                    if (jsonObject.has("profpic")) {
+                                        identity.setProfpic(jsonObject.getLong("profPic"));
+                                    }
+                                    setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
+                                    break;
+                                case 1:
+                                    setError(R.string.errUnknown);
+                                    break;
+                                case 2:
+                                    setError(R.string.errPartialData);
+                                    break;
+                                case 3:
+                                    setError(R.string.errRequest);
+                                    break;
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                    } else {
+                        setError(R.string.errNoAccess);
                     }
-                } else {
-                    setError(R.string.errNoAccess);
                 }
-            }
-        }.execute();
+            }.execute();
+        } else {
+            setError(R.string.strAlreadyRunning);
+        }
     }
 
     private class ProfileErrorProvider implements FieldValidator.ErrorProvider {

@@ -33,6 +33,9 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
@@ -55,6 +58,10 @@ public class GlobalFunctions extends Application {
             AndDown.HOEDOWN_EXT_SUPERSCRIPT | AndDown.HOEDOWN_EXT_UNDERLINE |
             AndDown.HOEDOWN_EXT_FOOTNOTES | AndDown.HOEDOWN_EXT_HIGHLIGHT |
             AndDown.HOEDOWN_EXT_NO_INTRA_EMPHASIS;
+
+    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
+            Runtime.getRuntime().availableProcessors(), 1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+
 
     public static HTTP_CODE getRegNameStatus() {
         return regNameStatus;

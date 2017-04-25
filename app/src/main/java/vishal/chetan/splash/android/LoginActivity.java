@@ -2,6 +2,7 @@ package vishal.chetan.splash.android;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -30,6 +31,7 @@ public class LoginActivity extends BaseActivity {
     private SharedPreferences sharedPreferences;
     private EditText txtUsername, txtPassword;
     private int serverIndex;
+    private static AsyncTask loginTask;
 
     private void setError(@StringRes int resId) {
         Snackbar.make(findViewById(R.id.frag), getString(resId), Snackbar.LENGTH_SHORT).show();
@@ -104,57 +106,61 @@ public class LoginActivity extends BaseActivity {
         if (!(username.isEmpty() || password.isEmpty() || serverIndex < 0)) {
             String postMessage = "user=" + username +"&pass=" + password;
 
-            new AsyncHelper(serverIndex, "login", postMessage) {
-                @Override
-                protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                    if (jsonObject != null) {
-                        try {
-                            int status = jsonObject.getInt("status");
+            if (loginTask == null || loginTask.getStatus() == AsyncTask.Status.FINISHED) {
+                loginTask = new AsyncHelper(serverIndex, "login", postMessage) {
+                    @Override
+                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
+                        if (jsonObject != null) {
+                            try {
+                                int status = jsonObject.getInt("status");
 
-                            if (status == 0) {
-                                UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
-                                if (identity == null) {
-                                    identity = new UserIdentity();
-                                    GlobalFunctions.identities.append(serverIndex, identity);
-                                }
+                                if (status == 0) {
+                                    UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
+                                    if (identity == null) {
+                                        identity = new UserIdentity();
+                                        GlobalFunctions.identities.append(serverIndex, identity);
+                                    }
 
-                                if (jsonObject.has("fname")) {
-                                    identity.setFirstname(jsonObject.getString("fname"));
+                                    if (jsonObject.has("fname")) {
+                                        identity.setFirstname(jsonObject.getString("fname"));
+                                    } else {
+                                        identity.setFirstname("");
+                                    }
+                                    if (jsonObject.has("lname")) {
+                                        identity.setLastname(jsonObject.getString("lname"));
+                                    } else {
+                                        identity.setLastname("");
+                                    }
+
+                                    if (jsonObject.has("profpic")) {
+                                        identity.setProfpic(jsonObject.getLong("profpic"));
+                                    }
+                                    identity.setUid(jsonObject.getLong("uid"));
+                                    identity.setUsername(jsonObject.getString("user"));
+                                    identity.setEmail(jsonObject.getString("email"));
+
+                                    setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
+                                    if (PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("remember", false)) {
+                                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                                        editor.putString("username" + GlobalFunctions.servers.get(serverIndex).getName(), username);
+                                        editor.putString("password" + GlobalFunctions.servers.get(serverIndex).getName(), password);
+                                        editor.apply();
+                                    }
+                                    finish();
                                 } else {
-                                    identity.setFirstname("");
+                                    setError(R.string.errInvalidCreds);
                                 }
-                                if (jsonObject.has("lname")) {
-                                    identity.setLastname(jsonObject.getString("lname"));
-                                } else {
-                                    identity.setLastname("");
-                                }
-
-                                if (jsonObject.has("profpic")) {
-                                    identity.setProfpic(jsonObject.getLong("profpic"));
-                                }
-                                identity.setUid(jsonObject.getLong("uid"));
-                                identity.setUsername(jsonObject.getString("user"));
-                                identity.setEmail(jsonObject.getString("email"));
-
-                                setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
-                                if (PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("remember", false)) {
-                                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                                    editor.putString("username" + GlobalFunctions.servers.get(serverIndex).getName(), username);
-                                    editor.putString("password" + GlobalFunctions.servers.get(serverIndex).getName(), password);
-                                    editor.apply();
-                                }
-                                finish();
-                            } else {
-                                setError(R.string.errInvalidCreds);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
                             }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        } else {
+                            setError(R.string.errNoAccess);
                         }
-                    } else {
-                        setError(R.string.errNoAccess);
                     }
-                }
-            }.execute();
+                }.execute();
+            } else {
+                setError(R.string.strAlreadyRunning);
+            }
         }
     }
 
