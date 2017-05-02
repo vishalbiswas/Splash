@@ -206,6 +206,7 @@ public class GlobalFunctions extends Application {
                         }
                         bufferedReader.close();
                         JSONArray data = new JSONArray(response.toString());
+                        source.clearTopics();
                         for(int i = 0; i < data.length(); ++i) {
                             JSONObject topic = data.getJSONObject(i);
                             source.addTopic(topic.getInt("topicid"), topic.getString("name"));

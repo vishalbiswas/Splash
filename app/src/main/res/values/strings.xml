@@ -89,9 +89,7 @@
     <string name="errPassNoMatch">Passwords do not match!</string>
     <string name="errUserData">Unable to retrieve userdata!</string>
     <string name="strEditThread">Edit Thread</string>
-    <string name="strEditComment">Edit Comment</string>
     <string name="labelSearch">Search Threads</string>
-    <string name="strAttach">Attach Image</string>
     <string name="strChangeAttach">Change Image</string>
     <string name="strCommentFetchFailed">Unable to fetch comments</string>
     <string name="errPost">An error occurred while posting</string>

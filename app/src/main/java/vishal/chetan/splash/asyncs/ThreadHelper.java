@@ -24,18 +24,18 @@ public abstract class ThreadHelper implements Runnable {
     private String postMessage = null;
     private boolean rawPost = false;
 
-    public ThreadHelper(int serverIndex, String pageUrl) {
+    protected ThreadHelper(int serverIndex, String pageUrl) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
     }
 
-    public ThreadHelper(int serverIndex, String pageUrl, String postMessage) {
+    protected ThreadHelper(int serverIndex, String pageUrl, String postMessage) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
         this.postMessage = postMessage;
     }
 
-    public ThreadHelper(int serverIndex, String pageUrl, boolean rawPost) {
+    protected ThreadHelper(int serverIndex, String pageUrl, boolean rawPost) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
         this.rawPost = rawPost;

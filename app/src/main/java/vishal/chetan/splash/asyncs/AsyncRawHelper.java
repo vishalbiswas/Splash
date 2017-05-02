@@ -19,7 +19,7 @@ import java.net.URL;
 import vishal.chetan.splash.GlobalFunctions;
 
 public abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
-    public static final String boundary = "mainBoundary";
+    private static final String boundary = "mainBoundary";
 
     private final int serverIndex;
     private final String pageUrl;

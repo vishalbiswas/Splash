@@ -72,6 +72,10 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             topics.add(new SplashTopic(topicId, topicName));
         }
 
+        public void clearTopics() {
+            topics.clear();
+        }
+
         public void addTopic(SplashTopic topic) {
             topics.add(topic);
         }

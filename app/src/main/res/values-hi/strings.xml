@@ -69,4 +69,26 @@
     <string name="strDefLnameSummary">नए पंजीकरण के लिए इस्तेमाल होने वाला आखरी नाम</string>
     <string name="strSubmit">सन्चित करे</string>
     <string name="strAbout">अधिक जानें</string>
+    <string name="errAttach">अटैच्मेंट अपलोड करते समय त्रुटि हुई है</string>
+    <string name="errPassNoMatch">पासवर्ड मेल नहीं खाते!</string>
+    <string name="errPost">पोस्ट करते समय त्रुटि हुई है</string>
+    <string name="errUserData">उपयोगकर्ता डेटा पुनर्प्राप्त करने में असमर्थ!</string>
+    <string name="labelSearch">खोजे</string>
+    <string name="strAlreadyRunning">पहले से ही प्रगति में है ...</string>
+    <string name="strAttachImage">चित्र संलग्न करें</string>
+    <string name="strAuthor">रचयिता</string>
+    <string name="strChangeAttach">चित्र बदलें</string>
+    <string name="strCommentFetchFailed">टिप्पणियाँ लाने में असमर्थ</string>
+    <string name="strComments">टिप्पणियाँ</string>
+    <string name="strConfirmPass">पासवर्ड</string>
+    <string name="strContent">पाठ</string>
+    <string name="strCreated">निर्मिती दिनांक:</string>
+    <string name="strCreator">निर्माता</string>
+    <string name="strForum">फोरम</string>
+    <string name="strLogout">लोग आउट</string>
+    <string name="strRefresh">ताज़ा करें</string>
+    <string name="strSearch">खोजे</string>
+    <string name="strThreadDate">पोस्ट की तारीख</string>
+    <string name="strThreadId">पोस्टआईडी</string>
+    <string name="strTitle">शीर्षक</string>
 </resources>

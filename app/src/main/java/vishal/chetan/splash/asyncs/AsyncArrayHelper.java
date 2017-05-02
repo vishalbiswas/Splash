@@ -20,7 +20,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
     protected final int serverIndex;
     private final String pageUrl;
 
-    public AsyncArrayHelper(int serverIndex, String pageUrl) {
+    protected AsyncArrayHelper(int serverIndex, String pageUrl) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
     }

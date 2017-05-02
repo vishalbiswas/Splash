@@ -26,7 +26,6 @@ import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
-import vishal.chetan.splash.ThreadInfoActivity;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncArrayHelper;
 
@@ -173,7 +172,7 @@ public class ViewThreadActivity extends BaseActivity {
                 break;
             case reply_thread_code:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == serverIndex && data.getLongExtra("threadId", -1) == threadId) {
-                    comments.getAdapter().notifyItemInserted(0);
+                    comments.getAdapter().notifyItemInserted(thread.getComments().size()-1);
                 }
                 break;
         }

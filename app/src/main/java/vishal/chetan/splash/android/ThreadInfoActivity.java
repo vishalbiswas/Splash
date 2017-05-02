@@ -1,4 +1,4 @@
-package vishal.chetan.splash;
+package vishal.chetan.splash.android;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,8 +6,11 @@ import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.TextView;
 
-import vishal.chetan.splash.android.BaseActivity;
-import vishal.chetan.splash.android.ProfileActivity;
+import vishal.chetan.splash.GlobalFunctions;
+import vishal.chetan.splash.R;
+import vishal.chetan.splash.SplashCache;
+import vishal.chetan.splash.Thread;
+import vishal.chetan.splash.UserIdentity;
 
 public class ThreadInfoActivity extends BaseActivity {
     private int serverIndex = -1;

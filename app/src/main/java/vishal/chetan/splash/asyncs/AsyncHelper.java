@@ -28,7 +28,7 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
         this.pageUrl = pageUrl;
     }
 
-    public AsyncHelper(int serverIndex, String pageUrl, @Nullable String postMessage) {
+    protected AsyncHelper(int serverIndex, String pageUrl, @Nullable String postMessage) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
         this.postMessage = postMessage;
@@ -74,7 +74,7 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                     bufferedReader.close();
                     result = new JSONObject(response.toString());
                 } else {
-                    result = new JSONObject("{status:5,msg:\"Internal error");
+                    result = new JSONObject("{status:5,msg:\"Internal error}");
                 }
 
             } catch (@NonNull IOException | JSONException e) {

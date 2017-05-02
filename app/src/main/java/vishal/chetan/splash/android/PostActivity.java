@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -43,10 +44,11 @@ public class PostActivity extends BaseActivity {
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
         previewPost =  (HtmlTextView) findViewById(R.id.previewPost);
         editPost = (EditText) findViewById(R.id.editPost);
-        editPost.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+        editPost.setOnKeyListener(new View.OnKeyListener() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
                 updatePreview();
+                return false;
             }
         });
         final EditText editPostTitle = (EditText) findViewById(R.id.editPostTitle);
@@ -171,7 +173,7 @@ public class PostActivity extends BaseActivity {
             } else {
                 attach = null;
                 attachid = -1;
-                btnImage.setText(R.string.strAttach);
+                btnImage.setText(R.string.strAttachImage);
             }
         }
     }

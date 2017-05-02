@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -98,6 +99,16 @@ public class ProfileActivity extends BaseActivity {
         LName.setText(identity.getLastname());
         Email.setText(identity.getEmail());
 
+        Email.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean focus) {
+                String email = Email.getText().toString().trim();
+                if (!identity.getEmail().equals(email)){
+                    fieldValidator.validateEmail(email);
+                }
+            }
+        });
+
         if (uid == -1) {
             editPass = (EditText) findViewById(R.id.editPass);
             editPass2 = (EditText) findViewById(R.id.editPass2);
@@ -148,18 +159,17 @@ public class ProfileActivity extends BaseActivity {
                 break;
             case R.id.menuSave:
                 if (!Email.getText().toString().equals(GlobalFunctions.identities.get(serverIndex).getEmail())) {
-                    fieldValidator.validateEmail(Email.getText().toString());
-                }
-                if (GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
-                    if (Email.getError() != null || GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.SUCCESS) {
+                    if (GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
+                        if (Email.getError() != null || GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.SUCCESS) {
+                            break;
+                        }
+                    } else {
+                        fieldValidator.errorProvider.setErrorSnack(R.string.warnRegBusy);
                         break;
                     }
-                } else {
-                    fieldValidator.errorProvider.setErrorSnack(R.string.warnRegBusy);
-                    break;
                 }
-                String pass = editPass.getText().toString();
-                String pass2 = editPass2.getText().toString();
+                String pass = editPass.getText().toString().trim();
+                String pass2 = editPass2.getText().toString().trim();
                 String postMessage = String.format("fname=%s&lname=%s&email=%s", FName.getText(), LName.getText(), Email.getText());
                 if (!pass.isEmpty()) {
                     if (!pass.equals(pass2)) {
@@ -169,6 +179,8 @@ public class ProfileActivity extends BaseActivity {
                         fieldValidator.validatePassword(editPass.getText().toString());
                         if (editPass.getError() == null) {
                             postMessage = String.format("%s&password=%s", postMessage, editPass.getText());
+                        } else {
+                            break;
                         }
                     }
                 }
@@ -182,7 +194,8 @@ public class ProfileActivity extends BaseActivity {
                         }
                     });
                 } else {
-                    doUpdate(String.format("%s&profpic=%s", postMessage, -1));
+                    assert identity != null;
+                    doUpdate(String.format("%s&profpic=%s", postMessage, identity.getProfpic()));
                 }
                 break;
         }
@@ -191,6 +204,7 @@ public class ProfileActivity extends BaseActivity {
 
     private void doUpdate(String postMessage) {
         if (updateTask == null || updateTask.getStatus() == AsyncTask.Status.FINISHED) {
+            assert identity != null;
             updateTask = new AsyncHelper(serverIndex, "update/" + identity.getUid(), postMessage) {
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
@@ -206,7 +220,7 @@ public class ProfileActivity extends BaseActivity {
                                         identity.setEmail(jsonObject.getString("email"));
                                     }
                                     if (jsonObject.has("profpic")) {
-                                        identity.setProfpic(jsonObject.getLong("profPic"));
+                                        identity.setProfpic(jsonObject.getLong("profpic"));
                                     }
                                     setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
                                     finish();
@@ -219,6 +233,9 @@ public class ProfileActivity extends BaseActivity {
                                     break;
                                 case 3:
                                     setError(R.string.errRequest);
+                                    break;
+                                case 5:
+                                    setError(R.string.errUnknown);
                                     break;
                             }
                         } catch (JSONException e) {
