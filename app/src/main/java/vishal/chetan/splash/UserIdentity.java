@@ -71,7 +71,6 @@ public class UserIdentity {
         this.email = email;
     }
 
-    @Nullable
     public long getProfpic() {
         return profpic;
     }

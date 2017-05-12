@@ -3,10 +3,7 @@
     <string name="app_name">समाचार</string>
     <string name="action_settings">सेटिंग</string>
     <string name="error_credentials">अवैध लॉगइन या पासवर्ड!</string>
-    <string name="error_login">आप अधिकृत नहीं हैं!</string>
     <string name="login">लॉगिन</string>
-    <string name="msgPassword">पासवर्ड</string>
-    <string name="msgUsername">उपयोगकर्ता नाम</string>
     <string name="password">पासवर्ड</string>
     <string name="strLanguage">भाषा</string>
     <string name="strRemember">मुझे याद रखें</string>
@@ -46,7 +43,6 @@
     <string name="txtFName">मूल नाम</string>
     <string name="txtLName">उपनाम</string>
     <string name="txtSave">संचय</string>
-    <string name="warnOffline">ऑफलाइन</string>
     <string name="defaultEmail">मुख्य ईमेल</string>
     <string name="defaultFname">मुख्य नाम</string>
     <string name="defaultIdentity">मुख्य पहचान</string>
@@ -58,7 +54,7 @@
     <string name="title_activity_sources_manager">फोरम बदले</string>
     <string name="strSave">सन्चित करे</string>
     <string name="descDeleteServer">सर्वर निकाले</string>
-    <string name="strNoResponse">" बन्द है"</string>
+    <string name="strNoResponse">" से संपर्क नहीं हो रहा हैै"</string>
     <string name="strAskLogin">क्या अाप अभी लॉगिन करना चाहते है?</string>
     <string name="strCloseSources">पोस्ट देखे</string>
     <string name="strFilterSource">फ़िल्टर करें</string>
@@ -73,8 +69,7 @@
     <string name="errPassNoMatch">पासवर्ड मेल नहीं खाते!</string>
     <string name="errPost">पोस्ट करते समय त्रुटि हुई है</string>
     <string name="errUserData">उपयोगकर्ता डेटा पुनर्प्राप्त करने में असमर्थ!</string>
-    <string name="labelSearch">खोजे</string>
-    <string name="strAlreadyRunning">पहले से ही प्रगति में है ...</string>
+    <string name="strAlreadyRunning">पहले से ही प्रगति में है …</string>
     <string name="strAttachImage">चित्र संलग्न करें</string>
     <string name="strAuthor">रचयिता</string>
     <string name="strChangeAttach">चित्र बदलें</string>
@@ -83,7 +78,6 @@
     <string name="strConfirmPass">पासवर्ड</string>
     <string name="strContent">पाठ</string>
     <string name="strCreated">निर्मिती दिनांक:</string>
-    <string name="strCreator">निर्माता</string>
     <string name="strForum">फोरम</string>
     <string name="strLogout">लोग आउट</string>
     <string name="strRefresh">ताज़ा करें</string>

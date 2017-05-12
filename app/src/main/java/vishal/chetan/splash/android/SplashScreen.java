@@ -20,7 +20,7 @@ public class SplashScreen extends BaseActivity {
         setContentView(R.layout.activity_splash_screen);
 
         if (BuildConfig.BUILD_TYPE.equals("debug") && GlobalFunctions.servers.size() == 0) {
-            if (Build.PRODUCT.startsWith("sdk")) {
+            if (Build.PRODUCT.startsWith("sdk") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
             } else {
                 GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));

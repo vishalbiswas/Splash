@@ -221,7 +221,7 @@ public class GlobalFunctions extends Application {
                 activity.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(activity, "Error occurred while connecting to " + source.getName() + ". Disabling...", Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, source.getName() + activity.getString(R.string.strNoResponse), Toast.LENGTH_LONG).show();
                         GlobalFunctions.servers.setDisabled(params[0], true);
                     }
                 });

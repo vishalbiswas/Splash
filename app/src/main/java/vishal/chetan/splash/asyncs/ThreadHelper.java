@@ -19,8 +19,8 @@ import vishal.chetan.splash.GlobalFunctions;
 public abstract class ThreadHelper implements Runnable {
     private static final String boundary = "mainBoundary";
 
-    private int serverIndex;
-    private String pageUrl;
+    private final int serverIndex;
+    private final String pageUrl;
     private String postMessage = null;
     private boolean rawPost = false;
 

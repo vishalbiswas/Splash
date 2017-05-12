@@ -149,7 +149,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 }
             }
         } else {
-            new FetchThreads(NUMBER_OF_THREADS).execute(serverIndex);;
+            new FetchThreads(NUMBER_OF_THREADS).execute(serverIndex);
         }
     }
 
@@ -159,14 +159,14 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         nav_menu.setGroupCheckable(Menu.NONE, true, true);
         nav_menu.clear();
         SubMenu menu = nav_menu.addSubMenu(R.string.strSource);
-        menu.add(Menu.NONE, -1, Menu.NONE, "All").setCheckable(true);
+        menu.add(Menu.NONE, -1, Menu.NONE, R.string.strAll).setCheckable(true);
         onNavigationItemSelected(menu.findItem(-1));
         for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
             if (GlobalFunctions.servers.get(i).isEnabled()) {
                 menu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true);
             }
         }
-        nav_menu.add(Menu.NONE, -2, Menu.NONE, "Search").setCheckable(true);
+        nav_menu.add(Menu.NONE, -2, Menu.NONE, R.string.strSearch).setCheckable(true);
     }
 
     @Override
@@ -236,7 +236,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     }
                 }.execute();
             } else {
-                Snackbar.make(nav_view, "Please, select a server to search in...", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(nav_view, R.string.errSelectSearchServer, Snackbar.LENGTH_SHORT).show();
             }
         }
     }

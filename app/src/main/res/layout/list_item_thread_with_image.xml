@@ -35,7 +35,8 @@
         <ImageView
             android:id="@+id/imgAttach"
             android:layout_width="match_parent"
-            android:layout_height="192dp" />
+            android:layout_height="192dp"
+            tools:ignore="ContentDescription" />
 
         <vishal.chetan.splash.NoScrollHtmlTextView
             android:id="@+id/threadPreview"

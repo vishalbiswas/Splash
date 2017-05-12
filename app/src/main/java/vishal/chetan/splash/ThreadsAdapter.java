@@ -1,12 +1,10 @@
 package vishal.chetan.splash;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
@@ -103,7 +101,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
                 SplashCache.ImageCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.ImageCache.OnGetImageListener() {
                     @Override
                     public void onGetImage(final Bitmap image) {
-                        ((AppCompatActivity)context).runOnUiThread(new Runnable() {
+                        context.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap(image);
@@ -118,7 +116,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         UserIdentity user = SplashCache.UsersCache.getUser(thread.getServerIndex(), thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
             @Override
             public void onGetUser(@NonNull final UserIdentity user) {
-                ((Activity)context).runOnUiThread(new Runnable() {
+                context.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         holder.creator.setText(user.getUsername());

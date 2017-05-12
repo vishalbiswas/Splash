@@ -2,7 +2,6 @@ package vishal.chetan.splash;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
@@ -12,18 +11,12 @@ import android.util.SparseArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
-import java.util.concurrent.ExecutionException;
 
-import vishal.chetan.splash.asyncs.AsyncHelper;
-import vishal.chetan.splash.asyncs.AsyncRawHelper;
 import vishal.chetan.splash.asyncs.ThreadHelper;
 
 import static android.content.ContentValues.TAG;
@@ -145,7 +138,7 @@ public class SplashCache {
             Runnable creator = new ThreadHelper(thread.getServerIndex(), "post", postMessage) {
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
-                    Thread newThread = null;
+                    Thread newThread;
                     if (jsonObject != null) {
                         try {
                             newThread = new Thread(jsonObject.getLong("threadid"), thread.getServerIndex(),
@@ -180,7 +173,7 @@ public class SplashCache {
             Runnable setter = new ThreadHelper(thread.getServerIndex(), "editpost/" + thread.getThreadId(), postMessage) {
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
-                    Thread newThread = null;
+                    Thread newThread;
                     if (jsonObject != null) {
                         newThread = thread;
                         try {
@@ -225,9 +218,9 @@ public class SplashCache {
 
         private final static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
 
-        public static Bitmap get(int serverIndex, long attachId, @NonNull OnGetImageListener listener) {
+        public static void get(int serverIndex, long attachId, @NonNull OnGetImageListener listener) {
             if (attachId < 0) {
-                return null;
+                return;
             }
             LongSparseArray<Bitmap> serverArray = images.get(serverIndex);
             Bitmap image = null;
@@ -243,7 +236,6 @@ public class SplashCache {
             } else {
                 listener.onGetImage(image);
             }
-            return image;
         }
 
         static private void loadImage(final int serverIndex, final long attachId, @NonNull final OnGetImageListener listener) {
