@@ -1,31 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="200dp"
-    android:background="@drawable/ic_nav_header"
-    android:gravity="bottom|start"
-    android:orientation="vertical"
-    android:padding="10dp">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <ImageView
-        android:id="@+id/headerPic"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_gravity="start|top"
-        android:contentDescription="@string/tipProfpic"
-        android:src="@mipmap/ic_news" />
+        android:scaleType="fitXY"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        app:srcCompat="@drawable/ic_nav_header"/>
 
-    <TextView
-        android:id="@+id/headerUser"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@android:color/primary_text_dark" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:gravity="bottom|start"
+        android:orientation="vertical"
+        android:padding="10dp">
 
-    <TextView
-        android:id="@+id/headerEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textColor="@android:color/primary_text_dark" />
-</LinearLayout>
+        <ImageView
+            android:id="@+id/headerPic"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="start|top"
+            android:contentDescription="@string/tipProfpic"
+            android:src="@mipmap/ic_news" />
+
+        <TextView
+            android:id="@+id/headerUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/primary_text_dark" />
+
+        <TextView
+            android:id="@+id/headerEmail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@android:color/primary_text_dark" />
+    </LinearLayout>
+</RelativeLayout>
