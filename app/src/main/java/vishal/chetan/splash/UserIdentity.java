@@ -20,6 +20,12 @@ public class UserIdentity {
         this.profpic = profpic;
     }
 
+    UserIdentity(long uid, @Nullable String username, String email) {
+        this.uid = uid;
+        this.username = username;
+        this.email = email;
+    }
+
     UserIdentity(@Nullable String username, String firstname, String lastname, String email) {
         this.username = username;
         this.firstname = firstname;

@@ -54,8 +54,13 @@ public class SplashCache {
                     if (jsonObject != null) {
                         try {
                             UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
-                                    jsonObject.getString("username"), jsonObject.getString("fname"),
-                                    jsonObject.getString("lname"), jsonObject.getString("email"));
+                                    jsonObject.getString("username"), jsonObject.getString("email"));
+                            if (jsonObject.has("fname")) {
+                                fetcheduser.setFirstname(jsonObject.getString("fname"));
+                            }
+                            if (jsonObject.has("lname")) {
+                                fetcheduser.setLastname(jsonObject.getString("lname"));
+                            }
                             if (jsonObject.has("profpic")) {
                                 fetcheduser.setProfpic(jsonObject.getLong("profpic"));
                             }
