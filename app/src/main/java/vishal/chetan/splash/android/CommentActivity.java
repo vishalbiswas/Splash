@@ -46,14 +46,14 @@ public class CommentActivity extends BaseActivity {
             public void onClick(View v) {
                 if (!editPost.getText().toString().trim().isEmpty()) {
                     btnSubmit.setEnabled(false);
-                    final Thread.Comment comment = new Thread.Comment(serverIndex, threadId, GlobalFunctions.identities.get(serverIndex).getUid(), editPost.getText().toString().trim());
+                    final Thread.Comment comment = new Thread.Comment(serverIndex, threadId, editPost.getText().toString().trim());
                     String postMessage = String.format("author=%s&content=%s", comment.getCreatorID(), comment.getText());
                     new AsyncHelper(serverIndex, "comment/" + threadId, postMessage) {
                         @Override
                         protected void onPostExecute(@Nullable JSONObject jsonObject) {
                             if (jsonObject != null) {
                                 try {
-                                    Thread.Comment finalComment = new Thread.Comment(serverIndex, threadId, comment.getCreatorID(), comment.getText(), jsonObject.getLong("commentid"), GlobalFunctions.parseDate(jsonObject.getString("ctime")), GlobalFunctions.parseDate(jsonObject.getString("mtime")));
+                                    Thread.Comment finalComment = new Thread.Comment(serverIndex, threadId, comment.getCreatorID(), comment.getText(), jsonObject.getLong("commentid"), jsonObject.getLong("ctime"), jsonObject.getLong("mtime"));
                                     SplashCache.ThreadCache.getThread(serverIndex, threadId).addComment(finalComment);
                                     setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", threadId).putExtra("commentId", finalComment.getCommentId()));
                                     finish();

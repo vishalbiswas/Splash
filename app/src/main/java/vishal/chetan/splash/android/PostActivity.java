@@ -121,7 +121,7 @@ public class PostActivity extends BaseActivity {
                             SplashCache.ThreadCache.set(thread);
                         }
                     } else {
-                         thread = new Thread(new Random(new Date().getTime()).nextLong(), serverIndex, editPostTitle.getText().toString(), editPost.getText().toString(), GlobalFunctions.identities.get(serverIndex).getUid(), new Date(), new Date(), (int) spinTopic.getSelectedItemId());
+                         thread = new Thread(serverIndex, editPostTitle.getText().toString(), editPost.getText().toString(), (int) spinTopic.getSelectedItemId());
                         if (attach != null) {
                             SplashCache.ImageCache.upload(serverIndex, attach, new SplashCache.ImageCache.OnUploadCompleteListener() {
                                 @Override

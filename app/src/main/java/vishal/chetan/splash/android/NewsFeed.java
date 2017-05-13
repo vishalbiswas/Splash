@@ -219,8 +219,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 JSONObject thread = jsonArray.getJSONObject(i);
                                 threads.add(new Thread(thread.getLong("threadid"), serverIndex,
                                         thread.getString("title"), thread.getString("content"),
-                                        thread.getLong("author"), GlobalFunctions.parseDate(thread.getString("ctime")),
-                                        GlobalFunctions.parseDate(thread.getString("mtime")), thread.getInt("topicid"),
+                                        thread.getLong("author"), thread.getLong("ctime"),
+                                        thread.getLong("mtime"), thread.getInt("topicid"),
                                         thread.getLong("attachid")));
 
                             } catch (JSONException e) {
@@ -464,8 +464,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                             SplashCache.ThreadCache.add(new Thread(thread.getLong("threadid"),
                                     serverIndex, thread.getString("title"),
                                     thread.getString("content"), thread.getLong("author"),
-                                    GlobalFunctions.parseDate(thread.getString("ctime")),
-                                    GlobalFunctions.parseDate(thread.getString("mtime")),
+                                    thread.getLong("ctime"), thread.getLong("mtime"),
                                     thread.getInt("topicid"), thread.getLong("attachid")));
                         }
                         if (previousItemId == -1 || previousItemId == serverIndex) {

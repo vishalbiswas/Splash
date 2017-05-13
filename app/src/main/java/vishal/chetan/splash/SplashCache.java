@@ -143,8 +143,8 @@ public class SplashCache {
                         try {
                             newThread = new Thread(jsonObject.getLong("threadid"), thread.getServerIndex(),
                                     thread.getTitle(), thread.getRawContent(), thread.getCreatorID(),
-                                    GlobalFunctions.parseDate(jsonObject.getString("ctime")),
-                                    GlobalFunctions.parseDate(jsonObject.getString("mtime")),
+                                    jsonObject.getLong("ctime"),
+                                    jsonObject.getLong("mtime"),
                                     thread.getTopicId(), thread.getAttachId());
                             add(newThread);
                         } catch (JSONException e) {
@@ -232,7 +232,6 @@ public class SplashCache {
             }
             if (image == null) {
                 loadImage(serverIndex, attachId, listener);
-                image = serverArray.get(attachId);
             } else {
                 listener.onGetImage(image);
             }

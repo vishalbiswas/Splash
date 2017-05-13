@@ -70,58 +70,39 @@ public class Thread {
 
     private long attachId = -1;
 
-    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int topicId, long attachId) {
+    public Thread(int serverIndex, String title, String content, int topicId) {
+        this.threadId = -1;
+        this.serverIndex = serverIndex;
+        this.title = title;
+        this.rawContent = content;
+        this.content = GlobalFunctions.parseMarkdown(content);
+        this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
+        this.ctime = null;
+        this.mtime = null;
+        this.topicId = topicId;
+    }
+
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
         this.rawContent = content;
         this.content = GlobalFunctions.parseMarkdown(content);
         this.creator_id = creator_id;
-        this.ctime = ctime;
-        this.mtime = mtime;
+        this.ctime = new Date(ctime);
+        this.mtime = new Date(mtime);
         this.topicId = topicId;
         this.attachId = attachId;
     }
-
-    public Thread(String title, String content, int serverIndex, int topicId, long attachId) {
-        this.threadId = -1;
-        this.serverIndex = serverIndex;
-        this.title = title;
-        this.rawContent = content;
-        this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
-        this.ctime = null;
-        this.mtime = null;
-        this.topicId = topicId;
-        if (attachId < 0) {
-            this.attachId = -1;
-        } else {
-            this.attachId = attachId;
-        }
-    }
-
-    public Thread(String title, String content, int serverIndex, int topicId) {
-        this.threadId = -1;
-        this.serverIndex = serverIndex;
-        this.title = title;
-        this.rawContent = content;
-        this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
-        this.ctime = null;
-        this.mtime = null;
-        this.topicId = topicId;
-        this.attachId = -1;
-    }
-
-    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, @Nullable Date ctime, @Nullable Date mtime, int topicId) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
         this.rawContent = content;
         this.content = GlobalFunctions.parseMarkdown(content);
         this.creator_id = creator_id;
-        this.ctime = ctime;
-        this.mtime = mtime;
+        this.ctime = new Date(ctime);
+        this.mtime = new Date(mtime);
         this.topicId = topicId;
         this.attachId = -1;
     }
@@ -237,19 +218,19 @@ public class Thread {
         final private long threadId;
         final private int serverIndex;
 
-        public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, @Nullable Date ctime, @Nullable Date mtime) {
+        public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, long ctime, long mtime) {
             this.text = text;
             this.creator_id = creator_id;
             this.commentId = commentId;
-            this.ctime = ctime;
-            this.mtime = mtime;
+            this.ctime = new Date(ctime);
+            this.mtime = new Date(mtime);
             this.threadId = threadId;
             this.serverIndex = serverIndex;
         }
 
-        public Comment(int serverIndex, long threadId, long creator_id, String text) {
+        public Comment(int serverIndex, long threadId, String text) {
             this.text = text;
-            this.creator_id = creator_id;
+            this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
             this.commentId = -1;
             this.ctime = null;
             this.mtime = null;

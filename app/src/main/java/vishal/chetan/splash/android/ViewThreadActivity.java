@@ -106,7 +106,7 @@ public class ViewThreadActivity extends BaseActivity {
                     for(int i = 0; i < jsonArray.length(); ++i) {
                         try {
                             JSONObject comment = jsonArray.getJSONObject(i);
-                            thread.addComment(new Thread.Comment(serverIndex, threadId, comment.getLong("author"), comment.getString("content"), comment.getLong("commentid"), GlobalFunctions.parseDate(comment.getString("ctime")), GlobalFunctions.parseDate(comment.getString("mtime"))));
+                            thread.addComment(new Thread.Comment(serverIndex, threadId, comment.getLong("author"), comment.getString("content"), comment.getLong("commentid"), comment.getLong("ctime"), comment.getLong("mtime")));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
