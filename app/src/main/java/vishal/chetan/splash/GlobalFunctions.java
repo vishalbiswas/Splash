@@ -41,8 +41,8 @@ public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
     @Nullable
     private static Locale locale;
-    private static HTTP_CODE regNameStatus;
-    private static HTTP_CODE regEmailStatus;
+    private static HTTP_CODE regNameStatus = HTTP_CODE.UNKNOWN;
+    private static HTTP_CODE regEmailStatus = HTTP_CODE.UNKNOWN;
     @NonNull
     public static SessionState sessionState = SessionState.UNKNOWN;
 

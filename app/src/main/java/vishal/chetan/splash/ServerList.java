@@ -68,6 +68,15 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             this.url = url;
         }
 
+        public int getTopicIndex(int topicid) {
+            for (int index = 0; index < topics.size(); ++index) {
+                if (topics.get(index).topicid == topicid) {
+                    return index;
+                }
+            }
+            return -1;
+        }
+
         public void addTopic(int topicId, String topicName) {
             topics.add(new SplashTopic(topicId, topicName));
         }

@@ -146,6 +146,7 @@ public class PostActivity extends BaseActivity {
 
         if (getIntent().getLongExtra("threadId", -1) != -1) {
             Thread thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
+            spinTopic.setSelection(GlobalFunctions.servers.get(thread.getServerIndex()).getTopicIndex(thread.getTopicId()));
             editPostTitle.setText(thread.getTitle());
             editPost.setText(thread.getRawContent());
             if (thread.getAttachId() >= 0) {

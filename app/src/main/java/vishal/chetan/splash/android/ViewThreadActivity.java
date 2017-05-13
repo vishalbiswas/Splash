@@ -57,15 +57,17 @@ public class ViewThreadActivity extends BaseActivity {
         comments.setAdapter(new CommentsAdapter());
         comments.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
 
-        if (GlobalFunctions.identities.get(serverIndex) != null && thread.getCreatorID() == GlobalFunctions.identities.get(serverIndex).getUid()) {
-            View threadEdit = findViewById(R.id.threadEdit);
-            threadEdit.setVisibility(View.VISIBLE);
-            threadEdit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivityForResult(new Intent(ViewThreadActivity.this, PostActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId), edit_thread_code);
-                }
-            });
+        if (GlobalFunctions.identities.get(serverIndex) != null) {
+            if (thread.getCreatorID() == GlobalFunctions.identities.get(serverIndex).getUid()) {
+                View threadEdit = findViewById(R.id.threadEdit);
+                threadEdit.setVisibility(View.VISIBLE);
+                threadEdit.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        startActivityForResult(new Intent(ViewThreadActivity.this, PostActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId), edit_thread_code);
+                    }
+                });
+            }
 
             View threadReply = findViewById(R.id.threadReply);
             threadReply.setVisibility(View.VISIBLE);

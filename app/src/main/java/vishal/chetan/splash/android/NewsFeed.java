@@ -387,7 +387,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             case create_thread_result_id:
                 if (resultCode == RESULT_OK && (previousItemId == -1 || data.getIntExtra("serverIndex", -3) == previousItemId)) {
                     threadsListView.swapAdapter(new ThreadsAdapter(this, previousItemId), false);
-                    startActivity(new Intent(NewsFeed.this, ViewThreadActivity.class).putExtras(data));
+                    startActivity(new Intent(NewsFeed.this, ViewThreadActivity.class).putExtras(data.getExtras()));
                 }
                 break;
             case update_user_result_id:

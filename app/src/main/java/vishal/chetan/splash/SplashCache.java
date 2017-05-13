@@ -138,7 +138,7 @@ public class SplashCache {
             Runnable creator = new ThreadHelper(thread.getServerIndex(), "post", postMessage) {
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
-                    Thread newThread;
+                    Thread newThread = null;
                     if (jsonObject != null) {
                         try {
                             newThread = new Thread(jsonObject.getLong("threadid"), thread.getServerIndex(),
@@ -154,10 +154,10 @@ public class SplashCache {
                         Log.d(TAG, "Unable to add thread");
                     }
                     if (adapterListener != null) {
-                        adapterListener.onModify(thread);
+                        adapterListener.onModify(newThread);
                     }
                     if (postListener != null) {
-                        postListener.onModify(thread);
+                        postListener.onModify(newThread);
                         postListener = null;
                     }
                 }
@@ -173,7 +173,7 @@ public class SplashCache {
             Runnable setter = new ThreadHelper(thread.getServerIndex(), "editpost/" + thread.getThreadId(), postMessage) {
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
-                    Thread newThread;
+                    Thread newThread = null;
                     if (jsonObject != null) {
                         newThread = thread;
                         try {
@@ -191,10 +191,10 @@ public class SplashCache {
                         }
                     }
                     if (adapterListener != null) {
-                        adapterListener.onModify(thread);
+                        adapterListener.onModify(newThread);
                     }
                     if (postListener != null) {
-                        postListener.onModify(thread);
+                        postListener.onModify(newThread);
                         postListener = null;
                     }
                 }

@@ -59,7 +59,6 @@ public class FieldValidator {
                 return;
             }
 
-            GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
             new CheckAvailable(serverIndex, email).execute();
             this.email = email;
         }
@@ -88,6 +87,11 @@ public class FieldValidator {
         CheckAvailable(int serverIndex, @NonNull String data) {
             super(serverIndex, "check/" + data);
             this.data = data;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            checkStatus(!data.contains("@"), GlobalFunctions.HTTP_CODE.BUSY);
         }
 
         @Override
