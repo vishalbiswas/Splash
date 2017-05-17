@@ -63,7 +63,7 @@ public class ProfileActivity extends BaseActivity {
         uid = getIntent().getLongExtra("uid", -1);
         if (uid == -1) {
             setContentView(R.layout.activity_profile);
-            identity = GlobalFunctions.identities.get(serverIndex);
+            identity = GlobalFunctions.servers.get(serverIndex).identity;
             fieldValidator = new FieldValidator(serverIndex, new ProfileErrorProvider());
         } else {
             setContentView(R.layout.activity_profile_readonly);
@@ -158,7 +158,7 @@ public class ProfileActivity extends BaseActivity {
                 GlobalFunctions.launchSettings(ProfileActivity.this);
                 break;
             case R.id.menuSave:
-                if (!Email.getText().toString().equals(GlobalFunctions.identities.get(serverIndex).getEmail())) {
+                if (!Email.getText().toString().equals(GlobalFunctions.servers.get(serverIndex).identity.getEmail())) {
                     if (GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.BUSY) {
                         if (Email.getError() != null || GlobalFunctions.getRegEmailStatus() != GlobalFunctions.HTTP_CODE.SUCCESS) {
                             break;
@@ -212,7 +212,7 @@ public class ProfileActivity extends BaseActivity {
                         try {
                             switch (jsonObject.getInt("status")) {
                                 case 0:
-                                    UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
+                                    UserIdentity identity = GlobalFunctions.servers.get(serverIndex).identity;
                                     identity.setFirstname(jsonObject.getString("fname"));
                                     identity.setLastname(jsonObject.getString("lname"));
 

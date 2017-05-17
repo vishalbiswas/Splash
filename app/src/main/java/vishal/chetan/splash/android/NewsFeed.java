@@ -257,8 +257,8 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 break;
             case R.id.logout:
                 if (previousItemId >= 0) {
-                    GlobalFunctions.identities.remove(previousItemId);
-                    GlobalFunctions.sessionState = GlobalFunctions.SessionState.DEAD;
+                    GlobalFunctions.servers.get(previousItemId).identity = null;
+                    GlobalFunctions.servers.get(previousItemId).session = ServerList.SplashSource.SessionState.DEAD;
                     updateNavHeader(-3);
                 }
                 break;
@@ -275,8 +275,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             if (ItemId < 0) {
                 actionBar.setTitle(getString(R.string.title_activity_news_feed));
             } else {
-
                 actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
+                if (GlobalFunctions.servers.get(ItemId).session == ServerList.SplashSource.SessionState.DEAD) {
+                    GlobalFunctions.servers.get(ItemId).session = ServerList.SplashSource.SessionState.UNKNOWN;
+                }
             }
             if (ItemId < -1) {
                 threadsListView.setAdapter(null);
@@ -290,9 +292,6 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             previousItemId = ItemId;
         }
         newsDrawer.closeDrawers();
-        if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.DEAD) {
-            GlobalFunctions.sessionState = GlobalFunctions.SessionState.UNKNOWN;
-        }
         return true;
     }
 
@@ -316,7 +315,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             identity = GlobalFunctions.defaultIdentity;
             fab.setVisibility(View.GONE);
         } else {
-            identity = GlobalFunctions.identities.get(itemId);
+            identity = GlobalFunctions.servers.get(itemId).identity;
             if (identity != null) {
                 if (menu_logout != null) {
                     menu_logout.setVisible(true);
@@ -332,8 +331,9 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 if (menu_logout != null) {
                     menu_logout.setVisible(false);
                 }
-                if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
-                    if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
+                if (GlobalFunctions.servers.get(itemId).session == ServerList.SplashSource.SessionState.UNKNOWN) {
+                    if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)
+                            && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
                         startActivityForResult(new Intent(NewsFeed.this, LoginActivity.class).putExtra("serverIndex", itemId), login_result_id);
                     } else {
                         Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strAskLogin), Snackbar.LENGTH_LONG)
@@ -377,10 +377,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
+        int requestServerIndex = data.getIntExtra("serverIndex", -1);
         switch (requestCode) {
             case login_result_id:
-                if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
-                    GlobalFunctions.sessionState = GlobalFunctions.SessionState.ALIVE;
+                if (resultCode == RESULT_OK && requestServerIndex == previousItemId) {
+                    GlobalFunctions.servers.get(requestServerIndex).session = ServerList.SplashSource.SessionState.ALIVE;
                     updateNavHeader(previousItemId);
                 }
                 break;
@@ -391,7 +392,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 }
                 break;
             case update_user_result_id:
-                if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
+                if (resultCode == RESULT_OK && requestServerIndex == previousItemId) {
                     updateNavHeader(previousItemId);
                 }
                 break;
@@ -460,12 +461,21 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         bufferedReader.close();
                         JSONArray data = new JSONArray(response.toString());
                         for (int i = 0; i < data.length(); ++i) {
-                            JSONObject thread = data.getJSONObject(i);
-                            SplashCache.ThreadCache.add(new Thread(thread.getLong("threadid"),
-                                    serverIndex, thread.getString("title"),
-                                    thread.getString("content"), thread.getLong("author"),
-                                    thread.getLong("ctime"), thread.getLong("mtime"),
-                                    thread.getInt("topicid"), thread.getLong("attachid")));
+                            JSONObject threadJSON = data.getJSONObject(i);
+                            Thread thread = new Thread(threadJSON.getLong("threadid"),
+                                    serverIndex, threadJSON.getString("title"),
+                                    threadJSON.getString("content"), threadJSON.getLong("author"),
+                                    threadJSON.getLong("ctime"), threadJSON.getLong("mtime"),
+                                    threadJSON.getInt("topicid"), threadJSON.getLong("attachid"));
+                            if (threadJSON.has("blocked")) {
+                                thread.setBlocked(threadJSON.getBoolean("blocked"));
+                            }
+                            if (threadJSON.has("hidden")) {
+                                thread.setHidden(threadJSON.getBoolean("hidden"));
+                            }
+                            if (thread.canShow()) {
+                                SplashCache.ThreadCache.add(thread);
+                            }
                         }
                         if (previousItemId == -1 || previousItemId == serverIndex) {
                             runOnUiThread(new Runnable() {

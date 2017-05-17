@@ -11,6 +11,14 @@ public class UserIdentity {
     private String email = "";
     private long profpic = -1;
 
+    private String sessionid = null;
+
+    public static final int MODERATOR_NONE = 0;
+    public static final int MODERATOR_NORMAL = 1;
+    public static final int MODERATOR_ABSOLUTE = 2;
+
+    private int mod = MODERATOR_NONE;
+
     UserIdentity(long uid, @Nullable String username, String firstname, String lastname, String email, long profpic) {
         this.uid = uid;
         this.username = username;
@@ -93,4 +101,23 @@ public class UserIdentity {
         this.uid = uid;
     }
 
+    public int getMod() {
+        return mod;
+    }
+
+    public void setMod(int mod) {
+        if (mod > MODERATOR_NONE && mod <= MODERATOR_ABSOLUTE) {
+            this.mod = mod;
+        } else {
+            this.mod = MODERATOR_NONE;
+        }
+    }
+
+    public String getSessionid() {
+        return sessionid;
+    }
+
+    public void setSessionid(String sessionid) {
+        this.sessionid = sessionid;
+    }
 }

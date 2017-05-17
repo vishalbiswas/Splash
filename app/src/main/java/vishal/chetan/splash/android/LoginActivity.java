@@ -68,7 +68,7 @@ public class LoginActivity extends BaseActivity {
                 String pass = sharedPreferences.getString("password" + source.getName(), "");
                 txtUsername.setText(user);
                 txtPassword.setText(pass);
-                if (GlobalFunctions.sessionState == GlobalFunctions.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
+                if (GlobalFunctions.servers.get(serverIndex).session == SplashSource.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
                     doLogin(user, pass);
                 }
             }
@@ -115,10 +115,10 @@ public class LoginActivity extends BaseActivity {
                                 int status = jsonObject.getInt("status");
 
                                 if (status == 0) {
-                                    UserIdentity identity = GlobalFunctions.identities.get(serverIndex);
+                                    UserIdentity identity = GlobalFunctions.servers.get(serverIndex).identity;
                                     if (identity == null) {
                                         identity = new UserIdentity();
-                                        GlobalFunctions.identities.append(serverIndex, identity);
+                                        GlobalFunctions.servers.get(serverIndex).identity = identity;
                                     }
 
                                     if (jsonObject.has("fname")) {
@@ -135,9 +135,14 @@ public class LoginActivity extends BaseActivity {
                                     if (jsonObject.has("profpic")) {
                                         identity.setProfpic(jsonObject.getLong("profpic"));
                                     }
+
+                                    if (jsonObject.has("mod")) {
+                                        identity.setMod(jsonObject.getInt("mod"));
+                                    }
                                     identity.setUid(jsonObject.getLong("uid"));
                                     identity.setUsername(jsonObject.getString("user"));
                                     identity.setEmail(jsonObject.getString("email"));
+                                    identity.setSessionid(jsonObject.getString("sessionid"));
 
                                     setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
                                     if (PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("remember", false)) {

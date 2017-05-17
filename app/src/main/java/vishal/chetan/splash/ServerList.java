@@ -19,6 +19,12 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
             }
         }
 
+        public enum SessionState {
+            ALIVE,
+            DEAD,
+            UNKNOWN
+        }
+
         public String getName() {
             return name;
         }
@@ -62,6 +68,8 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         private String url;
         boolean disabled = false;
         public final ArrayList<SplashTopic> topics = new ArrayList<>();
+        public UserIdentity identity = null;
+        public SessionState session = SessionState.UNKNOWN;
 
         public SplashSource(String name, String url) {
             this.name = name;

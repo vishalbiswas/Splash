@@ -60,6 +60,31 @@ public class Thread {
     private final int serverIndex;
     private int topicId;
 
+    public boolean isBlocked() {
+        return blocked;
+    }
+
+    public void setBlocked(boolean blocked) {
+        this.blocked = blocked;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
+    }
+
+    public boolean canShow() {
+        return !(blocked || hidden) ||
+                (GlobalFunctions.servers.get(serverIndex).identity != null &&
+                        GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE);
+    }
+
+    private boolean blocked = false;
+    private boolean hidden = false;
+
     public long getAttachId() {
         return attachId;
     }
@@ -76,7 +101,7 @@ public class Thread {
         this.title = title;
         this.rawContent = content;
         this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
+        this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
         this.ctime = null;
         this.mtime = null;
         this.topicId = topicId;
@@ -216,7 +241,41 @@ public class Thread {
         @Nullable
         private Date mtime = null;
         final private long threadId;
+
+        public long getParentCommentId() {
+            return parentCommentId;
+        }
+
+        public void setParentCommentId(long parentCommentId) {
+            this.parentCommentId = parentCommentId;
+        }
+
+        private long parentCommentId = -1;
         final private int serverIndex;
+        private boolean blocked = false;
+        private boolean hidden = false;
+
+        public boolean isBlocked() {
+            return blocked;
+        }
+
+        public void setBlocked(boolean blocked) {
+            this.blocked = blocked;
+        }
+
+        public boolean isHidden() {
+            return hidden;
+        }
+
+        public void setHidden(boolean hidden) {
+            this.hidden = hidden;
+        }
+
+        public boolean canShow() {
+            return !(blocked || hidden) ||
+                    (GlobalFunctions.servers.get(serverIndex).identity != null &&
+                            GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE);
+        }
 
         public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, long ctime, long mtime) {
             this.text = text;
@@ -230,7 +289,7 @@ public class Thread {
 
         public Comment(int serverIndex, long threadId, String text) {
             this.text = text;
-            this.creator_id = GlobalFunctions.identities.get(serverIndex).getUid();
+            this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
             this.commentId = -1;
             this.ctime = null;
             this.mtime = null;

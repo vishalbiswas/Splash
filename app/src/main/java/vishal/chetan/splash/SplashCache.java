@@ -117,7 +117,10 @@ public class SplashCache {
                 LongSparseArray<Thread> threadList = threads.get(filterIndex, new LongSparseArray<Thread>());
                 ArrayList<Thread> returnList = new ArrayList<>();
                 for (int i = 0; i < threadList.size(); ++i) {
-                    returnList.add(threadList.valueAt(i));
+                    Thread thread = threadList.valueAt(i);
+                    if (thread.canShow()) {
+                        returnList.add(thread);
+                    }
                 }
                 Collections.sort(returnList, new Thread.ModificationTimeComparator());
                 return returnList;
@@ -136,7 +139,7 @@ public class SplashCache {
         }
 
         public static void create(@NonNull final Thread thread) {
-            String postMessage = String.format("title=%s&content=%s&author=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
+            String postMessage = String.format("title=%s&content=%s&sessionid=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), GlobalFunctions.servers.get(thread.getServerIndex()).identity.getSessionid(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }
@@ -171,7 +174,7 @@ public class SplashCache {
         }
 
         public static void set(@NonNull final Thread thread) {
-            String postMessage = String.format("title=%s&content=%s&author=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), thread.getCreatorID(), thread.getTopicId());
+            String postMessage = String.format("title=%s&content=%s&sessionid=%s&topicid=%s", thread.getTitle(), thread.getRawContent(), GlobalFunctions.servers.get(thread.getServerIndex()).identity.getSessionid(), thread.getTopicId());
             if (thread.getAttachId() >= 0) {
                 postMessage = String.format("%s&attachid=%s", postMessage, thread.getAttachId());
             }

@@ -106,4 +106,6 @@
     <string name="strAlreadyRunning">Already in progress…</string>
     <string name="strAll">All</string>
     <string name="errSelectSearchServer">Please, select a server to search in…</string>
+    <string name="errInvalidSession">Invalid Session</string>
+    <string name="errCommentNotFound">Specified comment does not exist</string>
 </resources>
