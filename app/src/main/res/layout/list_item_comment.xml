@@ -11,11 +11,14 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:id="@+id/parentAuthor"
         android:visibility="gone"/>
+
     <org.sufficientlysecure.htmltextview.HtmlTextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:id="@+id/txtComment"/>
+        android:id="@+id/txtComment"
+        android:textIsSelectable="true"/>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

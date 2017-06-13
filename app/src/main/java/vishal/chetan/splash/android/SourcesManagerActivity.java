@@ -1,7 +1,9 @@
 package vishal.chetan.splash.android;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
@@ -18,6 +20,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
@@ -36,7 +39,7 @@ public class SourcesManagerActivity extends BaseActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                modifySource(-1, "", "");
+                modifySource(-1, null, null);
             }
         });
         final ActionBar toolbar = getSupportActionBar();
@@ -94,6 +97,10 @@ public class SourcesManagerActivity extends BaseActivity {
                 public void onClick(View view) {
                     GlobalFunctions.servers.remove(holder.getAdapterPosition());
                     notifyItemRemoved(holder.getAdapterPosition());
+                    SharedPreferences sharedPreferences = getSharedPreferences("sessions", MODE_PRIVATE);
+                    if (sharedPreferences.contains(source.getName())) {
+                        sharedPreferences.edit().remove(source.getName()).apply();
+                    }
                 }
             });
         }
@@ -135,10 +142,19 @@ public class SourcesManagerActivity extends BaseActivity {
         final LinearLayout layout = new LinearLayout(SourcesManagerActivity.this);
         layout.setOrientation(LinearLayout.VERTICAL);
 
-        final EditText nameEdit = new EditText(SourcesManagerActivity.this);
-        nameEdit.setHint("Name");
-        nameEdit.setText(initialName);
-        layout.addView(nameEdit);
+        final EditText nameEdit;
+        if (initialUrl != null) {
+            nameEdit = new EditText(SourcesManagerActivity.this);
+            nameEdit.setHint("Name");
+            nameEdit.setText(initialName);
+            layout.addView(nameEdit);
+        } else {
+            nameEdit = null;
+            final TextView txtName = new EditText(SourcesManagerActivity.this);
+            txtName.setHint("Name");
+            txtName.setText(initialName);
+            layout.addView(txtName);
+        }
 
         final EditText serverEdit = new EditText(SourcesManagerActivity.this);
         serverEdit.setHint("URL");
@@ -149,7 +165,18 @@ public class SourcesManagerActivity extends BaseActivity {
                 .setView(layout).setPositiveButton(getString(R.string.strSave), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                final String name = nameEdit.getText().toString();
+                final String name;
+                if (initialUrl != null) {
+                    name = nameEdit.getText().toString();
+                    for (ServerList.SplashSource source : GlobalFunctions.servers) {
+                        if (source.getName().equals(name)) {
+                            Toast.makeText(SourcesManagerActivity.this, "A Source with the same name already exists!", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                } else {
+                    name = (String) initialName;
+                }
                 final String url = serverEdit.getText().toString();
                 if (!name.isEmpty() && !name.isEmpty()) {
                     int correctIndex = index;

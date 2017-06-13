@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:name=".GlobalFunctions"
@@ -13,8 +14,8 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
-        <provider android:name=".ThreadSearchSuggestionProvider"
+        <provider
+            android:name=".ThreadSearchSuggestionProvider"
             android:authorities="vishal.chetan.splash.ThreadSearchSuggestionProvider"
             android:exported="false" />
 
@@ -22,26 +23,21 @@
             android:name=".android.LoginActivity"
             android:label="@string/app_name"
             android:parentActivityName=".android.NewsFeed"
-            android:theme="@style/AppTheme.NoActionBar">
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".android.SplashScreen"
-            android:label="@string/app_name"
+            android:name=".android.NewsFeed"
+            android:label="@string/title_activity_news_feed"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
-        <activity
-            android:name=".android.NewsFeed"
-            android:label="@string/title_activity_news_feed"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop">
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
             </intent-filter>
@@ -88,6 +84,38 @@
         <activity android:name=".android.AboutActivity" />
         <activity android:name=".android.ThreadInfoActivity" />
         <activity android:name=".android.CommentActivity" />
+
+        <activity android:name=".android.ExternalIntentHandler">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <data android:mimeType="image/*" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <data android:mimeType="text/plain" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <receiver
+            android:name=".android.NotificationReceiver"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
 </manifest>

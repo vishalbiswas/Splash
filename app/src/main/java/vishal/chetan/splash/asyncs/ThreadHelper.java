@@ -8,7 +8,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -42,7 +41,6 @@ public abstract class ThreadHelper implements Runnable {
     }
 
 
-
     @Override
     public void run() {
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
@@ -73,7 +71,7 @@ public abstract class ThreadHelper implements Runnable {
                         webservice.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                         outputStream = webservice.getOutputStream();
                         outputStream.write(("--" + boundary + "\r\n").getBytes());
-                        workOutput(outputStream);
+                        workOutput(webservice);
                         outputStream.write(("\r\n--" + boundary + "--\r\n").getBytes());
                     }
                     outputStream.flush();
@@ -82,9 +80,9 @@ public abstract class ThreadHelper implements Runnable {
                     webservice.setRequestMethod("GET");
                 }
                 if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    result = workInput(webservice.getInputStream());
+                    result = workInput(webservice);
                 } else {
-                    result = new JSONObject("{status:5,msg:\"Internal error");
+                    result = new JSONObject("{status:5,msg:\"Internal error\"}");
                 }
 
             } catch (@NonNull IOException | JSONException e) {
@@ -102,11 +100,10 @@ public abstract class ThreadHelper implements Runnable {
 
     abstract protected void doWork(JSONObject jsonObject);
 
-    protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(rawInputStream));
+    protected JSONObject workInput(HttpURLConnection webservice) throws JSONException, IOException {
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
         String line;
         StringBuilder response = new StringBuilder();
-
         try {
             while ((line = bufferedReader.readLine()) != null) {
                 response.append(line);
@@ -118,5 +115,6 @@ public abstract class ThreadHelper implements Runnable {
         return new JSONObject(response.toString());
     }
 
-    protected void workOutput(OutputStream rawOutputStream) throws IOException {}
+    protected void workOutput(HttpURLConnection webservice) throws IOException {
+    }
 }

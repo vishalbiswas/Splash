@@ -6,4 +6,5 @@
     <dimen name="thread_info_divider_space">10dp</dimen>
     <dimen name="card_horizontal_margin">5dp</dimen>
     <dimen name="card_vertical_margin">5dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>

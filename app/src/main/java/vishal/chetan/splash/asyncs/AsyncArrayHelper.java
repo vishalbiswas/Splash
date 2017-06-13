@@ -11,6 +11,7 @@ import org.json.JSONException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -19,10 +20,17 @@ import vishal.chetan.splash.GlobalFunctions;
 public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> {
     protected final int serverIndex;
     private final String pageUrl;
+    private String postMessage = null;
 
     protected AsyncArrayHelper(int serverIndex, String pageUrl) {
         this.serverIndex = serverIndex;
         this.pageUrl = pageUrl;
+    }
+
+    protected AsyncArrayHelper(int serverIndex, String pageUrl, String postMessage) {
+        this.serverIndex = serverIndex;
+        this.pageUrl = pageUrl;
+        this.postMessage = postMessage;
     }
 
     protected void workInBackground(JSONArray jsonArray) {}
@@ -45,7 +53,17 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
                 URL url = new URL(completeUrl);
                 HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
                 webservice.setConnectTimeout(3000);
-                webservice.setRequestMethod("GET");
+                if (postMessage != null) {
+                    webservice.setRequestMethod("POST");
+                    webservice.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                    webservice.setDoOutput(true);
+                    OutputStream outputStream = webservice.getOutputStream();
+                    outputStream.write(postMessage.getBytes());
+                    outputStream.flush();
+                    outputStream.close();
+                } else {
+                    webservice.setRequestMethod("GET");
+                }
                 if (webservice.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
                     String line;

@@ -11,11 +11,14 @@ import android.util.SparseArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 
 import vishal.chetan.splash.asyncs.ThreadHelper;
 
@@ -24,7 +27,7 @@ import static android.content.ContentValues.TAG;
 public class SplashCache {
     public static class UsersCache {
         public interface OnGetUserListener {
-            void onGetUser(UserIdentity user);
+            void onGetUser(final UserIdentity user);
         }
 
         private static final SparseArray<LongSparseArray<UserIdentity>> usernames = new SparseArray<>();
@@ -90,6 +93,24 @@ public class SplashCache {
     }
 
     public static class ThreadCache {
+        public static ArrayList<Thread> getModeratable() {
+            ArrayList<Thread> allThreads = new ArrayList<>();
+            for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                if (GlobalFunctions.servers.get(i).identity == null || GlobalFunctions.servers.get(i).identity.getMod() <= 0) {
+                    continue;
+                }
+                LongSparseArray<Thread> threadList = threads.get(i, new LongSparseArray<Thread>());
+                for (int j = 0; j < threadList.size(); ++j) {
+                    Thread thread = threadList.valueAt(i);
+                    if (thread.needmod) {
+                        allThreads.add(thread);
+                    }
+                }
+            }
+            Collections.sort(allThreads, new Thread.ModificationTimeComparator());
+            return allThreads;
+        }
+
         public interface OnThreadModifiedListener {
             void onModify(Thread thread);
         }
@@ -153,7 +174,8 @@ public class SplashCache {
                                     thread.getTitle(), thread.getRawContent(), thread.getCreatorID(),
                                     jsonObject.getLong("ctime"),
                                     jsonObject.getLong("mtime"),
-                                    thread.getTopicId(), thread.getAttachId());
+                                    thread.getTopicId(), thread.getAttachId(),
+                                    thread.getAttachType());
                             add(newThread);
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -185,7 +207,7 @@ public class SplashCache {
                     if (jsonObject != null) {
                         newThread = thread;
                         try {
-                            newThread.setMtime(GlobalFunctions.parseDate(jsonObject.getString("mtime")));
+                            newThread.setMtime(new Date(jsonObject.getLong("mtime")));
                             LongSparseArray<Thread> threadList = threads.get(newThread.getServerIndex());
                             if (threadList == null) {
                                 threadList = new LongSparseArray<>();
@@ -215,47 +237,87 @@ public class SplashCache {
         }
     }
 
-    public static class ImageCache {
+    public static class AttachmentCache {
+        public static final class SplashAttachment {
+            public static final int NONE = 0;
+            public static final int IMAGE = 1;
+            public static final int VIDEO = 2;
+            public static final int AUDIO = 3;
+            public static final int OTHER = 4;
+
+            @NonNull
+            public Object data;
+            public int type = OTHER;
+            public String mimeType;
+            public String name = "attach";
+
+            public SplashAttachment(@NonNull Object data) {
+                if (data instanceof Bitmap) {
+                    this.type = IMAGE;
+                    this.mimeType = "image/png";
+                } else {
+                    this.mimeType = "application/octet-stream";
+                    this.type = OTHER;
+                }
+                this.data = data;
+            }
+
+            public SplashAttachment(@NonNull Object data, @NonNull String name) {
+                if (data instanceof Bitmap) {
+                    this.type = IMAGE;
+                    this.mimeType = "image/png";
+                } else {
+                    this.mimeType = "application/octet-stream";
+                    this.type = OTHER;
+                }
+                this.data = data;
+                this.name = name;
+            }
+        }
+
         public interface OnUploadCompleteListener {
             void onUpload(long attachId);
         }
 
-        public interface OnGetImageListener {
-            void onGetImage(final Bitmap image);
+        public interface OnGetAttachmentListener {
+            void onGetAttachment(final SplashAttachment attachment);
         }
 
-        private final static SparseArray<LongSparseArray<Bitmap>> images = new SparseArray<>();
+        private final static SparseArray<LongSparseArray<SplashAttachment>> attachments = new SparseArray<>();
 
-        public static void get(int serverIndex, long attachId, @NonNull OnGetImageListener listener) {
+        public static SplashAttachment get(int serverIndex, long attachId, OnGetAttachmentListener listener) {
             if (attachId < 0) {
-                return;
+                return null;
             }
-            LongSparseArray<Bitmap> serverArray = images.get(serverIndex);
-            Bitmap image = null;
+            LongSparseArray<SplashAttachment> serverArray = attachments.get(serverIndex);
+            SplashAttachment attachment = null;
             if (serverArray == null) {
                 serverArray = new LongSparseArray<>();
-                images.append(serverIndex, serverArray);
+                attachments.append(serverIndex, serverArray);
             } else {
-                image = serverArray.get(attachId);
+                attachment = serverArray.get(attachId);
             }
-            if (image == null) {
-                loadImage(serverIndex, attachId, listener);
+            if (attachment == null) {
+                loadAttachment(serverIndex, attachId, listener);
             } else {
-                listener.onGetImage(image);
+                if (listener != null) {
+                    listener.onGetAttachment(attachment);
+                }
             }
+            return attachment;
         }
 
-        static private void loadImage(final int serverIndex, final long attachId, @NonNull final OnGetImageListener listener) {
+        static private void loadAttachment(final int serverIndex, final long attachId, final OnGetAttachmentListener listener) {
             Runnable loader = new ThreadHelper(serverIndex, "attachment/" + attachId) {
                 @Nullable
-                Bitmap image = null;
+                SplashAttachment attachment = null;
 
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             if (jsonObject.getInt("status") != 0) {
-                                Log.e(TAG, "Fetch image failed");
+                                Log.e(TAG, "Fetch attachment failed");
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -263,40 +325,65 @@ public class SplashCache {
                     } else {
                         Log.e(TAG, "Unknown error");
                     }
-                    listener.onGetImage(image);
+                    if (listener != null) {
+                        listener.onGetAttachment(attachment);
+                    }
                 }
 
                 @Override
-                protected JSONObject workInput(InputStream rawInputStream) throws JSONException {
-                    image = BitmapFactory.decodeStream(rawInputStream);
-                    setImage(serverIndex, attachId, image);
+                protected JSONObject workInput(HttpURLConnection webservice) throws JSONException, IOException {
+                    String type = webservice.getHeaderField("Content-Type");
+                    InputStream stream = webservice.getInputStream();
+                    if (type != null && type.startsWith("image")) {
+                        attachment = new SplashAttachment(BitmapFactory.decodeStream(stream));
+                    } else {
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+                        int nRead;
+                        byte[] data = new byte[16384];
+
+                        while ((nRead = stream.read(data, 0, data.length)) != -1) {
+                            buffer.write(data, 0, nRead);
+                        }
+
+                        buffer.flush();
+                        attachment = new SplashAttachment(buffer.toByteArray());
+                    }
+                    attachment.name = webservice.getHeaderField("FileName");
+                    attachment.mimeType = type;
+                    setAttachment(serverIndex, attachId, attachment);
                     return new JSONObject("{status:0}");
                 }
             };
             GlobalFunctions.executor.execute(loader);
         }
 
-        static void setImage(int serverIndex, long attachId, Bitmap image) {
+        static void setAttachment(int serverIndex, long attachId, SplashAttachment attachment) {
             if (attachId < 0) {
                 return;
             }
-            LongSparseArray<Bitmap> serverArray = images.get(serverIndex);
+            LongSparseArray<SplashAttachment> serverArray = attachments.get(serverIndex);
             if (serverArray == null) {
                 serverArray = new LongSparseArray<>();
-                images.append(serverIndex, serverArray);
+                attachments.append(serverIndex, serverArray);
             }
-            serverArray.append(attachId, image);
+            serverArray.append(attachId, attachment);
         }
 
 
-        public static void upload(final int serverIndex, @NonNull final Bitmap image, @NonNull final OnUploadCompleteListener listener) {
+        public static void upload(final int serverIndex, @NonNull final SplashAttachment attachment, @NonNull final OnUploadCompleteListener listener) {
             ThreadHelper uploader = new ThreadHelper(serverIndex, "upload", true) {
                 @Override
-                protected void workOutput(@NonNull OutputStream rawOutputStream) throws IOException {
-                    rawOutputStream.write("Content-Disposition: form-data; name=\"attach\"; filename=\"attach.png\"\r\n".getBytes());
-                    rawOutputStream.write("Content-Type: image/png\r\n".getBytes());
-                    rawOutputStream.write("Content-Transfer-Encoding: binary\r\n\r\n".getBytes());
-                    image.compress(Bitmap.CompressFormat.PNG, 100, rawOutputStream);
+                protected void workOutput(HttpURLConnection webservice) throws IOException {
+                    OutputStream rawOutputStream = webservice.getOutputStream();
+                    rawOutputStream.write(String.format("Content-Disposition: form-data; name=\"attach\"; filename=\"%s\"\r\n", attachment.name).getBytes());
+                    rawOutputStream.write("Content-Transfer-Encoding: binary\r\n".getBytes());
+                    rawOutputStream.write(String.format("Content-Type: %s\r\n\r\n", attachment.mimeType).getBytes());
+                    if (attachment.type == SplashAttachment.IMAGE) {
+                        ((Bitmap) attachment.data).compress(Bitmap.CompressFormat.PNG, 100, rawOutputStream);
+                    } else {
+                        rawOutputStream.write((byte[]) attachment.data);
+                    }
                     rawOutputStream.write("\r\n".getBytes());
                     rawOutputStream.flush();
                 }
@@ -307,7 +394,7 @@ public class SplashCache {
                     if (jsonObject != null) {
                         try {
                             attachId = jsonObject.getLong("attachid");
-                            setImage(serverIndex, attachId, image);
+                            setAttachment(serverIndex, attachId, attachment);
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }

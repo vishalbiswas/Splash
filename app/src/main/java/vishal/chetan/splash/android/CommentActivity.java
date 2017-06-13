@@ -8,7 +8,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -136,7 +135,7 @@ public class CommentActivity extends BaseActivity {
         } else {
             username = user.getUsername();
         }
-        String text = String.format("<i>%s wrote<i><break /><blockquote>%s</blockquote>", username, comment.getText());
+        String text = String.format("<i>%s wrote<i><break /><blockquote>%s</blockquote>", username, GlobalFunctions.parseMarkdown(comment.getText()));
         parentComment.setHtml(text);
     }
 }

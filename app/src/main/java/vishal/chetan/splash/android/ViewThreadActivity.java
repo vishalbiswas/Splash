@@ -3,10 +3,11 @@ package vishal.chetan.splash.android;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.FileProvider;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DividerItemDecoration;
@@ -16,23 +17,22 @@ import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import vishal.chetan.splash.GlobalFunctions;
+import vishal.chetan.splash.ModerationManager;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
 import vishal.chetan.splash.UserIdentity;
-import vishal.chetan.splash.asyncs.AsyncArrayHelper;
 
 public class ViewThreadActivity extends BaseActivity {
     private int serverIndex;
@@ -60,6 +60,7 @@ public class ViewThreadActivity extends BaseActivity {
         threadId = getIntent().getLongExtra("threadId", -1);
         updateThread();
         comments = (RecyclerView) findViewById(R.id.comments);
+        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refreshComments);
         comments.setLayoutManager(new LinearLayoutManager(this));
         comments.setAdapter(new CommentsAdapter());
         comments.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -93,7 +94,91 @@ public class ViewThreadActivity extends BaseActivity {
             }
         });
 
-        refreshLayout = (SwipeRefreshLayout) findViewById(R.id.refreshComments);
+        if (thread.isHidden()) {
+            (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.hidden));
+        } else if (thread.isBlocked()) {
+            (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.locked));
+        } else if (thread.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+            (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.reported));
+        }
+        findViewById(R.id.threadMore).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final ArrayList<CharSequence> items = new ArrayList<>();
+                if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                    if (GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE) {
+                        items.add("Moderate");
+                    } else {
+                        items.add("Report");
+                    }
+                }
+                CharSequence dummy = "@UID: " + thread.getCreatorID();
+                items.add(dummy);
+                SplashCache.UsersCache.getUser(serverIndex, thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
+                    @Override
+                    public void onGetUser(@NonNull final UserIdentity user) {
+                        items.set(items.size() - 1, user.getUsername());
+                    }
+                });
+                new AlertDialog.Builder(ViewThreadActivity.this).setItems(items.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String choice = items.get(i).toString();
+                        if (choice.equals("Report")) {
+                            final EditText msgReport = new EditText(ViewThreadActivity.this);
+                            new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Report message (Optional)").setView(msgReport).setPositiveButton("Report", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    ModerationManager.reportThread(serverIndex, threadId, msgReport.getText().toString());
+                                }
+                            }).show();
+                        } else if (choice.equals("Moderate")) {
+                            final ArrayList<CharSequence> list = new ArrayList<CharSequence>();
+                            if (thread.isBlocked()) {
+                                list.add("Unlock");
+                            } else {
+                                list.add("Lock");
+                            }
+                            if (thread.isHidden()) {
+                                list.add("Unhide");
+                            } else {
+                                list.add("Hide");
+                            }
+                            new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Select Action").setItems(list.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, final int i) {
+                                    if (list.get(i).toString().startsWith("Un")) {
+                                        String choice = list.get(i).toString();
+                                        if (choice.equals("Lock")) {
+                                            ModerationManager.unlockThread(serverIndex, threadId);
+                                        } else if (choice.equals("Hide")) {
+                                            ModerationManager.unhideThread(serverIndex, threadId);
+                                        }
+                                    } else {
+                                        final EditText msgModerate = new EditText(ViewThreadActivity.this);
+                                        new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int j) {
+                                                String choice = list.get(i).toString();
+                                                if (choice.equals("Lock")) {
+                                                    ModerationManager.lockThread(serverIndex, threadId, msgModerate.getText().toString());
+                                                } else if (choice.equals("Hide")) {
+                                                    ModerationManager.hideThread(serverIndex, threadId, msgModerate.getText().toString());
+                                                }
+                                            }
+                                        }).show();
+                                    }
+                                }
+                            }).show();
+                        } else if (i == items.size() - 1) {
+                            // poster's name selected
+                            startActivity(new Intent(ViewThreadActivity.this, ProfileActivity.class).putExtra("serverIndex", serverIndex).putExtra("uid", thread.getCreatorID()));
+                        }
+                    }
+                }).show();
+            }
+        });
+
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -104,32 +189,11 @@ public class ViewThreadActivity extends BaseActivity {
         fetchComments();
     }
 
-    private void fetchComments() {
-        new AsyncArrayHelper(serverIndex, "comments/" + threadId) {
+    public void fetchComments() {
+        thread.loadComments(new Thread.LoadCommentsListener() {
             @Override
-            protected void workInBackground(@Nullable JSONArray jsonArray) {
-                if (jsonArray != null) {
-                    thread.clearComments();
-                    for(int i = 0; i < jsonArray.length(); ++i) {
-                        try {
-                            JSONObject commentJSON = jsonArray.getJSONObject(i);
-                            Thread.Comment comment = new Thread.Comment(serverIndex, threadId, commentJSON.getLong("author"), commentJSON.getString("content"), commentJSON.getLong("commentid"), commentJSON.getLong("ctime"), commentJSON.getLong("mtime"));
-                            if (commentJSON.has("blocked")) {
-                                comment.setBlocked(commentJSON.getBoolean("blocked"));
-                            }
-                            if (commentJSON.has("hidden")) {
-                                comment.setHidden(commentJSON.getBoolean("hidden"));
-                            }
-                            if (commentJSON.has("parent")) {
-                                comment.setParentCommentId(commentJSON.getLong("parent"));
-                            }
-                            if (comment.canShow()) {
-                                thread.addComment(comment);
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
+            public void onCommentsLoaded(boolean result) {
+                if (result) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -147,7 +211,7 @@ public class ViewThreadActivity extends BaseActivity {
                     });
                 }
             }
-        }.execute();
+        });
     }
 
     private void updateThread() {
@@ -165,22 +229,67 @@ public class ViewThreadActivity extends BaseActivity {
         }
         ((TextView) findViewById(R.id.threadTime)).setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
         ((TextView) findViewById(R.id.threadSubforum)).setText(GlobalFunctions.servers.get(serverIndex).getTopic(thread.getTopicId()));
-        final ImageView imgAttach = (ImageView) findViewById(R.id.imgAttach);
         if (thread.getAttachId() >= 0) {
-            SplashCache.ImageCache.get(serverIndex, thread.getAttachId(), new SplashCache.ImageCache.OnGetImageListener() {
+            SplashCache.AttachmentCache.get(serverIndex, thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
                 @Override
-                public void onGetImage(final Bitmap image) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            imgAttach.setImageBitmap(image);
-                        }
-                    });
+                public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
+                    if (attachment != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                switch (attachment.type) {
+                                    case SplashCache.AttachmentCache.SplashAttachment.IMAGE:
+                                        final ImageView imgAttach = (ImageView) findViewById(R.id.imgAttach);
+                                        imgAttach.setImageBitmap((Bitmap) attachment.data);
+                                        imgAttach.setVisibility(View.VISIBLE);
+                                        imgAttach.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                openInExternal(attachment);
+                                            }
+                                        });
+                                        break;
+                                    default:
+                                        Drawable icon = getResources().getDrawable(android.R.drawable.presence_video_online);
+                                        TextView threadDummy = (TextView) findViewById(R.id.threadDummy);
+                                        threadDummy.setCompoundDrawables(icon, null, null, null);
+                                        threadDummy.setText(attachment.name);
+                                        threadDummy.setVisibility(View.VISIBLE);
+                                        threadDummy.setOnClickListener(new View.OnClickListener() {
+                                            @Override
+                                            public void onClick(View view) {
+                                                openInExternal(attachment);
+                                            }
+                                        });
+                                        break;
+                                }
+                            }
+                        });
+                    }
                 }
             });
-            imgAttach.setVisibility(View.VISIBLE);
-        } else {
-            imgAttach.setVisibility(View.GONE);
+        }
+    }
+
+    private void openInExternal(SplashCache.AttachmentCache.SplashAttachment attachment) {
+        if (attachment != null) {
+            try {
+                File file = new File(getFilesDir(), GlobalFunctions.servers.get(serverIndex).getName() + thread.getAttachId() + attachment.name);
+                FileOutputStream out = new FileOutputStream(file);
+                if (attachment.type == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
+                    ((Bitmap) attachment.data).compress(Bitmap.CompressFormat.JPEG, 100, out);
+                } else {
+                    out.write((byte[])attachment.data);
+                }
+                out.close();
+                Intent shareIntent = new Intent();
+                shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                shareIntent.setAction(Intent.ACTION_VIEW);
+                shareIntent.setDataAndType(FileProvider.getUriForFile(ViewThreadActivity.this, getApplicationContext().getPackageName() + ".provider", file), attachment.mimeType);
+                startActivity(shareIntent);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -194,12 +303,12 @@ public class ViewThreadActivity extends BaseActivity {
                 break;
             case REPLY_THREAD_CODE:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == serverIndex && data.getLongExtra("threadId", -1) == threadId) {
-                    comments.getAdapter().notifyItemInserted(thread.getComments().size()-1);
+                    comments.getAdapter().notifyItemInserted(thread.getComments().size() - 1);
                 }
                 break;
             case REPLY_COMMENT_CODE:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == serverIndex && data.getLongExtra("threadId", -1) == threadId) {
-                    comments.getAdapter().notifyItemInserted(thread.getComments().size()-1);
+                    comments.getAdapter().notifyItemInserted(thread.getComments().size() - 1);
                 }
                 break;
             case MODIFY_COMMENT_CODE:
@@ -237,14 +346,29 @@ public class ViewThreadActivity extends BaseActivity {
         public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
             final Thread.Comment comment = thread.getComments().valueAt(position);
             final ArrayList<CharSequence> items = new ArrayList<>();
+            if (comment.isHidden()) {
+                holder.setIsRecyclable(false);
+                holder.itemView.setBackgroundColor(getResources().getColor(R.color.hidden));
+            } else if (comment.isBlocked()) {
+                holder.setIsRecyclable(false);
+                holder.itemView.setBackgroundColor(getResources().getColor(R.color.locked));
+            } else if (comment.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+                holder.setIsRecyclable(false);
+                holder.itemView.setBackgroundColor(getResources().getColor(R.color.reported));
+            }
             holder.txtComment.setHtml(GlobalFunctions.parseMarkdown(comment.getText()));
             if (comment.getParentCommentId() != -1) {
                 CharSequence dummy = "@UID: " + thread.getComment(comment.getParentCommentId()).getCreatorID();
                 items.add(dummy);
                 UserIdentity parentAuthor = SplashCache.UsersCache.getUser(serverIndex, thread.getComment(comment.getParentCommentId()).getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
                     @Override
-                    public void onGetUser(@NonNull UserIdentity user) {
-                        holder.parentAuthor.setText("@" + user.getUsername());
+                    public void onGetUser(@NonNull final UserIdentity user) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                holder.parentAuthor.setText("@" + user.getUsername());
+                            }
+                        });
                         items.set(0, "@" + user.getUsername());
                     }
                 });
@@ -258,14 +382,23 @@ public class ViewThreadActivity extends BaseActivity {
                 if (comment.getCreatorID() == GlobalFunctions.servers.get(serverIndex).identity.getUid()) {
                     items.add("Edit");
                 }
+                if (GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE) {
+                    items.add("Moderate");
+                } else {
+                    items.add("Report");
+                }
             }
-            items.add("Report");
             CharSequence dummy = "@UID: " + comment.getCreatorID();
             items.add(dummy);
             UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, comment.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
                 @Override
-                public void onGetUser(@NonNull UserIdentity user) {
-                    holder.txtCommenter.setText(user.getUsername());
+                public void onGetUser(@NonNull final UserIdentity user) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            holder.txtCommenter.setText(user.getUsername());
+                        }
+                    });
                     items.set(items.size() - 1, user.getUsername());
                 }
             });
@@ -284,6 +417,52 @@ public class ViewThreadActivity extends BaseActivity {
                                 startActivityForResult(new Intent(ViewThreadActivity.this, CommentActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId).putExtra("commentId", comment.getCommentId()).putExtra("requestCode", REPLY_COMMENT_CODE), REPLY_COMMENT_CODE);
                             } else if (choice.equals("Edit")) {
                                 startActivityForResult(new Intent(ViewThreadActivity.this, CommentActivity.class).putExtra("serverIndex", serverIndex).putExtra("threadId", threadId).putExtra("commentId", comment.getCommentId()).putExtra("requestCode", MODIFY_COMMENT_CODE), MODIFY_COMMENT_CODE);
+                            } else if (choice.equals("Report")) {
+                                final EditText msgReport = new EditText(ViewThreadActivity.this);
+                                new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Report message (Optional)").setView(msgReport).setPositiveButton("Report", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        ModerationManager.reportComment(serverIndex, comment.getCommentId(), msgReport.getText().toString());
+                                    }
+                                }).show();
+                            } else if (choice.equals("Moderate")) {
+                                final ArrayList<CharSequence> list = new ArrayList<CharSequence>();
+                                if (comment.isBlocked()) {
+                                    list.add("Unlock");
+                                } else {
+                                    list.add("Lock");
+                                }
+                                if (comment.isHidden()) {
+                                    list.add("Unhide");
+                                } else {
+                                    list.add("Hide");
+                                }
+                                new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Select Action").setItems(list.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, final int i) {
+                                        if (list.get(i).toString().startsWith("Un")) {
+                                            String choice = list.get(i).toString();
+                                            if (choice.equals("Lock")) {
+                                                ModerationManager.unlockThread(serverIndex, threadId);
+                                            } else if (choice.equals("Hide")) {
+                                                ModerationManager.unhideThread(serverIndex, threadId);
+                                            }
+                                        } else {
+                                            final EditText msgModerate = new EditText(ViewThreadActivity.this);
+                                            new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialogInterface, int j) {
+                                                    String choice = list.get(i).toString();
+                                                    if (choice.equals("Lock")) {
+                                                        ModerationManager.lockComment(serverIndex, comment.getCommentId(), msgModerate.getText().toString());
+                                                    } else if (choice.equals("Hide")) {
+                                                        ModerationManager.hideComment(serverIndex, comment.getCommentId(), msgModerate.getText().toString());
+                                                    }
+                                                }
+                                            }).show();
+                                        }
+                                    }
+                                }).show();
                             } else if (i == 0) {
                                 // parent author name selected
                                 startActivity(new Intent(ViewThreadActivity.this, ProfileActivity.class).putExtra("serverIndex", serverIndex).putExtra("uid", thread.getComment(comment.getParentCommentId()).getCreatorID()));

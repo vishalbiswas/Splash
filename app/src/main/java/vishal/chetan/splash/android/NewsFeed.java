@@ -1,6 +1,7 @@
 package vishal.chetan.splash.android;
 
 import android.app.SearchManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -25,6 +26,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -43,6 +45,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import vishal.chetan.splash.GlobalFunctions;
+import vishal.chetan.splash.NotificationsAdapter;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.ServerList;
 import vishal.chetan.splash.SplashCache;
@@ -51,6 +54,7 @@ import vishal.chetan.splash.ThreadSearchSuggestionProvider;
 import vishal.chetan.splash.ThreadsAdapter;
 import vishal.chetan.splash.UserIdentity;
 import vishal.chetan.splash.asyncs.AsyncArrayHelper;
+import vishal.chetan.splash.asyncs.AsyncHelper;
 
 public class NewsFeed extends BaseActivity implements NavigationView.OnNavigationItemSelectedListener {
     private RecyclerView threadsListView;
@@ -124,8 +128,13 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                refreshLayout.setRefreshing(false);
-                fillThreadCache();
+                if (previousItemId == -4) {
+                    sendBroadcast(new Intent(NewsFeed.this, NotificationReceiver.class).putExtra("serverIndex", serverIndex));
+                    refreshLayout.setRefreshing(false);
+                } else {
+                    refreshLayout.setRefreshing(false);
+                    fillThreadCache();
+                }
             }
         });
 
@@ -145,28 +154,45 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         if (previousItemId == -1) {
             for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                 if (GlobalFunctions.servers.get(i).isEnabled()) {
-                    new FetchThreads(NUMBER_OF_THREADS).execute(i);
+                    new FetchThreads(NUMBER_OF_THREADS, false).execute(i);
                 }
             }
         } else {
-            new FetchThreads(NUMBER_OF_THREADS).execute(serverIndex);
+            new FetchThreads(NUMBER_OF_THREADS, false).execute(serverIndex);
         }
     }
 
     private void updateOptionsMenu() {
-        previousItemId = -3;
+        previousItemId = -5;
         Menu nav_menu = nav_view.getMenu();
         nav_menu.setGroupCheckable(Menu.NONE, true, true);
         nav_menu.clear();
         SubMenu menu = nav_menu.addSubMenu(R.string.strSource);
         menu.add(Menu.NONE, -1, Menu.NONE, R.string.strAll).setCheckable(true);
         onNavigationItemSelected(menu.findItem(-1));
+        boolean canModerate = false;
+        boolean notifications = false;
         for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+            menu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true).setEnabled(false);
             if (GlobalFunctions.servers.get(i).isEnabled()) {
-                menu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true);
+                menu.findItem(i).setEnabled(true);
+                if (GlobalFunctions.servers.get(i).identity != null) {
+                    if (!notifications) {
+                        notifications = true;
+                    }
+                    if (!canModerate && GlobalFunctions.servers.get(i).identity.getMod() > 0){
+                        canModerate = true;
+                    }
+                }
             }
         }
         nav_menu.add(Menu.NONE, -2, Menu.NONE, R.string.strSearch).setCheckable(true);
+        if (canModerate) {
+            nav_menu.add(Menu.NONE, -3, Menu.NONE, R.string.strModerate).setCheckable(true);
+        }
+        if (notifications) {
+            nav_menu.add(Menu.NONE, -4, Menu.NONE, "Notifications").setCheckable(true);
+        }
     }
 
     @Override
@@ -221,7 +247,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                         thread.getString("title"), thread.getString("content"),
                                         thread.getLong("author"), thread.getLong("ctime"),
                                         thread.getLong("mtime"), thread.getInt("topicid"),
-                                        thread.getLong("attachid")));
+                                        thread.getLong("attachid"), thread.getString("type")));
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -257,9 +283,26 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 break;
             case R.id.logout:
                 if (previousItemId >= 0) {
+                    AsyncHelper logoutTask = new AsyncHelper(previousItemId, "logout", "sessionid=" + GlobalFunctions.servers.get(previousItemId).identity.getSessionid()) {
+                        @Override
+                        protected void onPostExecute(JSONObject jsonObject) {
+                            try {
+                                if (jsonObject != null && jsonObject.getInt("status") == 0) {
+                                    Log.d(ContentValues.TAG, "Logged out");
+                                    return;
+                                }
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.e(ContentValues.TAG, "Cannot log out");
+                        }
+                    };
                     GlobalFunctions.servers.get(previousItemId).identity = null;
+                    GlobalFunctions.broadcastToNotifications(getApplicationContext(), previousItemId);
                     GlobalFunctions.servers.get(previousItemId).session = ServerList.SplashSource.SessionState.DEAD;
-                    updateNavHeader(-3);
+                    logoutTask.execute();
+                    updateOptionsMenu();
+                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
                 }
                 break;
         }
@@ -280,11 +323,31 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     GlobalFunctions.servers.get(ItemId).session = ServerList.SplashSource.SessionState.UNKNOWN;
                 }
             }
-            if (ItemId < -1) {
+            if (ItemId == -3) {
+                for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    if (GlobalFunctions.servers.get(i).isEnabled()) {
+                        new FetchThreads(NUMBER_OF_THREADS, true).execute(i);
+                    }
+                }
+                threadsListView.setAdapter(new ThreadsAdapter(this, ItemId));
+            } else if (ItemId == -4) {
+                final NotificationsAdapter adapter = new NotificationsAdapter(this);
+                NotificationReceiver.listener = new NotificationReceiver.OnNotificationAdded() {
+                    @Override
+                    public void onNotificationAdded() {
+                        adapter.notifyItemInserted(NotificationReceiver.notifications.size() - 1);
+                    }
+                };
+                threadsListView.setAdapter(adapter);
+            } else if (ItemId < -1) {
                 threadsListView.setAdapter(null);
             } else {
                 serverIndex = ItemId;
-                threadsListView.swapAdapter(new ThreadsAdapter(this, ItemId), false);
+                if (previousItemId != -4) {
+                    threadsListView.swapAdapter(new ThreadsAdapter(this, ItemId), false);
+                } else {
+                    threadsListView.setAdapter(new ThreadsAdapter(this, ItemId));
+                }
             }
             updateNavHeader(ItemId);
             nav_view.setCheckedItem(ItemId);
@@ -298,6 +361,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private void updateNavHeader(final int itemId) {
         final UserIdentity identity;
         View header = nav_view.getHeaderView(0);
+        final ImageView bg = (ImageView) header.findViewById(R.id.bg);
         if (itemId < 0) {
             if (menu_logout != null) {
                 menu_logout.setVisible(false);
@@ -314,7 +378,13 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             }
             identity = GlobalFunctions.defaultIdentity;
             fab.setVisibility(View.GONE);
+            bg.setImageResource(R.drawable.ic_nav_header);
         } else {
+            if (GlobalFunctions.servers.get(itemId).banner != null) {
+                bg.setImageBitmap(GlobalFunctions.servers.get(itemId).banner);
+            } else {
+                bg.setImageResource(R.drawable.ic_nav_header);
+            }
             identity = GlobalFunctions.servers.get(itemId).identity;
             if (identity != null) {
                 if (menu_logout != null) {
@@ -357,15 +427,17 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         final ImageView profpic = (ImageView) header.findViewById(R.id.headerPic);
         assert identity != null;
         if (identity.getProfpic() >= 0) {
-            SplashCache.ImageCache.get(serverIndex, identity.getProfpic(), new SplashCache.ImageCache.OnGetImageListener() {
+            SplashCache.AttachmentCache.get(serverIndex, identity.getProfpic(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
                 @Override
-                public void onGetImage(final Bitmap image) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            profpic.setImageBitmap(circleCrop(image));
-                        }
-                    });
+                public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
+                    if (attachment != null) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                profpic.setImageBitmap(circleCrop((Bitmap) attachment.data));
+                            }
+                        });
+                    }
                 }
             });
         } else {
@@ -377,22 +449,21 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
-        int requestServerIndex = data.getIntExtra("serverIndex", -1);
         switch (requestCode) {
             case login_result_id:
-                if (resultCode == RESULT_OK && requestServerIndex == previousItemId) {
-                    GlobalFunctions.servers.get(requestServerIndex).session = ServerList.SplashSource.SessionState.ALIVE;
-                    updateNavHeader(previousItemId);
+                if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
+                    GlobalFunctions.servers.get(data.getIntExtra("serverIndex", -1)).session = ServerList.SplashSource.SessionState.ALIVE;
+                    updateOptionsMenu();
+                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
                 }
                 break;
             case create_thread_result_id:
                 if (resultCode == RESULT_OK && (previousItemId == -1 || data.getIntExtra("serverIndex", -3) == previousItemId)) {
                     threadsListView.swapAdapter(new ThreadsAdapter(this, previousItemId), false);
-                    startActivity(new Intent(NewsFeed.this, ViewThreadActivity.class).putExtras(data.getExtras()));
                 }
                 break;
             case update_user_result_id:
-                if (resultCode == RESULT_OK && requestServerIndex == previousItemId) {
+                if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
                     updateNavHeader(previousItemId);
                 }
                 break;
@@ -419,26 +490,32 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         return result;
     }
 
-    private class FetchThreads extends AsyncTask<Integer, Void, Void> {
+    public class FetchThreads extends AsyncTask<Integer, Void, Void> {
         int serverIndex;
         @NonNull
         final String path;
+        final boolean forModeration;
+        String postMessage;
 
-        FetchThreads(int numberOfThreads) {
+        public FetchThreads(int numberOfThreads, boolean forModeration) {
             path = "/threads/" + numberOfThreads;
+            this.forModeration = forModeration;
         }
 
         @Nullable
         @Override
         protected Void doInBackground(Integer... params) {
-            serverIndex = params[0];
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     refreshLayout.setRefreshing(true);
                 }
             });
+            serverIndex = params[0];
             ServerList.SplashSource source = GlobalFunctions.servers.get(serverIndex);
+            if (forModeration) {
+                postMessage = "sessionid=" + source.identity.getSessionid();
+            }
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
                 URL urlServer;
@@ -447,10 +524,18 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     urlServer = new URL(source.getUrl() + path);
                     urlConn = (HttpURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
+                    if (forModeration) {
+                        urlConn.setRequestMethod("POST");
+                    } else {
+                        urlConn.setRequestMethod("GET");
+                    }
                     urlConn.connect();
                     if (urlConn.getResponseCode() != 200) {
                         throw new Exception();
                     } else {
+                        if (forModeration) {
+                            urlConn.getOutputStream().write(postMessage.getBytes());
+                        }
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
                         String line;
                         StringBuilder response = new StringBuilder();
@@ -466,15 +551,18 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                     serverIndex, threadJSON.getString("title"),
                                     threadJSON.getString("content"), threadJSON.getLong("author"),
                                     threadJSON.getLong("ctime"), threadJSON.getLong("mtime"),
-                                    threadJSON.getInt("topicid"), threadJSON.getLong("attachid"));
-                            if (threadJSON.has("blocked")) {
-                                thread.setBlocked(threadJSON.getBoolean("blocked"));
+                                    threadJSON.getInt("topicid"), threadJSON.getLong("attachid"),
+                                    threadJSON.getString("type"));
+                            if (threadJSON.has("locked")) {
+                                thread.setBlocked(threadJSON.getBoolean("locked"));
                             }
                             if (threadJSON.has("hidden")) {
                                 thread.setHidden(threadJSON.getBoolean("hidden"));
                             }
-                            if (thread.canShow()) {
-                                SplashCache.ThreadCache.add(thread);
+                            SplashCache.ThreadCache.add(thread);
+                            if (forModeration) {
+                                thread.reported = threadJSON.getInt("reported");
+                                thread.needmod = threadJSON.getBoolean("needmod");
                             }
                         }
                         if (previousItemId == -1 || previousItemId == serverIndex) {
@@ -482,6 +570,13 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                 @Override
                                 public void run() {
                                     threadsListView.swapAdapter(new ThreadsAdapter(NewsFeed.this, serverIndex), false);
+                                }
+                            });
+                        } else if (previousItemId == -3 && forModeration) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    threadsListView.swapAdapter(new ThreadsAdapter(NewsFeed.this, SplashCache.ThreadCache.getModeratable()), false);
                                 }
                             });
                         }

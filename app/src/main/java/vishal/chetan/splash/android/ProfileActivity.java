@@ -83,13 +83,13 @@ public class ProfileActivity extends BaseActivity {
         Email = (TextView) findViewById(R.id.Email);
 
         if (identity.getProfpic() >= 0) {
-            SplashCache.ImageCache.get(serverIndex, identity.getProfpic(), new SplashCache.ImageCache.OnGetImageListener() {
+            SplashCache.AttachmentCache.get(serverIndex, identity.getProfpic(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
                 @Override
-                public void onGetImage(final Bitmap image) {
+                public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            imgPic.setImageBitmap(image);
+                            imgPic.setImageBitmap((Bitmap)attachment.data);
                         }
                     });
                 }
@@ -170,7 +170,7 @@ public class ProfileActivity extends BaseActivity {
                 }
                 String pass = editPass.getText().toString().trim();
                 String pass2 = editPass2.getText().toString().trim();
-                String postMessage = String.format("fname=%s&lname=%s&email=%s", FName.getText(), LName.getText(), Email.getText());
+                String postMessage = String.format("sessionid=%s&fname=%s&lname=%s&email=%s", GlobalFunctions.servers.get(serverIndex).identity.getSessionid(), FName.getText(), LName.getText(), Email.getText());
                 if (!pass.isEmpty()) {
                     if (!pass.equals(pass2)) {
                         setError(R.string.errPassNoMatch);
@@ -187,7 +187,8 @@ public class ProfileActivity extends BaseActivity {
                 final String notFinalPostMessage = postMessage;
                 menu_save.setEnabled(false);
                 if (profPic != null) {
-                    SplashCache.ImageCache.upload(serverIndex, profPic, new SplashCache.ImageCache.OnUploadCompleteListener() {
+                    SplashCache.AttachmentCache.SplashAttachment attachment = new SplashCache.AttachmentCache.SplashAttachment(profPic);
+                    SplashCache.AttachmentCache.upload(serverIndex, attachment, new SplashCache.AttachmentCache.OnUploadCompleteListener() {
                         @Override
                         public void onUpload(long attachId) {
                             doUpdate(String.format("%s&profpic=%s", notFinalPostMessage, attachId));
@@ -205,7 +206,7 @@ public class ProfileActivity extends BaseActivity {
     private void doUpdate(String postMessage) {
         if (updateTask == null || updateTask.getStatus() == AsyncTask.Status.FINISHED) {
             assert identity != null;
-            updateTask = new AsyncHelper(serverIndex, "update/" + identity.getUid(), postMessage) {
+            updateTask = new AsyncHelper(serverIndex, "update", postMessage) {
                 @Override
                 protected void onPostExecute(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {

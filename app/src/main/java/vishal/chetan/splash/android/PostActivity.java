@@ -2,9 +2,12 @@ package vishal.chetan.splash.android;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -17,10 +20,10 @@ import android.widget.Spinner;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.Random;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
@@ -34,7 +37,7 @@ public class PostActivity extends BaseActivity {
     private EditText editPost;
     private Button btnImage;
     @Nullable
-    private Bitmap attach = null;
+    private SplashCache.AttachmentCache.SplashAttachment attach = null;
     private long attachid = -1;
 
     @Override
@@ -42,7 +45,7 @@ public class PostActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
-        previewPost =  (HtmlTextView) findViewById(R.id.previewPost);
+        previewPost = (HtmlTextView) findViewById(R.id.previewPost);
         editPost = (EditText) findViewById(R.id.editPost);
         editPost.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -57,11 +60,19 @@ public class PostActivity extends BaseActivity {
 
         btnImage = (Button) findViewById(R.id.btnImage);
 
+        if (getIntent().getType() != null) {
+            if (getIntent().getType().equals("text/plain")) {
+                editPost.setText(getIntent().getStringExtra(Intent.EXTRA_TEXT));
+            } else {
+                attachImage((Uri) getIntent().getParcelableExtra(Intent.EXTRA_STREAM));
+            }
+        }
+
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
+                intent.setType("*/*");
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
                 startActivityForResult(intent, requestCode);
             }
@@ -76,7 +87,9 @@ public class PostActivity extends BaseActivity {
                     public void run() {
                         btnSubmit.setEnabled(true);
                         if (thread != null) {
-                            setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", thread.getThreadId()));
+                            Intent launchIntent = new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", thread.getThreadId());
+                            setResult(RESULT_OK, launchIntent);
+                            startActivity(new Intent(PostActivity.this, ViewThreadActivity.class).putExtra("serverIndex", serverIndex).putExtras(launchIntent));
                             finish();
                         } else {
                             Snackbar.make(btnSubmit, getString(R.string.errPost), Snackbar.LENGTH_LONG).show();
@@ -99,7 +112,7 @@ public class PostActivity extends BaseActivity {
                         thread.setContent(editPost.getText().toString());
                         thread.setTopicId((int) spinTopic.getSelectedItemId());
                         if (attach != null) {
-                            SplashCache.ImageCache.upload(serverIndex, attach, new SplashCache.ImageCache.OnUploadCompleteListener() {
+                            SplashCache.AttachmentCache.upload(serverIndex, attach, new SplashCache.AttachmentCache.OnUploadCompleteListener() {
                                 @Override
                                 public void onUpload(long attachId) {
                                     if (attachId < 0) {
@@ -121,9 +134,9 @@ public class PostActivity extends BaseActivity {
                             SplashCache.ThreadCache.set(thread);
                         }
                     } else {
-                         thread = new Thread(serverIndex, editPostTitle.getText().toString(), editPost.getText().toString(), (int) spinTopic.getSelectedItemId());
+                        thread = new Thread(serverIndex, editPostTitle.getText().toString(), editPost.getText().toString(), (int) spinTopic.getSelectedItemId());
                         if (attach != null) {
-                            SplashCache.ImageCache.upload(serverIndex, attach, new SplashCache.ImageCache.OnUploadCompleteListener() {
+                            SplashCache.AttachmentCache.upload(serverIndex, attach, new SplashCache.AttachmentCache.OnUploadCompleteListener() {
                                 @Override
                                 public void onUpload(long attachId) {
                                     if (attachId < 0) {
@@ -162,21 +175,69 @@ public class PostActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
         if (requestCode == PostActivity.requestCode) {
             if (resultCode == Activity.RESULT_OK) {
-                try {
-                    InputStream stream = getContentResolver().openInputStream(data.getData());
-                    assert stream != null;
-                    attach = BitmapFactory.decodeStream(stream);
-                    stream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                btnImage.setText(R.string.strChangeAttach);
+                attachImage(data.getData());
             } else {
                 attach = null;
                 attachid = -1;
                 btnImage.setText(R.string.strAttachImage);
             }
         }
+    }
+
+    private void attachImage(Uri data) {
+        try {
+            String name = getFileName(data);
+            String mime = getContentResolver().getType(data);
+            if (mime == null) {
+                mime = "application/octet-stream";
+            }
+            InputStream stream = getContentResolver().openInputStream(data);
+            assert stream != null;
+            if (mime.startsWith("image")) {
+                attach = new SplashCache.AttachmentCache.SplashAttachment(BitmapFactory.decodeStream(stream), name);
+            } else {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+                int nRead;
+                byte[] byteArray = new byte[16384];
+
+                while ((nRead = stream.read(byteArray, 0, byteArray.length)) != -1) {
+                    buffer.write(byteArray, 0, nRead);
+                }
+
+                buffer.flush();
+                attach = new SplashCache.AttachmentCache.SplashAttachment(buffer.toByteArray(), name);
+                attach.mimeType = mime;
+            }
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        btnImage.setText(R.string.strChangeAttach);
+    }
+
+    public String getFileName(Uri uri) {
+        String result = null;
+        if (uri.getScheme().equals("content")) {
+            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.getPath();
+            int cut = result.lastIndexOf('/');
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+        return result;
     }
 
     private void updatePreview() {

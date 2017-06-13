@@ -28,7 +28,6 @@ import vishal.chetan.splash.asyncs.AsyncHelper;
 import vishal.chetan.splash.GlobalFunctions;
 
 public class LoginActivity extends BaseActivity {
-    private SharedPreferences sharedPreferences;
     private EditText txtUsername, txtPassword;
     private int serverIndex;
     private static AsyncTask loginTask;
@@ -44,10 +43,9 @@ public class LoginActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarLogin);
         setSupportActionBar(toolbar);
-        sharedPreferences = getPreferences(MODE_PRIVATE);
 
         if (GlobalFunctions.servers.size() == 0) {
-            Toast.makeText(this, R.string.warnConfigServer, Toast.LENGTH_SHORT);
+            Toast.makeText(this, R.string.warnConfigServer, Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, SourcesManagerActivity.class));
             finish();
             return;
@@ -61,15 +59,9 @@ public class LoginActivity extends BaseActivity {
         int tempServerIndex = getIntent().getIntExtra("serverIndex", -1);
         if (tempServerIndex != -1) {
             serverIndex = tempServerIndex;
-            SplashSource source = GlobalFunctions.servers.get(serverIndex);
-
             if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("remember", false)) {
-                String user = sharedPreferences.getString("username" + source.getName(), "");
-                String pass = sharedPreferences.getString("password" + source.getName(), "");
-                txtUsername.setText(user);
-                txtPassword.setText(pass);
                 if (GlobalFunctions.servers.get(serverIndex).session == SplashSource.SessionState.UNKNOWN && PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autolog", false)) {
-                    doLogin(user, pass);
+                    doLogin();
                 }
             }
         }
@@ -107,62 +99,20 @@ public class LoginActivity extends BaseActivity {
             String postMessage = "user=" + username +"&pass=" + password;
 
             if (loginTask == null || loginTask.getStatus() == AsyncTask.Status.FINISHED) {
-                loginTask = new AsyncHelper(serverIndex, "login", postMessage) {
-                    @Override
-                    protected void onPostExecute(@Nullable JSONObject jsonObject) {
-                        if (jsonObject != null) {
-                            try {
-                                int status = jsonObject.getInt("status");
+                loginTask = new LoginHelper(serverIndex, postMessage).execute();
+            } else {
+                setError(R.string.strAlreadyRunning);
+            }
+        }
+    }
 
-                                if (status == 0) {
-                                    UserIdentity identity = GlobalFunctions.servers.get(serverIndex).identity;
-                                    if (identity == null) {
-                                        identity = new UserIdentity();
-                                        GlobalFunctions.servers.get(serverIndex).identity = identity;
-                                    }
+    private void doLogin() {
+        String sessionid = getSharedPreferences("sessions", MODE_PRIVATE).getString(GlobalFunctions.servers.get(serverIndex).getName(), null);
+        if (sessionid != null) {
+            String postMessage = "sessionid=" + sessionid;
 
-                                    if (jsonObject.has("fname")) {
-                                        identity.setFirstname(jsonObject.getString("fname"));
-                                    } else {
-                                        identity.setFirstname("");
-                                    }
-                                    if (jsonObject.has("lname")) {
-                                        identity.setLastname(jsonObject.getString("lname"));
-                                    } else {
-                                        identity.setLastname("");
-                                    }
-
-                                    if (jsonObject.has("profpic")) {
-                                        identity.setProfpic(jsonObject.getLong("profpic"));
-                                    }
-
-                                    if (jsonObject.has("mod")) {
-                                        identity.setMod(jsonObject.getInt("mod"));
-                                    }
-                                    identity.setUid(jsonObject.getLong("uid"));
-                                    identity.setUsername(jsonObject.getString("user"));
-                                    identity.setEmail(jsonObject.getString("email"));
-                                    identity.setSessionid(jsonObject.getString("sessionid"));
-
-                                    setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
-                                    if (PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("remember", false)) {
-                                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                                        editor.putString("username" + GlobalFunctions.servers.get(serverIndex).getName(), username);
-                                        editor.putString("password" + GlobalFunctions.servers.get(serverIndex).getName(), password);
-                                        editor.apply();
-                                    }
-                                    finish();
-                                } else {
-                                    setError(R.string.errInvalidCreds);
-                                }
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            setError(R.string.errNoAccess);
-                        }
-                    }
-                }.execute();
+            if (loginTask == null || loginTask.getStatus() == AsyncTask.Status.FINISHED) {
+                loginTask = new LoginHelper(serverIndex, postMessage).execute();
             } else {
                 setError(R.string.strAlreadyRunning);
             }
@@ -190,5 +140,72 @@ public class LoginActivity extends BaseActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private class LoginHelper extends AsyncHelper {
+        public LoginHelper(int serverIndex, String postMessage) {
+            super(serverIndex, "login", postMessage);
+        }
+
+        @Override
+        protected void onPostExecute(@Nullable JSONObject jsonObject) {
+            if (jsonObject != null) {
+                try {
+                    int status = jsonObject.getInt("status");
+
+                    if (status == 0) {
+                        UserIdentity identity = GlobalFunctions.servers.get(serverIndex).identity;
+                        if (identity == null) {
+                            identity = new UserIdentity();
+                            GlobalFunctions.servers.get(serverIndex).identity = identity;
+                        }
+
+                        if (jsonObject.has("fname")) {
+                            identity.setFirstname(jsonObject.getString("fname"));
+                        } else {
+                            identity.setFirstname("");
+                        }
+                        if (jsonObject.has("lname")) {
+                            identity.setLastname(jsonObject.getString("lname"));
+                        } else {
+                            identity.setLastname("");
+                        }
+
+                        if (jsonObject.has("profpic")) {
+                            identity.setProfpic(jsonObject.getLong("profpic"));
+                        }
+
+                        if (jsonObject.has("mod")) {
+                            identity.setMod(jsonObject.getInt("mod"));
+                        }
+                        identity.setUid(jsonObject.getLong("uid"));
+                        identity.setUsername(jsonObject.getString("user"));
+                        identity.setEmail(jsonObject.getString("email"));
+                        identity.setSessionid(jsonObject.getString("sessionid"));
+
+                        GlobalFunctions.broadcastToNotifications(getApplicationContext(), serverIndex);
+
+                        setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex));
+                        if (PreferenceManager.getDefaultSharedPreferences(LoginActivity.this).getBoolean("remember", false)) {
+                            SharedPreferences.Editor editor = getSharedPreferences("sessions", MODE_PRIVATE).edit();
+                            editor.putString(GlobalFunctions.servers.get(serverIndex).getName(), identity.getSessionid());
+                            editor.apply();
+                        }
+                        finish();
+                    } else if (status == 4) {
+                        SharedPreferences.Editor editor = getSharedPreferences("sessions", MODE_PRIVATE).edit();
+                        editor.remove(GlobalFunctions.servers.get(serverIndex).getName());
+                        editor.apply();
+                    }
+                    else {
+                        setError(R.string.errInvalidCreds);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                setError(R.string.errNoAccess);
+            }
+        }
     }
 }

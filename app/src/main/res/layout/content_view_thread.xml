@@ -29,6 +29,7 @@
                 android:layout_height="match_parent"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
+                android:id="@+id/threadBG"
                 android:paddingBottom="@dimen/activity_vertical_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:paddingStart="@dimen/activity_horizontal_margin"
@@ -45,7 +46,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:autoLink="web"
-                        android:textAppearance="@android:style/TextAppearance.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Medium"
+                        android:textIsSelectable="true"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/threadDummy"
+                        android:visibility="gone" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -117,6 +125,16 @@
                         android:padding="10dp"
                         app:srcCompat="@drawable/ic_info"
                         tools:ignore="ContentDescription" />
+
+                    <Button
+                        android:id="@+id/threadMore"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="&#8942;"
+                        android:textSize="30dp"
+                        android:textColor="@color/colorPrimaryDark"
+                        android:background="@null"
+                        android:padding="10dp"/>
                 </LinearLayout>
 
             </LinearLayout>
@@ -124,7 +142,7 @@
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/comments"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 tools:listitem="@layout/list_item_comment" />
 
         </LinearLayout>

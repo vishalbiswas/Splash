@@ -1,5 +1,6 @@
 package vishal.chetan.splash;
 
+import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -70,6 +71,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         public final ArrayList<SplashTopic> topics = new ArrayList<>();
         public UserIdentity identity = null;
         public SessionState session = SessionState.UNKNOWN;
+        public Bitmap banner = null;
 
         public SplashSource(String name, String url) {
             this.name = name;

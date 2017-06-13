@@ -4,10 +4,19 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LongSparseArray;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.Random;
+
+import vishal.chetan.splash.asyncs.AsyncArrayHelper;
 
 public class Thread {
+
     final static class ModificationTimeComparator implements Comparator<Thread> {
         @Override
         public int compare(@NonNull Thread o1, @NonNull Thread o2) {
@@ -15,6 +24,16 @@ public class Thread {
             return o2.getMtime().compareTo(o1.getMtime());
         }
     }
+
+    public int reported;
+
+    public boolean needmod;
+
+    public interface LoadCommentsListener {
+        void onCommentsLoaded(boolean result);
+    }
+
+    public long adapterId = new Random().nextLong();
 
     public int getTopicId() {
         return topicId;
@@ -77,7 +96,7 @@ public class Thread {
     }
 
     public boolean canShow() {
-        return !(blocked || hidden) ||
+        return !hidden ||
                 (GlobalFunctions.servers.get(serverIndex).identity != null &&
                         GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE);
     }
@@ -95,6 +114,26 @@ public class Thread {
 
     private long attachId = -1;
 
+    public int getAttachType() {
+        return attachType;
+    }
+
+    private void setAttachType(String attachType) {
+        if (attachType == null) {
+            this.attachType = SplashCache.AttachmentCache.SplashAttachment.NONE;
+        } else if (attachType.startsWith("image")) {
+            this.attachType = SplashCache.AttachmentCache.SplashAttachment.IMAGE;
+        } else if (attachType.startsWith("video")) {
+            this.attachType = SplashCache.AttachmentCache.SplashAttachment.VIDEO;
+        } else if (attachType.startsWith("audio")) {
+            this.attachType = SplashCache.AttachmentCache.SplashAttachment.AUDIO;
+        } else {
+            this.attachType = SplashCache.AttachmentCache.SplashAttachment.OTHER;
+        }
+    }
+
+    private int attachType =SplashCache.AttachmentCache.SplashAttachment.NONE;
+
     public Thread(int serverIndex, String title, String content, int topicId) {
         this.threadId = -1;
         this.serverIndex = serverIndex;
@@ -107,7 +146,7 @@ public class Thread {
         this.topicId = topicId;
     }
 
-    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, String attachType) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
         this.title = title;
@@ -118,7 +157,23 @@ public class Thread {
         this.mtime = new Date(mtime);
         this.topicId = topicId;
         this.attachId = attachId;
+        setAttachType(attachType);
     }
+
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, int attachType) {
+        this.threadId = threadId;
+        this.serverIndex = serverIndex;
+        this.title = title;
+        this.rawContent = content;
+        this.content = GlobalFunctions.parseMarkdown(content);
+        this.creator_id = creator_id;
+        this.ctime = new Date(ctime);
+        this.mtime = new Date(mtime);
+        this.topicId = topicId;
+        this.attachId = attachId;
+        this.attachType = attachType;
+    }
+
     public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId) {
         this.threadId = threadId;
         this.serverIndex = serverIndex;
@@ -141,6 +196,14 @@ public class Thread {
         return comments.get(commentId);
     }
 
+    public void getCommentAsync(long commentId, LoadCommentsListener listener) {
+        if (getComment(commentId) != null) {
+            listener.onCommentsLoaded(true);
+        } else {
+            loadComments(listener);
+        }
+    }
+
     public void setComment(@NonNull Comment comment) {
         if (comment.getServerIndex() == serverIndex && comment.getThreadId() == threadId) {
             comments.put(comment.getCommentId(), comment);
@@ -151,6 +214,45 @@ public class Thread {
         if (comment.getServerIndex() == serverIndex && comment.getThreadId() == threadId) {
             comments.append(comment.getCommentId(), comment);
         }
+    }
+
+    public void loadComments(final LoadCommentsListener listener) {
+        this.clearComments();
+        new AsyncArrayHelper(serverIndex, "comments/" + threadId) {
+            @Override
+            protected void workInBackground(@Nullable JSONArray jsonArray) {
+                boolean result = true;
+                if (jsonArray != null) {
+                    for (int i = 0; i < jsonArray.length(); ++i) {
+                        try {
+                            JSONObject commentJSON = jsonArray.getJSONObject(i);
+                            Thread.Comment comment = new Thread.Comment(serverIndex, threadId, commentJSON.getLong("author"), commentJSON.getString("content"), commentJSON.getLong("commentid"), commentJSON.getLong("ctime"), commentJSON.getLong("mtime"));
+                            if (commentJSON.has("locked")) {
+                                comment.setBlocked(commentJSON.getBoolean("locked"));
+                            }
+                            if (commentJSON.has("hidden")) {
+                                comment.setHidden(commentJSON.getBoolean("hidden"));
+                            }
+                            if (commentJSON.has("parent")) {
+                                comment.setParentCommentId(commentJSON.getLong("parent"));
+                            }
+                            comment.reported = commentJSON.getInt("reported");
+                            if (comment.canShow()) {
+                                Thread.this.addComment(comment);
+                            }
+                        } catch (JSONException e) {
+                            result = false;
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    result = false;
+                }
+                if (listener != null) {
+                    listener.onCommentsLoaded(result);
+                }
+            }
+        }.execute();
     }
 
     public void clearComments() {
@@ -254,6 +356,7 @@ public class Thread {
         final private int serverIndex;
         private boolean blocked = false;
         private boolean hidden = false;
+        public int reported;
 
         public boolean isBlocked() {
             return blocked;
@@ -272,7 +375,7 @@ public class Thread {
         }
 
         public boolean canShow() {
-            return !(blocked || hidden) ||
+            return !hidden ||
                     (GlobalFunctions.servers.get(serverIndex).identity != null &&
                             GlobalFunctions.servers.get(serverIndex).identity.getMod() > UserIdentity.MODERATOR_NONE);
         }

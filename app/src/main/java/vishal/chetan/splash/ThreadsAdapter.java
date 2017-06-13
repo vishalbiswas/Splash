@@ -3,6 +3,7 @@ package vishal.chetan.splash;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +17,7 @@ import android.widget.TextView;
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import vishal.chetan.splash.android.ViewThreadActivity;
 
@@ -49,7 +51,17 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
         }
     }
 
-    private final static int NORMAL = 0, IMAGE = 1;
+    private class ThreadGenericViewHolder extends ThreadViewHolder {
+        @NonNull
+        final TextView threadAttach;
+
+        ThreadGenericViewHolder(@NonNull View view) {
+            super(view);
+            threadAttach = (TextView) view.findViewById(R.id.threadAttach);
+        }
+    }
+
+    private final static int NORMAL = 0, IMAGE = 1, GENERIC = 2;
     @Nullable
     private final ArrayList<Thread> threadList;
     private final Activity context;
@@ -88,7 +100,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
             case IMAGE:
                 return new ThreadWithImageViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread_with_image, parent, false));
             default:
-                return null;
+                return new ThreadGenericViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.list_item_thread_generic_attachment, parent, false));
         }
     }
 
@@ -96,20 +108,36 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     public void onBindViewHolder(@NonNull final ThreadViewHolder holder, final int position) {
         assert threadList != null;
         final Thread thread = threadList.get(position);
-        switch (holder.getItemViewType()) {
-            case IMAGE:
-                SplashCache.ImageCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.ImageCache.OnGetImageListener() {
-                    @Override
-                    public void onGetImage(final Bitmap image) {
-                        context.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap(image);
+        if (thread.isHidden()) {
+            holder.setIsRecyclable(false);
+            holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.hidden));
+        } else if (thread.isBlocked()) {
+            holder.setIsRecyclable(false);
+            holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.locked));
+        }
+        if (thread.getAttachType() != SplashCache.AttachmentCache.SplashAttachment.NONE) {
+            SplashCache.AttachmentCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
+                        @Override
+                        public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
+                            if (attachment != null) {
+                                context.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        switch (holder.getItemViewType()) {
+                                            case IMAGE:
+                                                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap((Bitmap)attachment.data);
+                                                break;
+                                            case GENERIC:
+                                                Drawable icon = context.getResources().getDrawable(android.R.drawable.presence_video_online);
+                                                ((ThreadGenericViewHolder) holder).threadAttach.setCompoundDrawables(icon, null, null, null);
+                                                ((ThreadGenericViewHolder) holder).threadAttach.setText(attachment.name);
+                                        }
+                                    }
+                                });
                             }
-                        });
-                    }
-                });
-                break;
+                        }
+                    });
+
         }
         holder.title.setText(thread.getTitle());
         holder.content.setHtml(thread.getContent());
@@ -139,7 +167,7 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     @Override
     public long getItemId(int i) {
         assert threadList != null;
-        return threadList.get(i).getThreadId();
+        return threadList.get(i).adapterId;
     }
 
     @Override
@@ -151,10 +179,12 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
     @Override
     public int getItemViewType(int position) {
         assert threadList != null;
-        if (threadList.get(position).getAttachId() >= 0) {
+        if (threadList.get(position).getAttachType() == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
             return IMAGE;
-        } else {
+        } else if (threadList.get(position).getAttachType() == SplashCache.AttachmentCache.SplashAttachment.NONE) {
             return NORMAL;
+        } else {
+            return GENERIC;
         }
     }
 }

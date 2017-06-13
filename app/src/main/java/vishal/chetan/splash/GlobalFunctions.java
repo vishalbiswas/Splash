@@ -1,19 +1,22 @@
 package vishal.chetan.splash;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
-import android.util.SparseArray;
 import android.widget.Toast;
 
 import com.commonsware.cwac.anddown.AndDown;
@@ -21,16 +24,14 @@ import com.commonsware.cwac.anddown.AndDown;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import vishal.chetan.splash.android.NotificationReceiver;
 import vishal.chetan.splash.android.SettingsActivity;
+import vishal.chetan.splash.android.SourcesManagerActivity;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -40,6 +41,12 @@ import java.util.concurrent.TimeUnit;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
+
+    @Nullable
+    public static Locale getLocale() {
+        return locale;
+    }
+
     @Nullable
     private static Locale locale;
     private static HTTP_CODE regNameStatus = HTTP_CODE.UNKNOWN;
@@ -72,7 +79,7 @@ public class GlobalFunctions extends Application {
         if (locale == null) initializeData(con);
         final Configuration config = new Configuration();
         config.locale = locale;
-        ((Activity) con).getBaseContext().getResources().updateConfiguration(config, ((Activity) con).getBaseContext().getResources().getDisplayMetrics());
+        con.getResources().updateConfiguration(config, con.getResources().getDisplayMetrics());
     }
 
     public static void initializeData(@NonNull Context context) {
@@ -152,44 +159,77 @@ public class GlobalFunctions extends Application {
                 onAdd(updatedSource);
             }
         });
+
+        lookupLocale(this);
+        initializeData(this);
+
+        if (BuildConfig.BUILD_TYPE.equals("debug") && GlobalFunctions.servers.size() == 0) {
+            if (Build.PRODUCT.startsWith("sdk") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
+            } else {
+                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));
+            }
+        }
+
+        if (GlobalFunctions.servers.size() == 0) {
+            Toast.makeText(this, R.string.errNoLoginServer, Toast.LENGTH_LONG).show();
+            startActivity(new Intent(this, SourcesManagerActivity.class));
+        } else {
+            for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                new GlobalFunctions.CheckSource(this).execute(i);
+            }
+        }
+    }
+
+    public static void broadcastToNotifications(Context context, int serverIndex) {
+        Intent i = new Intent(context, NotificationReceiver.class).putExtra("serverIndex", serverIndex);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        PendingIntent pi = PendingIntent.getBroadcast(context.getApplicationContext(), 0, i, 0);
+
+        if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 100 * 60 * 10, pi);
+        } else {
+            alarmManager.cancel(pi);
+        }
     }
 
     public static String parseMarkdown(String data) {
         return andDown.markdownToHtml(data, andDownExts, 0);
     }
 
-    public static Date parseDate(String date) {
-        assert locale != null;
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", locale);
-        try {
-            return format.parse(date);
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static class CheckSource extends AsyncTask<Integer, Void, Void> {
+    public static class CheckSource extends AsyncTask<Integer, Void, Boolean> {
         ServerList.SplashSource source;
-        final Activity activity;
+        final Context context;
+        private int serverIndex = -1;
 
-        public CheckSource(Activity activity) {
-            this.activity = activity;
+        public CheckSource(Context context) {
+            this.context = context;
         }
 
         @Nullable
         @Override
-        protected Void doInBackground(final Integer... params) {
-            source = GlobalFunctions.servers.get(params[0]);
+        protected Boolean doInBackground(final Integer... params) {
+            serverIndex = params[0];
+            source = GlobalFunctions.servers.get(serverIndex);
             boolean result = false;
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
                 URL urlServer;
                 HttpURLConnection urlConn;
                 try {
+                    urlServer = new URL(source.getUrl() + "/banner");
+                    urlConn = (HttpURLConnection) urlServer.openConnection();
+                    urlConn.setConnectTimeout(3000);
+                    urlConn.connect();
+                    if (urlConn.getResponseCode() == 200) {
+                        source.banner = BitmapFactory.decodeStream(urlConn.getInputStream());
+                    }
+                } catch (Exception ignored) { }
+
+                try {
                     urlServer = new URL(source.getUrl() + "/topics");
                     urlConn = (HttpURLConnection) urlServer.openConnection();
-                    urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
+                    urlConn.setConnectTimeout(3000);
                     urlConn.connect();
                     if (urlConn.getResponseCode() != 200) {
                         throw new Exception();
@@ -204,7 +244,7 @@ public class GlobalFunctions extends Application {
                         bufferedReader.close();
                         JSONArray data = new JSONArray(response.toString());
                         source.clearTopics();
-                        for(int i = 0; i < data.length(); ++i) {
+                        for (int i = 0; i < data.length(); ++i) {
                             JSONObject topic = data.getJSONObject(i);
                             source.addTopic(topic.getInt("topicid"), topic.getString("name"));
                         }
@@ -214,16 +254,15 @@ public class GlobalFunctions extends Application {
                     result = false;
                 }
             }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
             if (!result) {
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(activity, source.getName() + activity.getString(R.string.strNoResponse), Toast.LENGTH_LONG).show();
-                        GlobalFunctions.servers.setDisabled(params[0], true);
-                    }
-                });
+                Toast.makeText(context, source.getName() + context.getString(R.string.strNoResponse), Toast.LENGTH_LONG).show();
+                GlobalFunctions.servers.setDisabled(serverIndex, true);
             }
-            return null;
         }
     }
 
