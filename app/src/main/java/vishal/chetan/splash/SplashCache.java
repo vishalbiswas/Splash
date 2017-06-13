@@ -178,7 +178,7 @@ public class SplashCache {
                                     thread.getAttachType());
                             add(newThread);
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(TAG, e.getMessage());
                         }
                     } else {
                         Log.d(TAG, "Unable to add thread");

@@ -112,4 +112,5 @@
     <string name="strComentComent" formatted="false">%s replied to your comment in thread %s</string>
     <string name="strCommentThread" formatted="false">%s replied in your thread %s</string>
     <string name="strModerate">Moderate</string>
+    <string name="strPermImage">You need to grant this permission to be able to attach files!</string>
 </resources>

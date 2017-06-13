@@ -1,8 +1,11 @@
 package vishal.chetan.splash.android;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -11,6 +14,9 @@ import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -32,7 +38,8 @@ import vishal.chetan.splash.Thread;
 
 public class PostActivity extends BaseActivity {
     private int serverIndex;
-    private static final int requestCode = 1;
+    private static final int attachRequesCode = 1;
+    private static final int permissionRequestCode = 2;
     private HtmlTextView previewPost;
     private EditText editPost;
     private Button btnImage;
@@ -71,10 +78,25 @@ public class PostActivity extends BaseActivity {
         btnImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("*/*");
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                startActivityForResult(intent, requestCode);
+                if (ContextCompat.checkSelfPermission(PostActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(PostActivity.this,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                        new AlertDialog.Builder(PostActivity.this).setMessage(R.string.strPermImage).setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                ActivityCompat.requestPermissions(PostActivity.this,
+                                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                        permissionRequestCode);
+                            }
+                        }).show();
+                    } else {
+                        ActivityCompat.requestPermissions(PostActivity.this,
+                                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                                permissionRequestCode);
+                    }
+                } else {
+                    getImage();
+                }
             }
         });
 
@@ -171,9 +193,16 @@ public class PostActivity extends BaseActivity {
         }
     }
 
+    private void getImage() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, attachRequesCode);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @NonNull Intent data) {
-        if (requestCode == PostActivity.requestCode) {
+        if (requestCode == PostActivity.attachRequesCode) {
             if (resultCode == Activity.RESULT_OK) {
                 attachImage(data.getData());
             } else {
@@ -238,6 +267,15 @@ public class PostActivity extends BaseActivity {
             }
         }
         return result;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == permissionRequestCode) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                getImage();
+            }
+        }
     }
 
     private void updatePreview() {
