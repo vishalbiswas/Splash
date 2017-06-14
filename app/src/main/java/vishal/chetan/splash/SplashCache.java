@@ -53,7 +53,7 @@ public class SplashCache {
         private static void loadUser(final int serverIndex, long uid, @Nullable final OnGetUserListener listener) {
             Runnable loader = new ThreadHelper(serverIndex, "user/" + uid) {
                 @Override
-                protected void doWork(@Nullable  JSONObject jsonObject) {
+                protected void doWork(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
                             UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
@@ -101,7 +101,7 @@ public class SplashCache {
                 }
                 LongSparseArray<Thread> threadList = threads.get(i, new LongSparseArray<Thread>());
                 for (int j = 0; j < threadList.size(); ++j) {
-                    Thread thread = threadList.valueAt(i);
+                    Thread thread = threadList.valueAt(j);
                     if (thread.needmod) {
                         allThreads.add(thread);
                     }
@@ -116,10 +116,15 @@ public class SplashCache {
         }
 
         private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
+        private static final SparseArray<LongSparseArray<Thread>> individuals = new SparseArray<>();
         @Nullable
         static OnThreadModifiedListener adapterListener = null;
         @Nullable
         public static OnThreadModifiedListener postListener = null;
+
+        public interface OnGetThreadListener {
+            void onGetThread(final Thread thread);
+        }
 
         @Nullable
         static ArrayList<Thread> getAllForIndex(final int filterIndex) {
@@ -232,8 +237,89 @@ public class SplashCache {
             GlobalFunctions.executor.execute(setter);
         }
 
-        public static Thread getThread(int serverIndex, long threadId) {
-            return threads.get(serverIndex).get(threadId);
+        private static Thread getThread(final int serverIndex, final long threadId, final OnGetThreadListener listener, final boolean overwrite) {
+            Thread thread = null;
+            if (!overwrite) {
+                thread = threads.get(serverIndex).get(threadId);
+            }
+            if (!overwrite && thread != null) {
+                if (individuals.get(serverIndex) != null) {
+                    individuals.get(serverIndex).delete(threadId);
+                }
+                if (listener != null) {
+                    listener.onGetThread(thread);
+                }
+            } else {
+                if (!overwrite && individuals.get(serverIndex) != null) {
+                    thread = individuals.get(serverIndex).get(threadId);
+                }
+                if (!overwrite && thread != null) {
+                    if (listener != null) {
+                        listener.onGetThread(thread);
+                    }
+                } else if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                    String sessionid = "";
+                    if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                        sessionid = GlobalFunctions.servers.get(serverIndex).identity.getSessionid();
+                    }
+                    GlobalFunctions.executor.execute(new ThreadHelper(serverIndex, "thread/" + threadId, "sessionid=" + sessionid) {
+                        @Override
+                        protected void doWork(JSONObject jsonObject) {
+                            try {
+                                Thread newThread = createThreadfromJSON(serverIndex, jsonObject);
+                                if (!overwrite) {
+                                    LongSparseArray<Thread> threadList = individuals.get(newThread.getServerIndex());
+                                    if (threadList == null) {
+                                        threadList = new LongSparseArray<>();
+                                        threadList.append(threadId, newThread);
+                                        individuals.append(serverIndex, threadList);
+                                    } else {
+                                        threadList.append(threadId, newThread);
+                                    }
+                                } else {
+                                    add(newThread);
+                                }
+                                if (listener != null) {
+                                    listener.onGetThread(newThread);
+                                }
+                            } catch (JSONException ex) {
+                                Log.e(TAG, "Thread creation failed for threadid " + threadId);
+                            }
+                        }
+                    });
+                }
+            }
+            return thread;
+        }
+
+        public static Thread getThread(final int serverIndex, final long threadId, final OnGetThreadListener listener) {
+            return getThread(serverIndex, threadId, listener, false);
+        }
+
+        public static void updateThread(final int serverIndex, final long threadId) {
+            getThread(serverIndex, threadId, null, true);
+        }
+
+        public static Thread createThreadfromJSON(int serverIndex, JSONObject threadJSON) throws JSONException {
+            Thread thread = new Thread(threadJSON.getLong("threadid"),
+                    serverIndex, threadJSON.getString("title"),
+                    threadJSON.getString("content"), threadJSON.getLong("author"),
+                    threadJSON.getLong("ctime"), threadJSON.getLong("mtime"),
+                    threadJSON.getInt("topicid"), threadJSON.getLong("attachid"),
+                    threadJSON.getString("type"));
+            if (threadJSON.has("locked")) {
+                thread.setBlocked(threadJSON.getBoolean("locked"));
+            }
+            if (threadJSON.has("hidden")) {
+                thread.setHidden(threadJSON.getBoolean("hidden"));
+            }
+            if (threadJSON.has("reported")) {
+                thread.reported = threadJSON.getInt("reported");
+            }
+            if (threadJSON.has("needmod")) {
+                thread.needmod = threadJSON.getBoolean("needmod");
+            }
+            return thread;
         }
     }
 
@@ -245,13 +331,12 @@ public class SplashCache {
             public static final int AUDIO = 3;
             public static final int OTHER = 4;
 
-            @NonNull
             public Object data;
             public int type = OTHER;
             public String mimeType;
             public String name = "attach";
 
-            public SplashAttachment(@NonNull Object data) {
+            public SplashAttachment(Object data) {
                 if (data instanceof Bitmap) {
                     this.type = IMAGE;
                     this.mimeType = "image/png";
@@ -262,7 +347,7 @@ public class SplashCache {
                 this.data = data;
             }
 
-            public SplashAttachment(@NonNull Object data, @NonNull String name) {
+            public SplashAttachment(Object data, @NonNull String name) {
                 if (data instanceof Bitmap) {
                     this.type = IMAGE;
                     this.mimeType = "image/png";
@@ -334,29 +419,34 @@ public class SplashCache {
                 protected JSONObject workInput(HttpURLConnection webservice) throws JSONException, IOException {
                     String type = webservice.getHeaderField("Content-Type");
                     InputStream stream = webservice.getInputStream();
-                    if (type != null && type.startsWith("image")) {
-                        attachment = new SplashAttachment(BitmapFactory.decodeStream(stream));
-                    } else {
-                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        if (type != null && type.startsWith("image")) {
+                            attachment = new SplashAttachment(BitmapFactory.decodeStream(stream));
+                        } else {
+                            try {
+                            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-                        int nRead;
-                        byte[] data = new byte[16384];
+                            int nRead;
+                            byte[] data = new byte[8092];
 
-                        while ((nRead = stream.read(data, 0, data.length)) != -1) {
-                            buffer.write(data, 0, nRead);
+                            while ((nRead = stream.read(data, 0, data.length)) != -1) {
+                                buffer.write(data, 0, nRead);
+                            }
+                            buffer.flush();
+                            attachment = new SplashAttachment(buffer.toByteArray());
+                            } catch (OutOfMemoryError ex) {
+                                Log.e(TAG, "Attachment could not be decoded because it's too large");
+                                attachment = new SplashAttachment(null);
+                            }
                         }
-
-                        buffer.flush();
-                        attachment = new SplashAttachment(buffer.toByteArray());
-                    }
-                    attachment.name = webservice.getHeaderField("FileName");
-                    attachment.mimeType = type;
-                    setAttachment(serverIndex, attachId, attachment);
-                    return new JSONObject("{status:0}");
+                        attachment.name = webservice.getHeaderField("FileName");
+                        attachment.mimeType = type;
+                        setAttachment(serverIndex, attachId, attachment);
+                        return new JSONObject("{status:0}");
                 }
+
             };
             GlobalFunctions.executor.execute(loader);
-        }
+            }
 
         static void setAttachment(int serverIndex, long attachId, SplashAttachment attachment) {
             if (attachId < 0) {

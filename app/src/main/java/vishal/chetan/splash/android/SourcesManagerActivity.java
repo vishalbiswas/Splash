@@ -63,6 +63,15 @@ public class SourcesManagerActivity extends BaseActivity {
         @Override
         public void onBindViewHolder(@NonNull final SourceViewHolder holder, final int position) {
             final ServerList.SplashSource source = GlobalFunctions.servers.get(position);
+            if (source.isDisposed()) {
+                holder.itemView.setEnabled(false);
+                holder.deleteButton.setVisibility(View.GONE);
+                holder.sourceEnabled.setEnabled(false);
+                holder.itemSourceName.setEnabled(false);
+                holder.itemSourceUrl.setEnabled(false);
+                holder.editButton.setVisibility(View.GONE);
+                holder.setIsRecyclable(false);
+            }
             holder.sourceEnabled.setChecked(source.isEnabled());
             holder.sourceEnabled.setOnCheckedChangeListener(new SwitchCompat.OnCheckedChangeListener() {
                 @Override
@@ -96,7 +105,7 @@ public class SourcesManagerActivity extends BaseActivity {
                 @Override
                 public void onClick(View view) {
                     GlobalFunctions.servers.remove(holder.getAdapterPosition());
-                    notifyItemRemoved(holder.getAdapterPosition());
+                    notifyItemChanged(holder.getAdapterPosition());
                     SharedPreferences sharedPreferences = getSharedPreferences("sessions", MODE_PRIVATE);
                     if (sharedPreferences.contains(source.getName())) {
                         sharedPreferences.edit().remove(source.getName()).apply();
@@ -143,7 +152,7 @@ public class SourcesManagerActivity extends BaseActivity {
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final EditText nameEdit;
-        if (initialUrl != null) {
+        if (index == -1) {
             nameEdit = new EditText(SourcesManagerActivity.this);
             nameEdit.setHint("Name");
             nameEdit.setText(initialName);
@@ -166,10 +175,10 @@ public class SourcesManagerActivity extends BaseActivity {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 final String name;
-                if (initialUrl != null) {
+                if (index == -1) {
                     name = nameEdit.getText().toString();
-                    for (ServerList.SplashSource source : GlobalFunctions.servers) {
-                        if (source.getName().equals(name)) {
+                    for (int j = 0; j < GlobalFunctions.servers.size(); ++j) {
+                        if (!GlobalFunctions.servers.get(j).isDisposed() && GlobalFunctions.servers.get(j).getName().equals(name)) {
                             Toast.makeText(SourcesManagerActivity.this, "A Source with the same name already exists!", Toast.LENGTH_SHORT).show();
                             return;
                         }

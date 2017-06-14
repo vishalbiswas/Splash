@@ -10,7 +10,8 @@ public class UserIdentity {
     private String lastname = "";
     private String email = "";
     private long profpic = -1;
-
+    private boolean revoked = false;
+    private boolean banned = false;
     private String sessionid = null;
 
     public static final int MODERATOR_NONE = 0;
@@ -51,6 +52,23 @@ public class UserIdentity {
         this.lastname = lastname;
         this.email = email;
     }
+
+    public boolean isRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(boolean revoked) {
+        this.revoked = revoked;
+    }
+
+    public boolean isBanned() {
+        return banned;
+    }
+
+    public void setBanned(boolean banned) {
+        this.banned = banned;
+    }
+
 
     @Nullable
     public String getUsername() {

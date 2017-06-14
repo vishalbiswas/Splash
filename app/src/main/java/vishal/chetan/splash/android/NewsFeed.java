@@ -22,6 +22,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -32,6 +33,7 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -69,10 +71,12 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private int previousItemId;
     private int serverIndex = -1;
 
+    private FetchThreads fetcher = null;
+
     private final static int login_result_id = 1;
     private final static int create_thread_result_id = 2;
     private final static int update_user_result_id = 3;
-    private final static int NUMBER_OF_THREADS = 50;
+    public final static int NUMBER_OF_THREADS = 5;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,7 +100,21 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         });
 
         setSupportActionBar(toolbar);
+        threadsListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         threadsListView.setLayoutManager(new LinearLayoutManager(this));
+        threadsListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int scrollState) {
+                if (!(previousItemId == -2 || previousItemId == -4) && scrollState == RecyclerView.SCROLL_STATE_IDLE) {
+                    int visibleItemCount = recyclerView.getLayoutManager().getChildCount();
+                    int totalItemCount = recyclerView.getLayoutManager().getItemCount();
+                    int pastVisibleItems = ((LinearLayoutManager) recyclerView.getLayoutManager()).findFirstVisibleItemPosition();
+                    if (pastVisibleItems + visibleItemCount >= totalItemCount) {
+                        fetchNext(((ThreadsAdapter) recyclerView.getAdapter()).getThread(totalItemCount - 1));
+                    }
+                }
+            }
+        });
 
         nav_view.setNavigationItemSelectedListener(this);
         GlobalFunctions.servers.addListener(new ServerList.OnServerListChangeListener() {
@@ -130,11 +148,16 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             public void onRefresh() {
                 if (previousItemId == -4) {
                     sendBroadcast(new Intent(NewsFeed.this, NotificationReceiver.class).putExtra("serverIndex", serverIndex));
-                    refreshLayout.setRefreshing(false);
+                } else if (previousItemId == -3) {
+                    for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                        if (GlobalFunctions.servers.get(i).isEnabled()) {
+                            new FetchThreads(NewsFeed.this, NUMBER_OF_THREADS, true).execute(i);
+                        }
+                    }
                 } else {
-                    refreshLayout.setRefreshing(false);
                     fillThreadCache();
                 }
+                refreshLayout.setRefreshing(false);
             }
         });
 
@@ -154,11 +177,34 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         if (previousItemId == -1) {
             for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                 if (GlobalFunctions.servers.get(i).isEnabled()) {
-                    new FetchThreads(NUMBER_OF_THREADS, false).execute(i);
+                    new FetchThreads(this, NUMBER_OF_THREADS, false).execute(i);
                 }
             }
         } else {
-            new FetchThreads(NUMBER_OF_THREADS, false).execute(serverIndex);
+            new FetchThreads(this, NUMBER_OF_THREADS, false).execute(serverIndex);
+        }
+    }
+
+    public void fetchNext(Thread thread) {
+        if (fetcher == null || fetcher.getStatus() == AsyncTask.Status.FINISHED) {
+            if (previousItemId == -1) {
+                for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    if (GlobalFunctions.servers.get(i).isEnabled()) {
+                        fetcher = new FetchThreads(this, NUMBER_OF_THREADS, false, thread.getMtime().getTime());
+                        fetcher.execute(i);
+                    }
+                }
+            } else if (previousItemId == -3) {
+                for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    if (GlobalFunctions.servers.get(i).isEnabled()) {
+                        fetcher = new FetchThreads(this, NUMBER_OF_THREADS, true, thread.getMtime().getTime());
+                        fetcher.execute(i);
+                    }
+                }
+            } else {
+                fetcher = new FetchThreads(this, NUMBER_OF_THREADS, false, thread.getMtime().getTime());
+                fetcher.execute(serverIndex);
+            }
         }
     }
 
@@ -180,7 +226,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     if (!notifications) {
                         notifications = true;
                     }
-                    if (!canModerate && GlobalFunctions.servers.get(i).identity.getMod() > 0){
+                    if (!canModerate && GlobalFunctions.servers.get(i).identity.getMod() > 0) {
                         canModerate = true;
                     }
                 }
@@ -283,26 +329,28 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 break;
             case R.id.logout:
                 if (previousItemId >= 0) {
-                    AsyncHelper logoutTask = new AsyncHelper(previousItemId, "logout", "sessionid=" + GlobalFunctions.servers.get(previousItemId).identity.getSessionid()) {
+                    menu_logout.setEnabled(false);
+                    new AsyncHelper(previousItemId, "logout", "sessionid=" + GlobalFunctions.servers.get(previousItemId).identity.getSessionid()) {
                         @Override
                         protected void onPostExecute(JSONObject jsonObject) {
                             try {
                                 if (jsonObject != null && jsonObject.getInt("status") == 0) {
                                     Log.d(ContentValues.TAG, "Logged out");
+                                    GlobalFunctions.servers.get(previousItemId).identity = null;
+                                    GlobalFunctions.broadcastToNotifications(getApplicationContext(), serverIndex);
+                                    GlobalFunctions.servers.get(previousItemId).session = ServerList.SplashSource.SessionState.DEAD;
+                                    getSharedPreferences("sessions", MODE_PRIVATE).edit().remove(GlobalFunctions.servers.get(serverIndex).getName()).apply();
+                                    updateOptionsMenu();
+                                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
                                     return;
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                             Log.e(ContentValues.TAG, "Cannot log out");
+                            menu_logout.setEnabled(true);
                         }
-                    };
-                    GlobalFunctions.servers.get(previousItemId).identity = null;
-                    GlobalFunctions.broadcastToNotifications(getApplicationContext(), previousItemId);
-                    GlobalFunctions.servers.get(previousItemId).session = ServerList.SplashSource.SessionState.DEAD;
-                    logoutTask.execute();
-                    updateOptionsMenu();
-                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
+                    }.execute();
                 }
                 break;
         }
@@ -319,17 +367,14 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 actionBar.setTitle(getString(R.string.title_activity_news_feed));
             } else {
                 actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
-                if (GlobalFunctions.servers.get(ItemId).session == ServerList.SplashSource.SessionState.DEAD) {
-                    GlobalFunctions.servers.get(ItemId).session = ServerList.SplashSource.SessionState.UNKNOWN;
-                }
             }
             if (ItemId == -3) {
                 for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                     if (GlobalFunctions.servers.get(i).isEnabled()) {
-                        new FetchThreads(NUMBER_OF_THREADS, true).execute(i);
+                        new FetchThreads(this, NUMBER_OF_THREADS, true).execute(i);
                     }
                 }
-                threadsListView.setAdapter(new ThreadsAdapter(this, ItemId));
+                threadsListView.setAdapter(new ThreadsAdapter(this, SplashCache.ThreadCache.getModeratable()));
             } else if (ItemId == -4) {
                 final NotificationsAdapter adapter = new NotificationsAdapter(this);
                 NotificationReceiver.listener = new NotificationReceiver.OnNotificationAdded() {
@@ -490,31 +535,44 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         return result;
     }
 
-    public class FetchThreads extends AsyncTask<Integer, Void, Void> {
+    public static class FetchThreads extends AsyncTask<Integer, Void, Void> {
         int serverIndex;
         @NonNull
         final String path;
         final boolean forModeration;
-        String postMessage;
+        String postMessage = null;
+        NewsFeed feed;
 
-        public FetchThreads(int numberOfThreads, boolean forModeration) {
+        public FetchThreads(NewsFeed feed, int numberOfThreads, boolean forModeration) {
+            this.feed = feed;
             path = "/threads/" + numberOfThreads;
             this.forModeration = forModeration;
+        }
+
+        public FetchThreads(NewsFeed feed, int numberOfThreads, boolean forModeration, long after) {
+            this.feed = feed;
+            path = "/threads/" + numberOfThreads;
+            this.forModeration = forModeration;
+            postMessage = "after=" + after;
         }
 
         @Nullable
         @Override
         protected Void doInBackground(Integer... params) {
-            runOnUiThread(new Runnable() {
+            feed.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    refreshLayout.setRefreshing(true);
+                    feed.refreshLayout.setRefreshing(true);
                 }
             });
             serverIndex = params[0];
             ServerList.SplashSource source = GlobalFunctions.servers.get(serverIndex);
             if (forModeration) {
-                postMessage = "sessionid=" + source.identity.getSessionid();
+                if (postMessage != null) {
+                    postMessage += "&sessionid=" + source.identity.getSessionid();
+                } else {
+                    postMessage = "sessionid=" + source.identity.getSessionid();
+                }
             }
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
@@ -524,18 +582,18 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     urlServer = new URL(source.getUrl() + path);
                     urlConn = (HttpURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
-                    if (forModeration) {
+                    if (postMessage != null) {
                         urlConn.setRequestMethod("POST");
                     } else {
                         urlConn.setRequestMethod("GET");
                     }
                     urlConn.connect();
+                    if (postMessage != null) {
+                        urlConn.getOutputStream().write(postMessage.getBytes());
+                    }
                     if (urlConn.getResponseCode() != 200) {
                         throw new Exception();
                     } else {
-                        if (forModeration) {
-                            urlConn.getOutputStream().write(postMessage.getBytes());
-                        }
                         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
                         String line;
                         StringBuilder response = new StringBuilder();
@@ -546,37 +604,20 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         bufferedReader.close();
                         JSONArray data = new JSONArray(response.toString());
                         for (int i = 0; i < data.length(); ++i) {
-                            JSONObject threadJSON = data.getJSONObject(i);
-                            Thread thread = new Thread(threadJSON.getLong("threadid"),
-                                    serverIndex, threadJSON.getString("title"),
-                                    threadJSON.getString("content"), threadJSON.getLong("author"),
-                                    threadJSON.getLong("ctime"), threadJSON.getLong("mtime"),
-                                    threadJSON.getInt("topicid"), threadJSON.getLong("attachid"),
-                                    threadJSON.getString("type"));
-                            if (threadJSON.has("locked")) {
-                                thread.setBlocked(threadJSON.getBoolean("locked"));
-                            }
-                            if (threadJSON.has("hidden")) {
-                                thread.setHidden(threadJSON.getBoolean("hidden"));
-                            }
-                            SplashCache.ThreadCache.add(thread);
-                            if (forModeration) {
-                                thread.reported = threadJSON.getInt("reported");
-                                thread.needmod = threadJSON.getBoolean("needmod");
-                            }
+                            SplashCache.ThreadCache.add(SplashCache.ThreadCache.createThreadfromJSON(serverIndex, data.getJSONObject(i)));
                         }
-                        if (previousItemId == -1 || previousItemId == serverIndex) {
-                            runOnUiThread(new Runnable() {
+                        if (feed.previousItemId == -1 || feed.previousItemId == serverIndex) {
+                            feed.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    threadsListView.swapAdapter(new ThreadsAdapter(NewsFeed.this, serverIndex), false);
+                                    feed.threadsListView.swapAdapter(new ThreadsAdapter(feed, serverIndex), false);
                                 }
                             });
-                        } else if (previousItemId == -3 && forModeration) {
-                            runOnUiThread(new Runnable() {
+                        } else if (feed.previousItemId == -3 && forModeration) {
+                            feed.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    threadsListView.swapAdapter(new ThreadsAdapter(NewsFeed.this, SplashCache.ThreadCache.getModeratable()), false);
+                                    feed.threadsListView.swapAdapter(new ThreadsAdapter(feed, SplashCache.ThreadCache.getModeratable()), false);
                                 }
                             });
                         }
@@ -585,10 +626,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     e.printStackTrace();
                 }
             }
-            runOnUiThread(new Runnable() {
+            feed.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    refreshLayout.setRefreshing(false);
+                    feed.refreshLayout.setRefreshing(false);
                 }
             });
             return null;

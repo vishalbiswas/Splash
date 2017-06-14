@@ -1,6 +1,7 @@
 package vishal.chetan.splash.android;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AlertDialog;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import vishal.chetan.splash.FieldValidator;
+import vishal.chetan.splash.ModerationManager;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.UserIdentity;
@@ -89,7 +92,7 @@ public class ProfileActivity extends BaseActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            imgPic.setImageBitmap((Bitmap)attachment.data);
+                            imgPic.setImageBitmap((Bitmap) attachment.data);
                         }
                     });
                 }
@@ -103,7 +106,7 @@ public class ProfileActivity extends BaseActivity {
             @Override
             public void onFocusChange(View view, boolean focus) {
                 String email = Email.getText().toString().trim();
-                if (!identity.getEmail().equals(email)){
+                if (!identity.getEmail().equals(email)) {
                     fieldValidator.validateEmail(email);
                 }
             }
@@ -143,6 +146,20 @@ public class ProfileActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         if (uid == -1) {
             getMenuInflater().inflate(R.menu.menu_profile, menu);
+        } else {
+            if (GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+                getMenuInflater().inflate(R.menu.menu_profile_moderate, menu);
+                if (identity.isBanned()) {
+                    menu.findItem(R.id.unban).setVisible(true);
+                } else {
+                    menu.findItem(R.id.ban).setVisible(true);
+                }
+                if (identity.isRevoked()) {
+                    menu.findItem(R.id.revokePower).setVisible(true);
+                } else {
+                    menu.findItem(R.id.revivePower).setVisible(true);
+                }
+            }
         }
         getMenuInflater().inflate(R.menu.menu_main, menu);
         menu_save = menu.findItem(R.id.menuSave);
@@ -198,6 +215,38 @@ public class ProfileActivity extends BaseActivity {
                     assert identity != null;
                     doUpdate(String.format("%s&profpic=%s", postMessage, identity.getProfpic()));
                 }
+                break;
+            case R.id.revokePower:
+                final EditText msgModerate = new EditText(this);
+                new AlertDialog.Builder(this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int j) {
+                        ModerationManager.revokeUser(serverIndex, uid, msgModerate.getText().toString());
+                    }
+                }).show();
+                identity.setRevoked(true);
+                invalidateOptionsMenu();
+                break;
+            case R.id.ban:
+                final EditText msgBan = new EditText(this);
+                new AlertDialog.Builder(this).setTitle("Action message (Optional)").setView(msgBan).setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int j) {
+                        ModerationManager.banUser(serverIndex, uid, msgBan.getText().toString());
+                    }
+                }).show();
+                identity.setBanned(true);
+                invalidateOptionsMenu();
+                break;
+            case R.id.revivePower:
+                ModerationManager.reviveUser(serverIndex, uid);
+                identity.setRevoked(false);
+                invalidateOptionsMenu();
+                break;
+            case R.id.unban:
+                ModerationManager.unbanUser(serverIndex, uid);
+                identity.setBanned(false);
+                invalidateOptionsMenu();
                 break;
         }
         return true;

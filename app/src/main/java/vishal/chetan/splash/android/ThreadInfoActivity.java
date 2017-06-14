@@ -23,7 +23,7 @@ public class ThreadInfoActivity extends BaseActivity {
         threadId = getIntent().getLongExtra("threadId", -1);
 
         setContentView(R.layout.activity_thread_info);
-        final Thread thread = SplashCache.ThreadCache.getThread(serverIndex, threadId);
+        final Thread thread = SplashCache.ThreadCache.getThread(serverIndex, threadId, null);
 
         ((TextView) findViewById(R.id.txtTitle)).setText(thread.getTitle());
         ((TextView) findViewById(R.id.txtServer)).setText(GlobalFunctions.servers.get(serverIndex).getName());

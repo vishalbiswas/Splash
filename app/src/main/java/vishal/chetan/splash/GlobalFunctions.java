@@ -17,6 +17,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatDelegate;
 import android.widget.Toast;
 
 import com.commonsware.cwac.anddown.AndDown;
@@ -41,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
+    public static SharedPreferences preferences;
 
     @Nullable
     public static Locale getLocale() {
@@ -114,10 +116,11 @@ public class GlobalFunctions extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         connMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         Set<String> sources = getSharedPreferences("settings", MODE_PRIVATE).getStringSet("sourceKeys", new HashSet<String>());
         for (String key :
@@ -182,12 +185,18 @@ public class GlobalFunctions extends Application {
     }
 
     public static void broadcastToNotifications(Context context, int serverIndex) {
+        int intervalSeconds = preferences.getInt("notificationInterval", 60);
+
         Intent i = new Intent(context, NotificationReceiver.class).putExtra("serverIndex", serverIndex);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         PendingIntent pi = PendingIntent.getBroadcast(context.getApplicationContext(), 0, i, 0);
 
-        if (GlobalFunctions.servers.get(serverIndex).identity != null) {
-            alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 100 * 60 * 10, pi);
+        if (intervalSeconds > 0) {
+            if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 100 * intervalSeconds * 10, pi);
+            } else {
+                alarmManager.cancel(pi);
+            }
         } else {
             alarmManager.cancel(pi);
         }

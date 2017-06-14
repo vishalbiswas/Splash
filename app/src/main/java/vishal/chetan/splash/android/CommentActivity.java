@@ -47,8 +47,8 @@ public class CommentActivity extends BaseActivity {
         });
 
         if (commentId != -1) {
-            Thread.Comment comment = SplashCache.ThreadCache.getThread(serverIndex, threadId).getComment(commentId);
-            if (comment.isBlocked()) {
+            Thread.Comment comment = SplashCache.ThreadCache.getThread(serverIndex, threadId, null).getComment(commentId);
+            if (SplashCache.ThreadCache.getThread(serverIndex, threadId, null).isBlocked() || comment.isBlocked()) {
                 // cannot edit or reply to blocked comments
                 setResult(RESULT_CANCELED);
                 finish();
@@ -59,7 +59,7 @@ public class CommentActivity extends BaseActivity {
                 editPost.setText(comment.getText());
                 updatePreview();
                 if (comment.getParentCommentId() != -1) {
-                    updateParent(SplashCache.ThreadCache.getThread(serverIndex, threadId).getComment(comment.getParentCommentId()));
+                    updateParent(SplashCache.ThreadCache.getThread(serverIndex, threadId, null).getComment(comment.getParentCommentId()));
                 }
             } else {
                 updateParent(comment);
@@ -96,7 +96,7 @@ public class CommentActivity extends BaseActivity {
                                             if (jsonObject.has("parent")) {
                                                 finalComment.setParentCommentId(jsonObject.getLong("parent"));
                                             }
-                                            SplashCache.ThreadCache.getThread(serverIndex, threadId).addComment(finalComment);
+                                            SplashCache.ThreadCache.getThread(serverIndex, threadId, null).addComment(finalComment);
                                             setResult(RESULT_OK, new Intent().putExtra("serverIndex", serverIndex).putExtra("threadId", threadId).putExtra("commentId", finalComment.getCommentId()));
                                             finish();
                                             break;

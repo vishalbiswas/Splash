@@ -49,6 +49,12 @@ public class PostActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (getIntent().getLongExtra("threadId", -1) != -1) {
+            if (SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1), null).isBlocked()) {
+                setResult(RESULT_CANCELED);
+                return;
+            }
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
@@ -128,7 +134,7 @@ public class PostActivity extends BaseActivity {
                     v.setEnabled(false);
                     SplashCache.ThreadCache.postListener = modifiedListener;
                     if (getIntent().getLongExtra("threadId", -1) != -1) {
-                        thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
+                        thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1), null);
                         thread.setMtime(new Date());
                         thread.setTitle(editPostTitle.getText().toString());
                         thread.setContent(editPost.getText().toString());
@@ -180,7 +186,7 @@ public class PostActivity extends BaseActivity {
         });
 
         if (getIntent().getLongExtra("threadId", -1) != -1) {
-            Thread thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1));
+            Thread thread = SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1), null);
             spinTopic.setSelection(GlobalFunctions.servers.get(thread.getServerIndex()).getTopicIndex(thread.getTopicId()));
             editPostTitle.setText(thread.getTitle());
             editPost.setText(thread.getRawContent());

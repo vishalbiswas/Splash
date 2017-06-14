@@ -3,6 +3,7 @@ package vishal.chetan.splash;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.SparseArray;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,13 @@ import java.util.List;
 
 public class ServerList extends ArrayList<ServerList.SplashSource> {
     public static class SplashSource {
+
+        public boolean isDisposed() {
+            return disposed;
+        }
+
+        private boolean disposed = false;
+
         public class SplashTopic {
             public final int topicid;
             public final String name;
@@ -98,6 +106,11 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         public void addTopic(SplashTopic topic) {
             topics.add(topic);
         }
+
+        public void dispose() {
+            disabled = true;
+            disposed = true;
+        }
     }
 
     public interface OnServerListChangeListener {
@@ -120,7 +133,7 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
     @NonNull
     public ArrayList<SplashSource> getEnabled() {
         ArrayList<SplashSource> enabledSources = new ArrayList<>();
-        for(SplashSource source : instance) {
+        for(SplashSource source : enabledSources) {
             if (source.isEnabled()) {
                 enabledSources.add(source);
             }
@@ -128,7 +141,6 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         return enabledSources;
     }
 
-    @Override
     public SplashSource set(int index, SplashSource element) {
         SplashSource previousElement = super.set(index, element);
         for (OnServerListChangeListener changelistener : changeListeners) {
@@ -154,17 +166,19 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
 
     @Override
     public boolean add(SplashSource s) {
-        boolean val = super.add(s);
+        boolean success = super.add(s);
         for (OnServerListChangeListener changelistener:
              changeListeners) {
             changelistener.onAdd(s);
         }
-        return val;
+        return success;
     }
 
     @Override
     public SplashSource remove(int index) {
-        SplashSource s = super.remove(index);
+        SplashSource s = instance.get(index);
+        setDisabled(index, true);
+        instance.get(index).dispose();
         for (OnServerListChangeListener changelistener:
                 changeListeners) {
             changelistener.onRemove(s);
@@ -172,10 +186,9 @@ public class ServerList extends ArrayList<ServerList.SplashSource> {
         return s;
     }
 
-
     public void setDisabled(int index, boolean disabled) {
-        if (super.get(index).disabled != disabled) {
-            super.get(index).disabled = disabled;
+        if (instance.get(index).disabled != disabled) {
+            instance.get(index).disabled = disabled;
             for (OnServerEnabledListener listener : enabledListeners) {
                 listener.onEnabledChanged(index, !disabled);
             }

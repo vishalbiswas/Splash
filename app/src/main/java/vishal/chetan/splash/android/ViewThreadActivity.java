@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
@@ -215,7 +216,7 @@ public class ViewThreadActivity extends BaseActivity {
     }
 
     private void updateThread() {
-        thread = SplashCache.ThreadCache.getThread(serverIndex, threadId);
+        thread = SplashCache.ThreadCache.getThread(serverIndex, threadId, null);
         setTitle(thread.getTitle());
         ((HtmlTextView) findViewById(R.id.threadContent)).setHtml(thread.getContent());
         UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, thread.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
@@ -233,7 +234,7 @@ public class ViewThreadActivity extends BaseActivity {
             SplashCache.AttachmentCache.get(serverIndex, thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
                 @Override
                 public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
-                    if (attachment != null) {
+                    if (attachment != null && attachment.data != null) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -250,17 +251,28 @@ public class ViewThreadActivity extends BaseActivity {
                                         });
                                         break;
                                     default:
-                                        Drawable icon = getResources().getDrawable(android.R.drawable.presence_video_online);
-                                        TextView threadDummy = (TextView) findViewById(R.id.threadDummy);
-                                        threadDummy.setCompoundDrawables(icon, null, null, null);
-                                        threadDummy.setText(attachment.name);
-                                        threadDummy.setVisibility(View.VISIBLE);
-                                        threadDummy.setOnClickListener(new View.OnClickListener() {
+                                        Drawable icon;
+                                        switch (attachment.type) {
+                                            case SplashCache.AttachmentCache.SplashAttachment.VIDEO:
+                                                icon = getResources().getDrawable(R.drawable.ic_video);
+                                                break;
+                                            case SplashCache.AttachmentCache.SplashAttachment.AUDIO:
+                                                icon = getResources().getDrawable(R.drawable.ic_audio);
+                                                break;
+                                            default:
+                                                icon = getResources().getDrawable(R.drawable.ic_file);
+                                                break;
+                                        }
+                                        LinearLayout threadAttach = (LinearLayout) findViewById(R.id.threadAttach);
+                                        ((ImageView) threadAttach.findViewById(R.id.threadAttachIcon)).setImageDrawable(icon);
+                                        ((TextView) threadAttach.findViewById(R.id.threadDummy)).setText(attachment.name);
+                                        threadAttach.setOnClickListener(new View.OnClickListener() {
                                             @Override
                                             public void onClick(View view) {
                                                 openInExternal(attachment);
                                             }
                                         });
+                                        threadAttach.setVisibility(View.VISIBLE);
                                         break;
                                 }
                             }
@@ -272,7 +284,7 @@ public class ViewThreadActivity extends BaseActivity {
     }
 
     private void openInExternal(SplashCache.AttachmentCache.SplashAttachment attachment) {
-        if (attachment != null) {
+        if (attachment != null && attachment.data != null) {
             try {
                 File file = new File(getFilesDir(), GlobalFunctions.servers.get(serverIndex).getName() + thread.getAttachId() + attachment.name);
                 FileOutputStream out = new FileOutputStream(file);

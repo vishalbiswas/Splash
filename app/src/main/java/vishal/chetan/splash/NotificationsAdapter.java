@@ -2,6 +2,7 @@ package vishal.chetan.splash;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -32,26 +33,29 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         SplashCache.AttachmentCache.get(notification.serverIndex, notification.attachid, new SplashCache.AttachmentCache.OnGetAttachmentListener() {
             @Override
             public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
-                ((Activity)context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (attachment.type == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
-                            holder.notificationImage.setImageBitmap((Bitmap) attachment.data);
-                        } else {
-                            holder.notificationImage.setImageBitmap(null);
+                if (attachment != null && attachment.data != null) {
+                    ((Activity) context).runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (attachment.type == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
+                                holder.notificationImage.setImageBitmap((Bitmap) attachment.data);
+                            } else {
+                                holder.notificationImage.setImageBitmap(null);
+                            }
                         }
-                    }
-                });;
+                    });
+                }
             }
         });
         holder.notificationTitle.setText(notification.title);
         holder.notificationContent.setText(notification.getMessage());
+        holder.notificationServer.setText(GlobalFunctions.servers.get(notification.serverIndex).getName());
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (notification.intent != null) {
-                    context.getApplicationContext().startActivity(notification.intent);
+                    context.startActivity(notification.intent);
                 }
             }
         });
@@ -67,6 +71,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         public final ImageView notificationImage;
         public final TextView notificationTitle;
         public final TextView notificationContent;
+        public final TextView notificationServer;
 
         public ViewHolder(View view) {
             super(view);
@@ -74,6 +79,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             notificationImage = (ImageView) view.findViewById(R.id.notificationImage);
             notificationTitle = (TextView) view.findViewById(R.id.notificationTitle);
             notificationContent = (TextView) view.findViewById(R.id.notificationContent);
+            notificationServer = (TextView) view.findViewById(R.id.notificationServer);
         }
 
         @Override

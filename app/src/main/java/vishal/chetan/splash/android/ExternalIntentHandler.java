@@ -24,8 +24,8 @@ public class ExternalIntentHandler extends AppCompatActivity {
             final String action = getIntent().getAction();
             if (Intent.ACTION_SEND.equals(action)) {
                 List<CharSequence> items = new ArrayList<>();
-                for (ServerList.SplashSource source : GlobalFunctions.servers) {
-                    items.add(source.getName());
+                for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    items.add(GlobalFunctions.servers.get(i).getName());
                 }
                 new AlertDialog.Builder(this).setTitle("Select Server to post in...")
                         .setItems(items.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {

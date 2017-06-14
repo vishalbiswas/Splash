@@ -29,6 +29,14 @@
         android:title="@string/strSource">
         <intent android:action="vishal.chetan.splash.android.SourcesManagerActivity" />
     </Preference>
+
+    <EditTextPreference
+        android:key="notificationCheckInterval"
+        android:inputType="number"
+        android:title="Notifications Update Interval"
+        android:summary="seconds, 0 = manual check only"
+        android:id="@+id/notificationInterval" />
+
     <PreferenceCategory
         android:key="defaultIdentity"
         android:title="@string/defaultIdentity">
