@@ -15,6 +15,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import vishal.chetan.splash.GlobalFunctions;
 
 public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> {
@@ -51,7 +53,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
             try {
                 String completeUrl = String.format("%s/%s", serverAddress, pageUrl);
                 URL url = new URL(completeUrl);
-                HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection webservice = (HttpsURLConnection) url.openConnection();
                 webservice.setConnectTimeout(3000);
                 if (postMessage != null) {
                     webservice.setRequestMethod("POST");

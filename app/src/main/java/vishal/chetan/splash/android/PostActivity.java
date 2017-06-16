@@ -4,9 +4,8 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.database.Cursor;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
+import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
@@ -242,7 +241,7 @@ public class PostActivity extends BaseActivity {
 
                 buffer.flush();
                 attach = new SplashCache.AttachmentCache.SplashAttachment(buffer.toByteArray(), name);
-                attach.mimeType = mime;
+                attach.setMimeType(mime);
             }
             stream.close();
         } catch (IOException e) {

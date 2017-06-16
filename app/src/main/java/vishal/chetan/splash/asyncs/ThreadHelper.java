@@ -13,6 +13,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import vishal.chetan.splash.GlobalFunctions;
 
 public abstract class ThreadHelper implements Runnable {
@@ -57,7 +59,7 @@ public abstract class ThreadHelper implements Runnable {
             try {
                 String completeUrl = String.format("%s/%s", serverAddress, pageUrl);
                 URL url = new URL(completeUrl);
-                HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection webservice = (HttpsURLConnection) url.openConnection();
                 webservice.setConnectTimeout(3000);
                 if (postMessage != null || rawPost) {
                     webservice.setRequestMethod("POST");
@@ -100,7 +102,7 @@ public abstract class ThreadHelper implements Runnable {
 
     abstract protected void doWork(JSONObject jsonObject);
 
-    protected JSONObject workInput(HttpURLConnection webservice) throws JSONException, IOException {
+    protected JSONObject workInput(HttpsURLConnection webservice) throws JSONException, IOException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(webservice.getInputStream()));
         String line;
         StringBuilder response = new StringBuilder();
@@ -115,6 +117,6 @@ public abstract class ThreadHelper implements Runnable {
         return new JSONObject(response.toString());
     }
 
-    protected void workOutput(HttpURLConnection webservice) throws IOException {
+    protected void workOutput(HttpsURLConnection webservice) throws IOException {
     }
 }

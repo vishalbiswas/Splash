@@ -15,10 +15,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import vishal.chetan.splash.asyncs.ThreadHelper;
 
@@ -333,13 +334,35 @@ public class SplashCache {
 
             public Object data;
             public int type = OTHER;
-            public String mimeType;
+
+            public String getMimeType() {
+                return mimeType;
+            }
+
+            public void setMimeType(String mimeType) {
+                this.mimeType = mimeType;
+                if (mimeType.startsWith("image")) {
+                    this.type = IMAGE;
+                } else if (mimeType.startsWith("video")) {
+                    this.type = VIDEO;
+                } else if (mimeType.startsWith("audio")) {
+                    this.type = AUDIO;
+                } else {
+                    this.type = OTHER;
+                }
+            }
+
+            private String mimeType = "application/octet-stream";
             public String name = "attach";
 
             public SplashAttachment(Object data) {
                 if (data instanceof Bitmap) {
                     this.type = IMAGE;
                     this.mimeType = "image/png";
+                } else if (mimeType.startsWith("video")) {
+                    this.type = VIDEO;
+                } else if (mimeType.startsWith("audio")) {
+                    this.type = AUDIO;
                 } else {
                     this.mimeType = "application/octet-stream";
                     this.type = OTHER;
@@ -348,14 +371,7 @@ public class SplashCache {
             }
 
             public SplashAttachment(Object data, @NonNull String name) {
-                if (data instanceof Bitmap) {
-                    this.type = IMAGE;
-                    this.mimeType = "image/png";
-                } else {
-                    this.mimeType = "application/octet-stream";
-                    this.type = OTHER;
-                }
-                this.data = data;
+                this(data);
                 this.name = name;
             }
         }
@@ -416,7 +432,7 @@ public class SplashCache {
                 }
 
                 @Override
-                protected JSONObject workInput(HttpURLConnection webservice) throws JSONException, IOException {
+                protected JSONObject workInput(HttpsURLConnection webservice) throws JSONException, IOException {
                     String type = webservice.getHeaderField("Content-Type");
                     InputStream stream = webservice.getInputStream();
                         if (type != null && type.startsWith("image")) {
@@ -439,7 +455,7 @@ public class SplashCache {
                             }
                         }
                         attachment.name = webservice.getHeaderField("FileName");
-                        attachment.mimeType = type;
+                        attachment.setMimeType(type);
                         setAttachment(serverIndex, attachId, attachment);
                         return new JSONObject("{status:0}");
                 }
@@ -464,11 +480,11 @@ public class SplashCache {
         public static void upload(final int serverIndex, @NonNull final SplashAttachment attachment, @NonNull final OnUploadCompleteListener listener) {
             ThreadHelper uploader = new ThreadHelper(serverIndex, "upload", true) {
                 @Override
-                protected void workOutput(HttpURLConnection webservice) throws IOException {
+                protected void workOutput(HttpsURLConnection webservice) throws IOException {
                     OutputStream rawOutputStream = webservice.getOutputStream();
                     rawOutputStream.write(String.format("Content-Disposition: form-data; name=\"attach\"; filename=\"%s\"\r\n", attachment.name).getBytes());
                     rawOutputStream.write("Content-Transfer-Encoding: binary\r\n".getBytes());
-                    rawOutputStream.write(String.format("Content-Type: %s\r\n\r\n", attachment.mimeType).getBytes());
+                    rawOutputStream.write(String.format("Content-Type: %s\r\n\r\n", attachment.getMimeType()).getBytes());
                     if (attachment.type == SplashAttachment.IMAGE) {
                         ((Bitmap) attachment.data).compress(Bitmap.CompressFormat.PNG, 100, rawOutputStream);
                     } else {

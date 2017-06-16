@@ -186,7 +186,10 @@ public class SourcesManagerActivity extends BaseActivity {
                 } else {
                     name = (String) initialName;
                 }
-                final String url = serverEdit.getText().toString();
+                String url = serverEdit.getText().toString();
+                if (!url.startsWith("http")) {
+                    url = "https://" + url;
+                }
                 if (!name.isEmpty() && !name.isEmpty()) {
                     int correctIndex = index;
                     ServerList.SplashSource source = new ServerList.SplashSource(name, url);

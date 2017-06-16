@@ -297,7 +297,7 @@ public class ViewThreadActivity extends BaseActivity {
                 Intent shareIntent = new Intent();
                 shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 shareIntent.setAction(Intent.ACTION_VIEW);
-                shareIntent.setDataAndType(FileProvider.getUriForFile(ViewThreadActivity.this, getApplicationContext().getPackageName() + ".provider", file), attachment.mimeType);
+                shareIntent.setDataAndType(FileProvider.getUriForFile(ViewThreadActivity.this, getApplicationContext().getPackageName() + ".provider", file), attachment.getMimeType());
                 startActivity(shareIntent);
             } catch (Exception e) {
                 e.printStackTrace();

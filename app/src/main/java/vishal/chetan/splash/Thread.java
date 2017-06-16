@@ -43,7 +43,7 @@ public class Thread {
         return threadId;
     }
 
-    private final long threadId;
+    private long threadId = -1;
 
     public void setTitle(String title) {
         this.title = title;
@@ -66,17 +66,17 @@ public class Thread {
     }
 
     private String rawContent;
-    private final long creator_id;
+    private long creator_id = -1;
     @Nullable
-    private final Date ctime;
+    private Date ctime = null;
 
     public void setMtime(@Nullable Date mtime) {
         this.mtime = mtime;
     }
 
     @Nullable
-    private Date mtime;
-    private final int serverIndex;
+    private Date mtime = null;
+    private int serverIndex = -1;
     private int topicId;
 
     public boolean isBlocked() {
@@ -132,59 +132,37 @@ public class Thread {
         }
     }
 
-    private int attachType =SplashCache.AttachmentCache.SplashAttachment.NONE;
+    private int attachType = SplashCache.AttachmentCache.SplashAttachment.NONE;
 
     public Thread(int serverIndex, String title, String content, int topicId) {
-        this.threadId = -1;
         this.serverIndex = serverIndex;
         this.title = title;
         this.rawContent = content;
         this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
-        this.ctime = null;
-        this.mtime = null;
+        if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+            this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
+        }
         this.topicId = topicId;
     }
 
     public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, String attachType) {
-        this.threadId = threadId;
-        this.serverIndex = serverIndex;
-        this.title = title;
-        this.rawContent = content;
-        this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = creator_id;
-        this.ctime = new Date(ctime);
-        this.mtime = new Date(mtime);
-        this.topicId = topicId;
+        this(threadId, serverIndex, title, content, creator_id, ctime, mtime, topicId);
         this.attachId = attachId;
         setAttachType(attachType);
     }
 
     public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, int attachType) {
-        this.threadId = threadId;
-        this.serverIndex = serverIndex;
-        this.title = title;
-        this.rawContent = content;
-        this.content = GlobalFunctions.parseMarkdown(content);
-        this.creator_id = creator_id;
-        this.ctime = new Date(ctime);
-        this.mtime = new Date(mtime);
-        this.topicId = topicId;
+        this(threadId, serverIndex, title, content, creator_id, ctime, mtime, topicId);
         this.attachId = attachId;
         this.attachType = attachType;
     }
 
     public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId) {
+        this(serverIndex, title, content, topicId);
         this.threadId = threadId;
-        this.serverIndex = serverIndex;
-        this.title = title;
-        this.rawContent = content;
-        this.content = GlobalFunctions.parseMarkdown(content);
         this.creator_id = creator_id;
         this.ctime = new Date(ctime);
         this.mtime = new Date(mtime);
-        this.topicId = topicId;
-        this.attachId = -1;
     }
 
     @NonNull
@@ -327,10 +305,10 @@ public class Thread {
         }
 
         private String text;
-        final private long creator_id;
-        final private long commentId;
+        private long creator_id = -1;
+        private long commentId = -1;
         @Nullable
-        final private Date ctime;
+        private Date ctime = null;
 
         public void setText(String text) {
             this.text = text;
@@ -342,7 +320,7 @@ public class Thread {
 
         @Nullable
         private Date mtime = null;
-        final private long threadId;
+        private long threadId = -1;
 
         public long getParentCommentId() {
             return parentCommentId;
@@ -353,10 +331,10 @@ public class Thread {
         }
 
         private long parentCommentId = -1;
-        final private int serverIndex;
+        private int serverIndex = -1;
         private boolean blocked = false;
         private boolean hidden = false;
-        public int reported;
+        public int reported = 0;
 
         public boolean isBlocked() {
             return blocked;
@@ -381,21 +359,18 @@ public class Thread {
         }
 
         public Comment(int serverIndex, long threadId, long creator_id, String text, long commentId, long ctime, long mtime) {
-            this.text = text;
+            this(serverIndex, threadId, text);
             this.creator_id = creator_id;
             this.commentId = commentId;
             this.ctime = new Date(ctime);
             this.mtime = new Date(mtime);
-            this.threadId = threadId;
-            this.serverIndex = serverIndex;
         }
 
         public Comment(int serverIndex, long threadId, String text) {
             this.text = text;
-            this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
-            this.commentId = -1;
-            this.ctime = null;
-            this.mtime = null;
+            if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                this.creator_id = GlobalFunctions.servers.get(serverIndex).identity.getUid();
+            }
             this.threadId = threadId;
             this.serverIndex = serverIndex;
         }

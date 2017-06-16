@@ -13,6 +13,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,16 +30,30 @@ import vishal.chetan.splash.android.NotificationReceiver;
 import vishal.chetan.splash.android.SettingsActivity;
 import vishal.chetan.splash.android.SourcesManagerActivity;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.Socket;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManagerFactory;
 
 public class GlobalFunctions extends Application {
     public static ConnectivityManager connMan;
@@ -166,11 +181,45 @@ public class GlobalFunctions extends Application {
         lookupLocale(this);
         initializeData(this);
 
-        if (BuildConfig.BUILD_TYPE.equals("debug") && GlobalFunctions.servers.size() == 0) {
-            if (Build.PRODUCT.startsWith("sdk") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
-            } else {
-                GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));
+        if (BuildConfig.BUILD_TYPE.equals("debug")) {
+            if (GlobalFunctions.servers.size() == 0) {
+                if (Build.PRODUCT.startsWith("sdk") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
+                } else {
+                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));
+                }
+            }
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                InputStream caInput = new BufferedInputStream(new FileInputStream(Environment.getExternalStorageDirectory().getPath() + "/cert.cer"));
+                Certificate ca;
+                ca = cf.generateCertificate(caInput);
+                System.out.println("ca=" + ((X509Certificate) ca).getSubjectDN());
+                caInput.close();
+
+                String keyStoreType = KeyStore.getDefaultType();
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                keyStore.load(null, null);
+                keyStore.setCertificateEntry("ca", ca);
+
+                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                tmf.init(keyStore);
+
+                SSLContext context = SSLContext.getInstance("TLS");
+                context.init(null, tmf.getTrustManagers(), null);
+                HttpsURLConnection.setDefaultSSLSocketFactory(context.getSocketFactory());
+
+                HostnameVerifier hv = new HostnameVerifier() {
+
+                    public boolean verify(String urlHostName, SSLSession session) {
+                        String msg = "Warning: URL Host: " + urlHostName + " vs. " + session.getPeerHost();
+                        System.err.println(msg);
+                        return true;
+                    }
+                };
+                HttpsURLConnection.setDefaultHostnameVerifier(hv);
+            } catch (Exception ignored) {
             }
         }
 
@@ -224,20 +273,21 @@ public class GlobalFunctions extends Application {
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
                 URL urlServer;
-                HttpURLConnection urlConn;
+                HttpsURLConnection urlConn;
                 try {
                     urlServer = new URL(source.getUrl() + "/banner");
-                    urlConn = (HttpURLConnection) urlServer.openConnection();
+                    urlConn = (HttpsURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000);
                     urlConn.connect();
                     if (urlConn.getResponseCode() == 200) {
                         source.banner = BitmapFactory.decodeStream(urlConn.getInputStream());
                     }
-                } catch (Exception ignored) { }
+                } catch (Exception ignored) {
+                }
 
                 try {
                     urlServer = new URL(source.getUrl() + "/topics");
-                    urlConn = (HttpURLConnection) urlServer.openConnection();
+                    urlConn = (HttpsURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000);
                     urlConn.connect();
                     if (urlConn.getResponseCode() != 200) {

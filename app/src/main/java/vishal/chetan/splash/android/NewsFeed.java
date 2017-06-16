@@ -33,7 +33,6 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONArray;
@@ -42,9 +41,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.NotificationsAdapter;
@@ -577,10 +577,10 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             NetworkInfo netInfo = GlobalFunctions.connMan.getActiveNetworkInfo();
             if (netInfo != null && netInfo.isConnected()) {
                 URL urlServer;
-                HttpURLConnection urlConn;
+                HttpsURLConnection urlConn;
                 try {
                     urlServer = new URL(source.getUrl() + path);
-                    urlConn = (HttpURLConnection) urlServer.openConnection();
+                    urlConn = (HttpsURLConnection) urlServer.openConnection();
                     urlConn.setConnectTimeout(3000); //<- 3Seconds Timeout
                     if (postMessage != null) {
                         urlConn.setRequestMethod("POST");

@@ -16,6 +16,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import vishal.chetan.splash.GlobalFunctions;
 
 abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
@@ -46,7 +48,7 @@ abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
             try {
                 String completeUrl = String.format("%s/%s", serverAddress, pageUrl);
                 URL url = new URL(completeUrl);
-                HttpURLConnection webservice = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection webservice = (HttpsURLConnection) url.openConnection();
                 webservice.setConnectTimeout(3000);
                 if (isPost) {
                     webservice.setRequestMethod("POST");
