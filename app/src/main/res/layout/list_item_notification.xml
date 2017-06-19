@@ -22,14 +22,13 @@
             android:id="@+id/notificationTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="1"
             android:textAppearance="?attr/textAppearanceListItem" />
 
         <vishal.chetan.splash.NoScrollHtmlTextView
             android:id="@+id/notificationContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxLines="2"
+            android:maxLines="3"
             android:textAppearance="?attr/textAppearanceListItem" />
 
 

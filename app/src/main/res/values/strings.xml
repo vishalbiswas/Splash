@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">News App</string>
+    <string name="app_name">Splash</string>
     <string name="action_settings">Settings</string>
     <string name="wait">Please wait…</string>
     <string name="username">Username</string>
@@ -126,4 +126,9 @@
     <string name="strThreadLocked">You thread \'%s\' was locked</string>
     <string name="strCommentUnlocked">Your comment \'%s\' was unlocked</string>
     <string name="strThreadUnlocked">Your thread \'%s\' was unlocked</string>
+    <string name="strCommentUnhidden">Your comment \'%s\' was restored</string>
+    <string name="strThreadUnhidden">Your thread \'%s\' was restored</string>
+    <string name="strCommentHidden">Your comment \'%s\' was banned</string>
+    <string name="strThreadBanned">Your thread \'%s\' was banned</string>
+    <string name="strNoServers">No servers configured</string>
 </resources>

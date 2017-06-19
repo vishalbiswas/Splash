@@ -5,12 +5,12 @@
         android:title="Revoke Rights"
         android:visible="false"/>
     <item
-        android:id="@+id/ban"
-        android:title="Ban"
-        android:visible="false"/>
-    <item
         android:id="@+id/revivePower"
         android:title="Revive Rights"
+        android:visible="false"/>
+    <item
+        android:id="@+id/ban"
+        android:title="Ban"
         android:visible="false"/>
     <item
         android:id="@+id/unban"

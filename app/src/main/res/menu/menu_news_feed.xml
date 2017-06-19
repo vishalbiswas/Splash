@@ -18,4 +18,7 @@
         android:title="@string/strLogout"
         app:showAsAction="ifRoom|withText"
         android:visible="false" />
+    <item
+        android:id="@+id/user"
+        android:title="View User" />
 </menu>

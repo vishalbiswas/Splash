@@ -50,7 +50,7 @@ public class ViewThreadActivity extends BaseActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        updateThread();
+                        recreate();
                     }
                 });
             }
@@ -60,7 +60,12 @@ public class ViewThreadActivity extends BaseActivity {
     private final ModerationManager.OnTaskCompleteListener commentListener = new ModerationManager.OnTaskCompleteListener() {
         @Override
         public void onCompleted(int serverIndex, long id) {
-            fetchComments();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fetchComments();
+                }
+            });
         }
     };
 
@@ -118,12 +123,12 @@ public class ViewThreadActivity extends BaseActivity {
             }
         });
 
-        if (thread.isHidden()) {
+        if (thread.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+            (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.reported));
+        } else if (thread.isHidden()) {
             (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.hidden));
         } else if (thread.isBlocked()) {
             (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.locked));
-        } else if (thread.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
-            (findViewById(R.id.threadBG)).setBackgroundColor(getResources().getColor(R.color.reported));
         }
         findViewById(R.id.threadMore).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -237,24 +242,19 @@ public class ViewThreadActivity extends BaseActivity {
         refreshLayout.setRefreshing(true);
         thread.loadComments(new Thread.LoadCommentsListener() {
             @Override
-            public void onCommentsLoaded(boolean result) {
-                if (result) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+            public void onCommentsLoaded(final boolean result) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result) {
                             refreshLayout.setRefreshing(false);
-                            comments.getAdapter().notifyDataSetChanged();
-                        }
-                    });
-                } else {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                            comments.setAdapter(new CommentsAdapter());
+                        } else {
                             Snackbar.make(comments, getString(R.string.strCommentFetchFailed), Snackbar.LENGTH_LONG).show();
                             refreshLayout.setRefreshing(false);
                         }
-                    });
-                }
+                    }
+                });
             }
         });
     }
@@ -408,15 +408,15 @@ public class ViewThreadActivity extends BaseActivity {
         public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
             final Thread.Comment comment = thread.getComments().valueAt(position);
             final ArrayList<CharSequence> items = new ArrayList<>();
-            if (comment.isHidden()) {
+            if (comment.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+                holder.setIsRecyclable(false);
+                holder.itemView.setBackgroundColor(getResources().getColor(R.color.reported));
+            } else if (comment.isHidden()) {
                 holder.setIsRecyclable(false);
                 holder.itemView.setBackgroundColor(getResources().getColor(R.color.hidden));
             } else if (comment.isBlocked()) {
                 holder.setIsRecyclable(false);
                 holder.itemView.setBackgroundColor(getResources().getColor(R.color.locked));
-            } else if (comment.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
-                holder.setIsRecyclable(false);
-                holder.itemView.setBackgroundColor(getResources().getColor(R.color.reported));
             }
             holder.txtComment.setHtml(GlobalFunctions.parseMarkdown(comment.getText()));
             if (comment.getParentCommentId() != -1) {
@@ -536,7 +536,6 @@ public class ViewThreadActivity extends BaseActivity {
                                                 }
                                             }).show();
                                         }
-                                        notifyItemChanged(holder.getAdapterPosition());
                                     }
                                 }).show();
                             } else if (i == items.size() - 1) {

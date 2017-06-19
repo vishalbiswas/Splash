@@ -57,29 +57,7 @@ public class SplashCache {
                 protected void doWork(@Nullable JSONObject jsonObject) {
                     if (jsonObject != null) {
                         try {
-                            UserIdentity fetcheduser = new UserIdentity(jsonObject.getLong("uid"),
-                                    jsonObject.getString("username"), jsonObject.getString("email"));
-                            if (jsonObject.has("fname")) {
-                                fetcheduser.setFirstname(jsonObject.getString("fname"));
-                            }
-                            if (jsonObject.has("lname")) {
-                                fetcheduser.setLastname(jsonObject.getString("lname"));
-                            }
-                            if (jsonObject.has("profpic")) {
-                                fetcheduser.setProfpic(jsonObject.getLong("profpic"));
-                            }
-                            if (jsonObject.has("canpost")) {
-                                fetcheduser.setCanpost(jsonObject.getBoolean("canpost"));
-                            }
-                            if (jsonObject.has("cancomment")) {
-                                fetcheduser.setCancomment(jsonObject.getBoolean("cancomment"));
-                            }
-                            if (jsonObject.has("banned")) {
-                                fetcheduser.setBanned(jsonObject.getBoolean("banned"));
-                            }
-                            if (jsonObject.has("mod")) {
-                                fetcheduser.setMod(jsonObject.getInt("mod"));
-                            }
+                            UserIdentity fetcheduser = parseUserFromJSON(jsonObject);
                             setUser(serverIndex, fetcheduser);
                             if (listener != null) {
                                 listener.onGetUser(fetcheduser);
@@ -93,6 +71,55 @@ public class SplashCache {
                 }
             };
             GlobalFunctions.executor.execute(loader);
+        }
+
+        public static void loadUser(final int serverIndex, String username, @Nullable final OnGetUserListener listener) {
+            Runnable loader = new ThreadHelper(serverIndex, "username/" + username) {
+                @Override
+                protected void doWork(@Nullable JSONObject jsonObject) {
+                    if (jsonObject != null) {
+                        try {
+                            UserIdentity fetcheduser = parseUserFromJSON(jsonObject);
+                            setUser(serverIndex, fetcheduser);
+                            if (listener != null) {
+                                listener.onGetUser(fetcheduser);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.e(TAG, "Unknown error");
+                    }
+                }
+            };
+            GlobalFunctions.executor.execute(loader);
+        }
+
+        private static UserIdentity parseUserFromJSON(JSONObject jsonObject) throws JSONException {
+            UserIdentity user = new UserIdentity(jsonObject.getLong("uid"),
+                    jsonObject.getString("username"), jsonObject.getString("email"));
+            if (jsonObject.has("fname")) {
+                user.setFirstname(jsonObject.getString("fname"));
+            }
+            if (jsonObject.has("lname")) {
+                user.setLastname(jsonObject.getString("lname"));
+            }
+            if (jsonObject.has("profpic")) {
+                user.setProfpic(jsonObject.getLong("profpic"));
+            }
+            if (jsonObject.has("canpost")) {
+                user.setCanpost(jsonObject.getBoolean("canpost"));
+            }
+            if (jsonObject.has("cancomment")) {
+                user.setCancomment(jsonObject.getBoolean("cancomment"));
+            }
+            if (jsonObject.has("banned")) {
+                user.setBanned(jsonObject.getBoolean("banned"));
+            }
+            if (jsonObject.has("mod")) {
+                user.setMod(jsonObject.getInt("mod"));
+            }
+            return user;
         }
 
         static void setUser(int serverIndex, @NonNull UserIdentity user) {
@@ -131,7 +158,7 @@ public class SplashCache {
         private static final SparseArray<LongSparseArray<Thread>> threads = new SparseArray<>();
         private static final SparseArray<LongSparseArray<Thread>> individuals = new SparseArray<>();
         @Nullable
-        static OnThreadModifiedListener adapterListener = null;
+        public static OnThreadModifiedListener adapterListener = null;
         @Nullable
         public static OnThreadModifiedListener postListener = null;
 
@@ -288,9 +315,9 @@ public class SplashCache {
                                         individuals.append(serverIndex, threadList);
                                     } else {
                                         threadList.append(threadId, newThread);
-                                    }
-                                    if (adapterListener != null) {
-                                        adapterListener.onModify(newThread);
+                                        if (adapterListener != null) {
+                                            adapterListener.onModify(newThread);
+                                        }
                                     }
                                 } else {
                                     add(newThread);

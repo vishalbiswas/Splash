@@ -89,6 +89,11 @@ public class ModerationManager {
     }
 
     public static void clearThread(int serverIndex, final long id) {
+        Thread thread = SplashCache.ThreadCache.getThread(serverIndex, id, null);
+        thread.reported = 0;
+        if (SplashCache.ThreadCache.adapterListener != null) {
+            SplashCache.ThreadCache.adapterListener.onModify(thread);
+        }
         clearReport("thread", serverIndex, id, new OnTaskCompleteListener() {
             @Override
             public void onCompleted(int serverIndex, long id) {
@@ -132,6 +137,11 @@ public class ModerationManager {
     }
 
     public static void unlockThread(int serverIndex, final long id) {
+        Thread thread = SplashCache.ThreadCache.getThread(serverIndex, id, null);
+        thread.setBlocked(false);
+        if (SplashCache.ThreadCache.adapterListener != null) {
+            SplashCache.ThreadCache.adapterListener.onModify(thread);
+        }
         unlock("thread", serverIndex, id, new OnTaskCompleteListener() {
             @Override
             public void onCompleted(int serverIndex, long id) {
@@ -185,6 +195,11 @@ public class ModerationManager {
     }
 
     public static void unhideThread(int serverIndex, final long id) {
+        Thread thread = SplashCache.ThreadCache.getThread(serverIndex, id, null);
+        thread.setHidden(false);
+        if (SplashCache.ThreadCache.adapterListener != null) {
+            SplashCache.ThreadCache.adapterListener.onModify(thread);
+        }
         unhide("thread", serverIndex, id, new OnTaskCompleteListener() {
             @Override
             public void onCompleted(int serverIndex, long id) {
@@ -238,6 +253,11 @@ public class ModerationManager {
     }
 
     public static void lockThread(int serverIndex, final long id, final String msg) {
+        Thread thread = SplashCache.ThreadCache.getThread(serverIndex, id, null);
+        thread.setBlocked(true);
+        if (SplashCache.ThreadCache.adapterListener != null) {
+            SplashCache.ThreadCache.adapterListener.onModify(thread);
+        }
         lock("thread", serverIndex, id, msg, new OnTaskCompleteListener() {
             @Override
             public void onCompleted(int serverIndex, long id) {
@@ -291,6 +311,11 @@ public class ModerationManager {
     }
 
     public static void hideThread(int serverIndex, final long id, final String msg) {
+        Thread thread = SplashCache.ThreadCache.getThread(serverIndex, id, null);
+        thread.setHidden(true);
+        if (SplashCache.ThreadCache.adapterListener != null) {
+            SplashCache.ThreadCache.adapterListener.onModify(thread);
+        }
         hide("thread", serverIndex, id, msg, new OnTaskCompleteListener() {
             @Override
             public void onCompleted(int serverIndex, long id) {

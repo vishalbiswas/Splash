@@ -3,6 +3,7 @@ package vishal.chetan.splash.android;
 import android.app.SearchManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
@@ -22,6 +23,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -32,8 +36,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -172,6 +179,22 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         });
 
         fillThreadCache();
+
+        SplashCache.ThreadCache.adapterListener = new SplashCache.ThreadCache.OnThreadModifiedListener() {
+            @Override
+            public void onModify(@Nullable Thread thread) {
+                if (thread != null) {
+                    if (previousItemId == -1 || thread.getServerIndex() == previousItemId) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                threadsListView.invalidate();
+                            }
+                        });
+                    }
+                }
+            }
+        };
     }
 
     private void fillThreadCache() {
@@ -277,7 +300,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                 SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
                         ThreadSearchSuggestionProvider.AUTHORITY, ThreadSearchSuggestionProvider.MODE);
                 suggestions.saveRecentQuery(query, GlobalFunctions.servers.get(serverIndex).getName());
-                new AsyncArrayHelper(serverIndex, "search/" + query) {
+                String postMessage = "quantity=" + NUMBER_OF_THREADS;
+                if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+                    postMessage += "&sessionid=" + GlobalFunctions.servers.get(serverIndex).identity.getSessionid();
+                }
+                new AsyncArrayHelper(serverIndex, "search/" + query, postMessage) {
                     @Override
                     protected void workInBackground(@Nullable JSONArray jsonArray) {
                         if (jsonArray == null) {
@@ -358,6 +385,47 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     }.execute();
                 }
                 break;
+            case R.id.user:
+                final ArrayList<String> list = new ArrayList<>();
+                final ArrayList<Integer> positions = new ArrayList<>();
+                for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                    ServerList.SplashSource source = GlobalFunctions.servers.get(i);
+                    if (source.isEnabled()) {
+                        list.add(source.getName());
+                        positions.add(i);
+                    }
+                }
+                if (list.size() > 0) {
+                    final View view = getLayoutInflater().inflate(R.layout.dialog_goto_user, null, false);
+                    final AppCompatSpinner spinServer = (AppCompatSpinner) view.findViewById(R.id.spinServer);
+                    spinServer.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, list));
+                    new AlertDialog.Builder(this).setView(view).setTitle("Enter username of the user").setPositiveButton("View User", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            String username = ((AppCompatEditText) view.findViewById(R.id.editUsername)).getText().toString().trim();
+                            final Toast toast = Toast.makeText(NewsFeed.this, "Fetching user details...", Toast.LENGTH_LONG);
+                            toast.show();
+                            SplashCache.UsersCache.loadUser(positions.get(spinServer.getSelectedItemPosition()), username, new SplashCache.UsersCache.OnGetUserListener() {
+                                @Override
+                                public void onGetUser(final UserIdentity user) {
+                                    runOnUiThread(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            toast.cancel();
+                                            if (user != null) {
+                                                startActivity(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", positions.get(spinServer.getSelectedItemPosition())).putExtra("uid", user.getUid()));
+                                            } else {
+                                                Toast.makeText(NewsFeed.this, R.string.errUserData, Toast.LENGTH_LONG).show();
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }).show();
+                } else {
+                    Snackbar.make(findViewById(R.id.root_coord), getString(R.string.strNoServers), Snackbar.LENGTH_SHORT).show();
+                }
         }
         return true;
     }

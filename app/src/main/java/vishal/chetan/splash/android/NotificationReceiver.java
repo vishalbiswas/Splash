@@ -229,6 +229,9 @@ public class NotificationReceiver extends BroadcastReceiver {
                                             case COMMENT_UNLOCKED:
                                                 notification.title = context.getString(R.string.strCommentUnlocked, thread.getTitle());
                                                 break;
+                                            case COMMENT_UNHIDDEN:
+                                                notification.title = context.getString(R.string.strCommentUnhidden, thread.getTitle());
+                                                break;
                                         }
                                     }
                                     notification.msg = thread.getComment(notification.commentid).getText();
@@ -243,15 +246,23 @@ public class NotificationReceiver extends BroadcastReceiver {
                                 case THREAD_UNLOCKED:
                                     notification.title = context.getString(R.string.strThreadUnlocked, thread.getTitle());
                                     break;
+                                case THREAD_UNHIDDEN:
+                                    notification.title = context.getString(R.string.strThreadUnhidden, thread.getTitle());
+                                    break;
                             }
                             showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid));
-
                         }
                     }
                 }
             });
         } else {
             switch (notification.code) {
+                case COMMENT_HIDDEN:
+                    notification.title = context.getString(R.string.strCommentHidden, notification.title);
+                    break;
+                case THREAD_HIDDEN:
+                    notification.title = context.getString(R.string.strThreadBanned, notification.title);
+                    break;
                 case UNBANNED:
                     notification.title = "You were unbanned";
                     break;
