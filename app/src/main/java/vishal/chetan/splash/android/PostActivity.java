@@ -53,12 +53,14 @@ public class PostActivity extends BaseActivity {
         if (!GlobalFunctions.servers.get(serverIndex).identity.canPost()) {
             Toast.makeText(this, R.string.errCannotPost, Toast.LENGTH_LONG).show();
             setResult(RESULT_CANCELED);
+            finish();
             return;
         }
         if (getIntent().getLongExtra("threadId", -1) != -1) {
             if (SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1), null).isBlocked()) {
                 Toast.makeText(this, R.string.errCannotPost, Toast.LENGTH_LONG).show();
                 setResult(RESULT_CANCELED);
+                finish();
                 return;
             }
         }

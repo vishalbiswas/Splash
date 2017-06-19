@@ -35,6 +35,12 @@ public class CommentActivity extends BaseActivity {
         setContentView(R.layout.activity_comment);
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
         threadId = getIntent().getLongExtra("threadId", -1);
+        if (SplashCache.ThreadCache.getThread(serverIndex, threadId, null).isBlocked() || !GlobalFunctions.servers.get(serverIndex).identity.canComment()) {
+            Toast.makeText(this, R.string.errCannotComment, Toast.LENGTH_LONG).show();
+            setResult(RESULT_CANCELED);
+            finish();
+            return;
+        }
         requestCode = getIntent().getIntExtra("requestCode", ViewThreadActivity.REPLY_THREAD_CODE);
         commentId = getIntent().getLongExtra("commentId", -1);
         previewPost = (HtmlTextView) findViewById(R.id.previewPost);
@@ -49,8 +55,7 @@ public class CommentActivity extends BaseActivity {
 
         if (commentId != -1) {
             Thread.Comment comment = SplashCache.ThreadCache.getThread(serverIndex, threadId, null).getComment(commentId);
-            if (SplashCache.ThreadCache.getThread(serverIndex, threadId, null).isBlocked() || comment.isBlocked()
-                    || !GlobalFunctions.servers.get(serverIndex).identity.canComment()) {
+            if (comment.isBlocked()) {
                 // cannot edit or reply to blocked comments
                 Toast.makeText(this, R.string.errCannotComment, Toast.LENGTH_LONG).show();
                 setResult(RESULT_CANCELED);
