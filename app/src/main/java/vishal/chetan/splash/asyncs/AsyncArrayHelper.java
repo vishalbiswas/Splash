@@ -77,6 +77,7 @@ public abstract class AsyncArrayHelper extends AsyncTask<Void, Void, JSONArray> 
                     bufferedReader.close();
                     result = new JSONArray(response.toString());
                 }
+                webservice.disconnect();
             } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();
             }

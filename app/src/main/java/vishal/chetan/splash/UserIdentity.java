@@ -10,7 +10,8 @@ public class UserIdentity {
     private String lastname = "";
     private String email = "";
     private long profpic = -1;
-    private boolean revoked = false;
+    private boolean canpost = false;
+    private boolean cancomment = false;
     private boolean banned = false;
     private String sessionid = null;
 
@@ -53,20 +54,28 @@ public class UserIdentity {
         this.email = email;
     }
 
-    public boolean isRevoked() {
-        return revoked;
-    }
-
-    public void setRevoked(boolean revoked) {
-        this.revoked = revoked;
-    }
-
     public boolean isBanned() {
         return banned;
     }
 
     public void setBanned(boolean banned) {
         this.banned = banned;
+    }
+
+    public boolean canPost() {
+        return canpost;
+    }
+
+    public void setCanpost(boolean canpost) {
+        this.canpost = canpost;
+    }
+
+    public boolean canComment() {
+        return cancomment;
+    }
+
+    public void setCancomment(boolean cancomment) {
+        this.cancomment = cancomment;
     }
 
 
@@ -137,5 +146,14 @@ public class UserIdentity {
 
     public void setSessionid(String sessionid) {
         this.sessionid = sessionid;
+    }
+
+    public void setRevoked(boolean b) {
+        cancomment = !b;
+        canpost = !b;
+    }
+
+    public boolean isRevoked() {
+        return !(cancomment && canpost);
     }
 }

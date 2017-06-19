@@ -33,6 +33,7 @@ import vishal.chetan.splash.ModerationManager;
 import vishal.chetan.splash.R;
 import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
+import vishal.chetan.splash.ThreadsAdapter;
 import vishal.chetan.splash.UserIdentity;
 
 public class ViewThreadActivity extends BaseActivity {
@@ -41,6 +42,27 @@ public class ViewThreadActivity extends BaseActivity {
     private Thread thread;
     private RecyclerView comments;
     private SwipeRefreshLayout refreshLayout;
+
+    private final ModerationManager.OnTaskCompleteListener threadListener = new ModerationManager.OnTaskCompleteListener() {
+        @Override
+        public void onCompleted(int serverIndex, long id) {
+            if (threadId == id) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateThread();
+                    }
+                });
+            }
+        }
+    };
+
+    private final ModerationManager.OnTaskCompleteListener commentListener = new ModerationManager.OnTaskCompleteListener() {
+        @Override
+        public void onCompleted(int serverIndex, long id) {
+            fetchComments();
+        }
+    };
 
     public static final int EDIT_THREAD_CODE = 1;
     public static final int REPLY_THREAD_CODE = 2;
@@ -65,6 +87,7 @@ public class ViewThreadActivity extends BaseActivity {
         comments.setLayoutManager(new LinearLayoutManager(this));
         comments.setAdapter(new CommentsAdapter());
         comments.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
+        comments.setHasFixedSize(false);
 
         if (GlobalFunctions.servers.get(serverIndex).identity != null) {
             if (thread.getCreatorID() == GlobalFunctions.servers.get(serverIndex).identity.getUid()) {
@@ -145,14 +168,21 @@ public class ViewThreadActivity extends BaseActivity {
                             } else {
                                 list.add("Hide");
                             }
+                            if (thread.reported > 0) {
+                                list.add("Clear Reports");
+                            }
                             new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Select Action").setItems(list.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, final int i) {
-                                    if (list.get(i).toString().startsWith("Un")) {
-                                        String choice = list.get(i).toString();
-                                        if (choice.equals("Lock")) {
+                                    final String choice = list.get(i).toString();
+                                    if (choice.equals("Clear Reports")) {
+                                        ModerationManager.extraListener = threadListener;
+                                        ModerationManager.clearThread(serverIndex, threadId);
+                                    } else if (choice.startsWith("Un")) {
+                                        ModerationManager.extraListener = threadListener;
+                                        if (choice.equals("Unlock")) {
                                             ModerationManager.unlockThread(serverIndex, threadId);
-                                        } else if (choice.equals("Hide")) {
+                                        } else if (choice.equals("Unhide")) {
                                             ModerationManager.unhideThread(serverIndex, threadId);
                                         }
                                     } else {
@@ -160,7 +190,7 @@ public class ViewThreadActivity extends BaseActivity {
                                         new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int j) {
-                                                String choice = list.get(i).toString();
+                                                ModerationManager.extraListener = threadListener;
                                                 if (choice.equals("Lock")) {
                                                     ModerationManager.lockThread(serverIndex, threadId, msgModerate.getText().toString());
                                                 } else if (choice.equals("Hide")) {
@@ -169,6 +199,19 @@ public class ViewThreadActivity extends BaseActivity {
                                             }
                                         }).show();
                                     }
+                                    SplashCache.ThreadCache.postListener = new SplashCache.ThreadCache.OnThreadModifiedListener() {
+                                        @Override
+                                        public void onModify(Thread thread) {
+                                            if (thread.getThreadId() == threadId) {
+                                                runOnUiThread(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        updateThread();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    };
                                 }
                             }).show();
                         } else if (i == items.size() - 1) {
@@ -191,6 +234,7 @@ public class ViewThreadActivity extends BaseActivity {
     }
 
     public void fetchComments() {
+        refreshLayout.setRefreshing(true);
         thread.loadComments(new Thread.LoadCommentsListener() {
             @Override
             public void onCommentsLoaded(boolean result) {
@@ -231,6 +275,24 @@ public class ViewThreadActivity extends BaseActivity {
         ((TextView) findViewById(R.id.threadTime)).setText(DateUtils.getRelativeTimeSpanString(thread.getMtime().getTime()));
         ((TextView) findViewById(R.id.threadSubforum)).setText(GlobalFunctions.servers.get(serverIndex).getTopic(thread.getTopicId()));
         if (thread.getAttachId() >= 0) {
+            final LinearLayout threadAttach = (LinearLayout) findViewById(R.id.threadAttach);
+            if (thread.getAttachType() != SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
+                threadAttach.setVisibility(View.VISIBLE);
+            }
+            Drawable icon;
+            switch (thread.getAttachType()) {
+                case SplashCache.AttachmentCache.SplashAttachment.VIDEO:
+                    icon = getResources().getDrawable(R.drawable.ic_video);
+                    break;
+                case SplashCache.AttachmentCache.SplashAttachment.AUDIO:
+                    icon = getResources().getDrawable(R.drawable.ic_audio);
+                    break;
+                default:
+                    icon = getResources().getDrawable(R.drawable.ic_file);
+                    break;
+            }
+            ((ImageView) threadAttach.findViewById(R.id.threadAttachIcon)).setImageDrawable(icon);
+            ((TextView) threadAttach.findViewById(R.id.threadDummy)).setText(String.format("Downloading %s...", thread.getAttachName()));
             SplashCache.AttachmentCache.get(serverIndex, thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
                 @Override
                 public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
@@ -251,20 +313,6 @@ public class ViewThreadActivity extends BaseActivity {
                                         });
                                         break;
                                     default:
-                                        Drawable icon;
-                                        switch (attachment.type) {
-                                            case SplashCache.AttachmentCache.SplashAttachment.VIDEO:
-                                                icon = getResources().getDrawable(R.drawable.ic_video);
-                                                break;
-                                            case SplashCache.AttachmentCache.SplashAttachment.AUDIO:
-                                                icon = getResources().getDrawable(R.drawable.ic_audio);
-                                                break;
-                                            default:
-                                                icon = getResources().getDrawable(R.drawable.ic_file);
-                                                break;
-                                        }
-                                        LinearLayout threadAttach = (LinearLayout) findViewById(R.id.threadAttach);
-                                        ((ImageView) threadAttach.findViewById(R.id.threadAttachIcon)).setImageDrawable(icon);
                                         ((TextView) threadAttach.findViewById(R.id.threadDummy)).setText(attachment.name);
                                         threadAttach.setOnClickListener(new View.OnClickListener() {
                                             @Override
@@ -272,7 +320,6 @@ public class ViewThreadActivity extends BaseActivity {
                                                 openInExternal(attachment);
                                             }
                                         });
-                                        threadAttach.setVisibility(View.VISIBLE);
                                         break;
                                 }
                             }
@@ -291,7 +338,7 @@ public class ViewThreadActivity extends BaseActivity {
                 if (attachment.type == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
                     ((Bitmap) attachment.data).compress(Bitmap.CompressFormat.JPEG, 100, out);
                 } else {
-                    out.write((byte[])attachment.data);
+                    out.write((byte[]) attachment.data);
                 }
                 out.close();
                 Intent shareIntent = new Intent();
@@ -339,12 +386,15 @@ public class ViewThreadActivity extends BaseActivity {
             final TextView txtCommenter;
             @NonNull
             final TextView parentAuthor;
+            @NonNull
+            final TextView txtCtime;
 
             ViewHolder(@NonNull View view) {
                 super(view);
                 txtComment = (HtmlTextView) view.findViewById(R.id.txtComment);
                 txtCommenter = (TextView) view.findViewById(R.id.txtCommenter);
                 parentAuthor = (TextView) view.findViewById(R.id.parentAuthor);
+                txtCtime = (TextView) view.findViewById(R.id.txtCtime);
             }
         }
 
@@ -355,7 +405,7 @@ public class ViewThreadActivity extends BaseActivity {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
             final Thread.Comment comment = thread.getComments().valueAt(position);
             final ArrayList<CharSequence> items = new ArrayList<>();
             if (comment.isHidden()) {
@@ -364,7 +414,7 @@ public class ViewThreadActivity extends BaseActivity {
             } else if (comment.isBlocked()) {
                 holder.setIsRecyclable(false);
                 holder.itemView.setBackgroundColor(getResources().getColor(R.color.locked));
-            } else if (comment.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+            } else if (comment.reported > 0 && GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
                 holder.setIsRecyclable(false);
                 holder.itemView.setBackgroundColor(getResources().getColor(R.color.reported));
             }
@@ -388,6 +438,8 @@ public class ViewThreadActivity extends BaseActivity {
                     holder.parentAuthor.setText(dummy);
                 }
                 holder.parentAuthor.setVisibility(View.VISIBLE);
+            } else {
+                holder.parentAuthor.setVisibility(View.GONE);
             }
             if (GlobalFunctions.servers.get(serverIndex).identity != null) {
                 items.add("Reply");
@@ -400,7 +452,7 @@ public class ViewThreadActivity extends BaseActivity {
                     items.add("Report");
                 }
             }
-            CharSequence dummy = "@UID: " + comment.getCreatorID();
+            CharSequence dummy = "UID: " + comment.getCreatorID();
             items.add(dummy);
             UserIdentity user = SplashCache.UsersCache.getUser(serverIndex, comment.getCreatorID(), new SplashCache.UsersCache.OnGetUserListener() {
                 @Override
@@ -449,43 +501,57 @@ public class ViewThreadActivity extends BaseActivity {
                                 } else {
                                     list.add("Hide");
                                 }
+                                if (comment.reported > 0) {
+                                    list.add("Clear Reports");
+                                }
                                 new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Select Action").setItems(list.toArray(new CharSequence[0]), new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, final int i) {
-                                        if (list.get(i).toString().startsWith("Un")) {
-                                            String choice = list.get(i).toString();
-                                            if (choice.equals("Lock")) {
-                                                ModerationManager.unlockThread(serverIndex, threadId);
-                                            } else if (choice.equals("Hide")) {
-                                                ModerationManager.unhideThread(serverIndex, threadId);
+                                        final String choice = list.get(i).toString();
+                                        if (choice.equals("Clear Reports")) {
+                                            ModerationManager.extraListener = commentListener;
+                                            ModerationManager.clearComment(serverIndex, comment.getCommentId());
+                                        } else if (list.get(i).toString().startsWith("Un")) {
+                                            ModerationManager.extraListener = commentListener;
+                                            if (choice.equals("Unlock")) {
+                                                ModerationManager.unlockComment(serverIndex, threadId, comment.getCommentId());
+                                                comment.setBlocked(false);
+                                            } else if (choice.equals("Unhide")) {
+                                                ModerationManager.unhideComment(serverIndex, threadId, comment.getCommentId());
+                                                comment.setHidden(false);
                                             }
                                         } else {
                                             final EditText msgModerate = new EditText(ViewThreadActivity.this);
                                             new AlertDialog.Builder(ViewThreadActivity.this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
                                                 @Override
                                                 public void onClick(DialogInterface dialogInterface, int j) {
-                                                    String choice = list.get(i).toString();
+                                                    ModerationManager.extraListener = commentListener;
                                                     if (choice.equals("Lock")) {
-                                                        ModerationManager.lockComment(serverIndex, comment.getCommentId(), msgModerate.getText().toString());
+                                                        ModerationManager.lockComment(serverIndex, threadId, comment.getCommentId(), msgModerate.getText().toString());
+                                                        comment.setBlocked(true);
                                                     } else if (choice.equals("Hide")) {
-                                                        ModerationManager.hideComment(serverIndex, comment.getCommentId(), msgModerate.getText().toString());
+                                                        ModerationManager.hideComment(serverIndex, threadId, comment.getCommentId(), msgModerate.getText().toString());
+                                                        comment.setHidden(true);
                                                     }
                                                 }
                                             }).show();
                                         }
+                                        notifyItemChanged(holder.getAdapterPosition());
                                     }
                                 }).show();
-                            } else if (i == 0) {
-                                // parent author name selected
-                                startActivity(new Intent(ViewThreadActivity.this, ProfileActivity.class).putExtra("serverIndex", serverIndex).putExtra("uid", thread.getComment(comment.getParentCommentId()).getCreatorID()));
                             } else if (i == items.size() - 1) {
                                 // commenter's name selected
                                 startActivity(new Intent(ViewThreadActivity.this, ProfileActivity.class).putExtra("serverIndex", serverIndex).putExtra("uid", comment.getCreatorID()));
+                            } else if (i == 0) {
+                                // parent author name selected
+                                startActivity(new Intent(ViewThreadActivity.this, ProfileActivity.class).putExtra("serverIndex", serverIndex).putExtra("uid", thread.getComment(comment.getParentCommentId()).getCreatorID()));
                             }
                         }
                     }).show();
                 }
             });
+
+            holder.txtCtime.setText(DateUtils.getRelativeTimeSpanString(comment.getCtime().getTime()));
         }
 
         @Override

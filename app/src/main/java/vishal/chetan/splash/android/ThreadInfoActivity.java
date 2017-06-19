@@ -3,8 +3,12 @@ package vishal.chetan.splash.android;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.TextView;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 import vishal.chetan.splash.GlobalFunctions;
 import vishal.chetan.splash.R;
@@ -38,8 +42,9 @@ public class ThreadInfoActivity extends BaseActivity {
         if (user == null) {
             author.setText("UID: " + thread.getCreatorID());
         }
-        ((TextView) findViewById(R.id.txtCreated)).setText(thread.getCtime().toString());
-        ((TextView) findViewById(R.id.txtModified)).setText(thread.getMtime().toString());
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", GlobalFunctions.getLocale());
+        ((TextView) findViewById(R.id.txtCreated)).setText(df.format(thread.getCtime()));
+        ((TextView) findViewById(R.id.txtModified)).setText(df.format(thread.getMtime()));
         ((TextView) findViewById(R.id.txtID)).setText(Long.toString(thread.getThreadId()));
         ((TextView) findViewById(R.id.txtComments)).setText(Integer.toString(thread.getComments().size()));
 

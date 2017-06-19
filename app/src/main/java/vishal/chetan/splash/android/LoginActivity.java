@@ -40,7 +40,7 @@ public class LoginActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         GlobalFunctions.lookupLocale(this);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbarLogin);
         setSupportActionBar(toolbar);
 
@@ -51,8 +51,8 @@ public class LoginActivity extends BaseActivity {
             return;
         }
 
-        txtUsername=(EditText)findViewById(R.id.txtUsername);
-        txtPassword=(EditText)findViewById(R.id.txtPassword);
+        txtUsername = (EditText) findViewById(R.id.txtUsername);
+        txtPassword = (EditText) findViewById(R.id.txtPassword);
         Button btnLogin = (Button) findViewById(R.id.btnLogin);
         Button btnRegister = (Button) findViewById(R.id.btnRegister);
 
@@ -96,7 +96,7 @@ public class LoginActivity extends BaseActivity {
         final String password = pass.trim();
 
         if (!(username.isEmpty() || password.isEmpty() || serverIndex < 0)) {
-            String postMessage = "user=" + username +"&pass=" + password;
+            String postMessage = "user=" + username + "&pass=" + password;
 
             if (loginTask == null || loginTask.getStatus() == AsyncTask.Status.FINISHED) {
                 loginTask = new LoginHelper(serverIndex, postMessage).execute();
@@ -178,6 +178,13 @@ public class LoginActivity extends BaseActivity {
                         if (jsonObject.has("mod")) {
                             identity.setMod(jsonObject.getInt("mod"));
                         }
+                        if (jsonObject.has("canpost")) {
+                            identity.setCanpost(jsonObject.getBoolean("canpost"));
+                        }
+                        if (jsonObject.has("cancomment")) {
+                            identity.setCancomment(jsonObject.getBoolean("cancomment"));
+                        }
+
                         identity.setUid(jsonObject.getLong("uid"));
                         identity.setUsername(jsonObject.getString("user"));
                         identity.setEmail(jsonObject.getString("email"));
@@ -192,12 +199,13 @@ public class LoginActivity extends BaseActivity {
                             editor.apply();
                         }
                         finish();
-                    } else if (status == 4) {
+                    } else if (status == 3) {
                         SharedPreferences.Editor editor = getSharedPreferences("sessions", MODE_PRIVATE).edit();
                         editor.remove(GlobalFunctions.servers.get(serverIndex).getName());
                         editor.apply();
-                    }
-                    else {
+                    } else if (status == 4) {
+                        setError(R.string.errBannedLogin);
+                    } else {
                         setError(R.string.errInvalidCreds);
                     }
                 } catch (JSONException e) {

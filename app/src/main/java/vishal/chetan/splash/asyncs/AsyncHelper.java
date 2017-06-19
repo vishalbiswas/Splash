@@ -78,6 +78,7 @@ public abstract class AsyncHelper extends AsyncTask<Void, Void, JSONObject> {
                 } else {
                     result = new JSONObject("{status:5,msg:\"Internal error\"}");
                 }
+                webservice.disconnect();
 
             } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();

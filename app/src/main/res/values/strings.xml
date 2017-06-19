@@ -66,7 +66,7 @@
     <string name="defaultLname">Default Last Name</string>
     <string name="defaultEmail">Default Email</string>
     <string name="descDeleteServer">Delete Server</string>
-    <string name="strNoResponse">is not responding. Disabling…</string>
+    <string name="strNoResponse"> is not responding. Disabling…</string>
     <string name="strFilterSource">Filter by Sources</string>
     <string name="strCloseSources">Return to threads view</string>
     <string name="strAskLogin">Do you want to login now?</string>
@@ -91,7 +91,7 @@
     <string name="errAttach">An error occurred while uploading attachment</string>
     <string name="strContent">Content</string>
     <string name="strTitle">Title</string>
-    <string name="strAttachImage">Attach Image</string>
+    <string name="strAttach">Attach File</string>
     <string name="strConfirmPass">Confirm Password</string>
     <string name="strForum">Forum</string>
     <string name="strAuthor">Author</string>
@@ -113,4 +113,17 @@
     <string name="strCommentThread" formatted="false">%s replied in your thread %s</string>
     <string name="strModerate">Moderate</string>
     <string name="strPermImage">You need to grant this permission to be able to attach files!</string>
+    <string name="errBannedLogin">You have been banned</string>
+    <string name="errCannotComment">Thread/comment is blocked or you don\'t have sufficient rights</string>
+    <string name="errCannotPost">Thread is locked or you don\'t have sufficient rights</string>
+    <string name="strUserBanned">This user has been banned</string>
+    <string name="strUserRevoked">This user had their rights revoked</string>
+    <string name="strMember">Member</string>
+    <string name="strModerator">Moderator</string>
+    <string name="strAdministrator">Administrator</string>
+    <string name="errAlphaNumOnly">Only alphanumeric values are allowed</string>
+    <string name="strCommentLocked">Your comment in thread \'%s\' was locked</string>
+    <string name="strThreadLocked">You thread \'%s\' was locked</string>
+    <string name="strCommentUnlocked">Your comment \'%s\' was unlocked</string>
+    <string name="strThreadUnlocked">Your thread \'%s\' was unlocked</string>
 </resources>

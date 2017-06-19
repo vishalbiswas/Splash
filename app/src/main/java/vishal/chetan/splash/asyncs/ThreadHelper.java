@@ -18,7 +18,7 @@ import javax.net.ssl.HttpsURLConnection;
 import vishal.chetan.splash.GlobalFunctions;
 
 public abstract class ThreadHelper implements Runnable {
-    private static final String boundary = "mainBoundary";
+    protected static final String boundary = "mainBoundary";
 
     private final int serverIndex;
     private final String pageUrl;
@@ -86,7 +86,7 @@ public abstract class ThreadHelper implements Runnable {
                 } else {
                     result = new JSONObject("{status:5,msg:\"Internal error\"}");
                 }
-
+                webservice.disconnect();
             } catch (@NonNull IOException | JSONException e) {
                 e.printStackTrace();
             }

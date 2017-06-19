@@ -48,7 +48,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             }
         });
         holder.notificationTitle.setText(notification.title);
-        holder.notificationContent.setText(notification.getMessage());
+        holder.notificationContent.setHtml(notification.getMessage());
         holder.notificationServer.setText(GlobalFunctions.servers.get(notification.serverIndex).getName());
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -70,7 +70,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
         public final View mView;
         public final ImageView notificationImage;
         public final TextView notificationTitle;
-        public final TextView notificationContent;
+        public final NoScrollHtmlTextView notificationContent;
         public final TextView notificationServer;
 
         public ViewHolder(View view) {
@@ -78,7 +78,7 @@ public class NotificationsAdapter extends RecyclerView.Adapter<NotificationsAdap
             mView = view;
             notificationImage = (ImageView) view.findViewById(R.id.notificationImage);
             notificationTitle = (TextView) view.findViewById(R.id.notificationTitle);
-            notificationContent = (TextView) view.findViewById(R.id.notificationContent);
+            notificationContent = (NoScrollHtmlTextView) view.findViewById(R.id.notificationContent);
             notificationServer = (TextView) view.findViewById(R.id.notificationServer);
         }
 

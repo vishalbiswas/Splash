@@ -84,7 +84,6 @@
         <activity android:name=".android.AboutActivity" />
         <activity android:name=".android.ThreadInfoActivity" />
         <activity android:name=".android.CommentActivity" />
-
         <activity android:name=".android.ExternalIntentHandler">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
@@ -116,6 +115,7 @@
             android:name=".android.NotificationReceiver"
             android:enabled="true"
             android:exported="false" />
+
     </application>
 
 </manifest>

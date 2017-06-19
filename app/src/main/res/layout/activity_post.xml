@@ -46,7 +46,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="@string/strAttachImage"
+        android:text="@string/strAttach"
         android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
     <android.support.v7.widget.AppCompatButton

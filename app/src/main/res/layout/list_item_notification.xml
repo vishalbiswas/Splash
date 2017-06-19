@@ -25,7 +25,7 @@
             android:maxLines="1"
             android:textAppearance="?attr/textAppearanceListItem" />
 
-        <TextView
+        <vishal.chetan.splash.NoScrollHtmlTextView
             android:id="@+id/notificationContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

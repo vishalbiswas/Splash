@@ -64,6 +64,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     private NavigationView nav_view;
     private FloatingActionButton fab;
     private SwipeRefreshLayout refreshLayout;
+    private SubMenu subMenu;
 
     private MenuItem menu_logout;
     private MenuItem menu_search;
@@ -180,7 +181,16 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                     new FetchThreads(this, NUMBER_OF_THREADS, false).execute(i);
                 }
             }
-        } else {
+        } else if (previousItemId == -3) {
+            for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+                if (GlobalFunctions.servers.get(i).isEnabled()) {
+                    fetcher = new FetchThreads(this, NUMBER_OF_THREADS, true);
+                    fetcher.execute(i);
+                }
+            }
+        } else if (previousItemId == -4) {
+            sendBroadcast(new Intent(NewsFeed.this, NotificationReceiver.class).putExtra("serverIndex", serverIndex));
+        } else if (previousItemId >= 0) {
             new FetchThreads(this, NUMBER_OF_THREADS, false).execute(serverIndex);
         }
     }
@@ -213,15 +223,15 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
         Menu nav_menu = nav_view.getMenu();
         nav_menu.setGroupCheckable(Menu.NONE, true, true);
         nav_menu.clear();
-        SubMenu menu = nav_menu.addSubMenu(R.string.strSource);
-        menu.add(Menu.NONE, -1, Menu.NONE, R.string.strAll).setCheckable(true);
-        onNavigationItemSelected(menu.findItem(-1));
+        subMenu = nav_menu.addSubMenu(R.string.strSource);
+        subMenu.add(Menu.NONE, -1, Menu.NONE, R.string.strAll).setCheckable(true);
+        onNavigationItemSelected(subMenu.findItem(-1));
         boolean canModerate = false;
         boolean notifications = false;
         for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
-            menu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true).setEnabled(false);
+            subMenu.add(Menu.NONE, i, Menu.NONE, GlobalFunctions.servers.get(i).getName()).setCheckable(true).setEnabled(false);
             if (GlobalFunctions.servers.get(i).isEnabled()) {
-                menu.findItem(i).setEnabled(true);
+                subMenu.findItem(i).setEnabled(true);
                 if (GlobalFunctions.servers.get(i).identity != null) {
                     if (!notifications) {
                         notifications = true;
@@ -288,13 +298,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         final ArrayList<Thread> threads = new ArrayList<>();
                         for (int i = 0; i < jsonArray.length(); ++i) {
                             try {
-                                JSONObject thread = jsonArray.getJSONObject(i);
-                                threads.add(new Thread(thread.getLong("threadid"), serverIndex,
-                                        thread.getString("title"), thread.getString("content"),
-                                        thread.getLong("author"), thread.getLong("ctime"),
-                                        thread.getLong("mtime"), thread.getInt("topicid"),
-                                        thread.getLong("attachid"), thread.getString("type")));
-
+                                threads.add(SplashCache.ThreadCache.createThreadfromJSON(serverIndex, jsonArray.getJSONObject(i)));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -340,14 +344,15 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                                     GlobalFunctions.broadcastToNotifications(getApplicationContext(), serverIndex);
                                     GlobalFunctions.servers.get(previousItemId).session = ServerList.SplashSource.SessionState.DEAD;
                                     getSharedPreferences("sessions", MODE_PRIVATE).edit().remove(GlobalFunctions.servers.get(serverIndex).getName()).apply();
+                                    int temp = serverIndex;
                                     updateOptionsMenu();
-                                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
-                                    return;
+                                    //nav_view.setCheckedItem(temp);
+                                    //subMenu.findItem(-1).setChecked(false);
+                                    onNavigationItemSelected(subMenu.findItem(temp));
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
-                            Log.e(ContentValues.TAG, "Cannot log out");
                             menu_logout.setEnabled(true);
                         }
                     }.execute();
@@ -361,12 +366,18 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int ItemId = item.getItemId();
         if (ItemId != previousItemId) {
+            if (previousItemId > -5) {
+                nav_view.getMenu().findItem(previousItemId).setChecked(false);
+                if (previousItemId >= 0) {
+                    subMenu.findItem(previousItemId).setChecked(false);
+                }
+            }
             ActionBar actionBar = getSupportActionBar();
             assert actionBar != null;
-            if (ItemId < 0) {
+            if (ItemId == -1) {
                 actionBar.setTitle(getString(R.string.title_activity_news_feed));
             } else {
-                actionBar.setTitle(GlobalFunctions.servers.get(ItemId).getName());
+                actionBar.setTitle(item.getTitle());
             }
             if (ItemId == -3) {
                 for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
@@ -441,7 +452,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                         startActivityForResult(new Intent(NewsFeed.this, ProfileActivity.class).putExtra("serverIndex", previousItemId), update_user_result_id);
                     }
                 });
-                fab.setVisibility(View.VISIBLE);
+                if (identity.canPost()) {
+                    fab.setVisibility(View.VISIBLE);
+                } else {
+                    fab.setVisibility(View.GONE);
+                }
             } else {
                 if (menu_logout != null) {
                     menu_logout.setVisible(false);
@@ -498,8 +513,11 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             case login_result_id:
                 if (resultCode == RESULT_OK && data.getIntExtra("serverIndex", -1) == previousItemId) {
                     GlobalFunctions.servers.get(data.getIntExtra("serverIndex", -1)).session = ServerList.SplashSource.SessionState.ALIVE;
+                    int temp = serverIndex;
                     updateOptionsMenu();
-                    onNavigationItemSelected(nav_view.getMenu().findItem(serverIndex));
+                    //nav_view.setCheckedItem(temp);
+                    //subMenu.findItem(-1).setChecked(false);
+                    onNavigationItemSelected(subMenu.findItem(temp));
                 }
                 break;
             case create_thread_result_id:
@@ -622,6 +640,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                             });
                         }
                     }
+                    urlConn.disconnect();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

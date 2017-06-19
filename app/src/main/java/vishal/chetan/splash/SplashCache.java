@@ -51,7 +51,7 @@ public class SplashCache {
             return user;
         }
 
-        private static void loadUser(final int serverIndex, long uid, @Nullable final OnGetUserListener listener) {
+        public static void loadUser(final int serverIndex, long uid, @Nullable final OnGetUserListener listener) {
             Runnable loader = new ThreadHelper(serverIndex, "user/" + uid) {
                 @Override
                 protected void doWork(@Nullable JSONObject jsonObject) {
@@ -67,6 +67,18 @@ public class SplashCache {
                             }
                             if (jsonObject.has("profpic")) {
                                 fetcheduser.setProfpic(jsonObject.getLong("profpic"));
+                            }
+                            if (jsonObject.has("canpost")) {
+                                fetcheduser.setCanpost(jsonObject.getBoolean("canpost"));
+                            }
+                            if (jsonObject.has("cancomment")) {
+                                fetcheduser.setCancomment(jsonObject.getBoolean("cancomment"));
+                            }
+                            if (jsonObject.has("banned")) {
+                                fetcheduser.setBanned(jsonObject.getBoolean("banned"));
+                            }
+                            if (jsonObject.has("mod")) {
+                                fetcheduser.setMod(jsonObject.getInt("mod"));
                             }
                             setUser(serverIndex, fetcheduser);
                             if (listener != null) {
@@ -181,7 +193,7 @@ public class SplashCache {
                                     jsonObject.getLong("ctime"),
                                     jsonObject.getLong("mtime"),
                                     thread.getTopicId(), thread.getAttachId(),
-                                    thread.getAttachType());
+                                    thread.getAttachType(), thread.getAttachName());
                             add(newThread);
                         } catch (JSONException e) {
                             Log.e(TAG, e.getMessage());
@@ -277,11 +289,18 @@ public class SplashCache {
                                     } else {
                                         threadList.append(threadId, newThread);
                                     }
+                                    if (adapterListener != null) {
+                                        adapterListener.onModify(newThread);
+                                    }
                                 } else {
                                     add(newThread);
                                 }
                                 if (listener != null) {
                                     listener.onGetThread(newThread);
+                                }
+                                if (postListener != null) {
+                                    postListener.onModify(newThread);
+                                    postListener = null;
                                 }
                             } catch (JSONException ex) {
                                 Log.e(TAG, "Thread creation failed for threadid " + threadId);
@@ -320,6 +339,9 @@ public class SplashCache {
             if (threadJSON.has("needmod")) {
                 thread.needmod = threadJSON.getBoolean("needmod");
             }
+            if (threadJSON.has("filename")) {
+                thread.setAttachName(threadJSON.getString("filename"));
+            }
             return thread;
         }
     }
@@ -334,6 +356,7 @@ public class SplashCache {
 
             public Object data;
             public int type = OTHER;
+            public long attachid = -1;
 
             public String getMimeType() {
                 return mimeType;
@@ -454,6 +477,7 @@ public class SplashCache {
                                 attachment = new SplashAttachment(null);
                             }
                         }
+                        attachment.attachid = attachId;
                         attachment.name = webservice.getHeaderField("FileName");
                         attachment.setMimeType(type);
                         setAttachment(serverIndex, attachId, attachment);
@@ -478,6 +502,9 @@ public class SplashCache {
 
 
         public static void upload(final int serverIndex, @NonNull final SplashAttachment attachment, @NonNull final OnUploadCompleteListener listener) {
+            if (GlobalFunctions.servers.get(serverIndex).identity == null) {
+                return;
+            }
             ThreadHelper uploader = new ThreadHelper(serverIndex, "upload", true) {
                 @Override
                 protected void workOutput(HttpsURLConnection webservice) throws IOException {
@@ -491,6 +518,11 @@ public class SplashCache {
                         rawOutputStream.write((byte[]) attachment.data);
                     }
                     rawOutputStream.write("\r\n".getBytes());
+                    rawOutputStream.flush();
+                    rawOutputStream.write(("--" + boundary + "\r\n").getBytes());
+                    rawOutputStream.write("Content-Disposition: form-data; name=\"sessionid\";\r\n".getBytes());
+                    rawOutputStream.write("Content-Type: text/plain\r\n\r\n".getBytes());
+                    rawOutputStream.write(GlobalFunctions.servers.get(serverIndex).identity.getSessionid().getBytes());
                     rawOutputStream.flush();
                 }
 

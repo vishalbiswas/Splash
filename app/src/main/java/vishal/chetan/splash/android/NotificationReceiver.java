@@ -33,6 +33,7 @@ import static android.content.ContentValues.TAG;
 
 public class NotificationReceiver extends BroadcastReceiver {
     private Context context;
+
     public interface OnNotificationAdded {
         void onNotificationAdded();
     }
@@ -86,8 +87,8 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
 
         public Intent intent = null;
-        public String title = "New action";
-        String msg = null;
+        public String title = "New from Splash";
+        String msg = "";
         long threadid = -1;
         long commentid = -1;
         long actionuid = -1;
@@ -103,6 +104,19 @@ public class NotificationReceiver extends BroadcastReceiver {
     public static final int OTHERS = 0;
     public static final int COMMENT_TO_THREAD = 1;
     public static final int COMMENT_TO_COMMENT = 2;
+    public static final int COMMENT_LOCKED = 3;
+    public static final int THREAD_LOCKED = 4;
+    public static final int COMMENT_UNLOCKED = 5;
+    public static final int THREAD_UNLOCKED = 6;
+    public static final int UNBANNED = 7;
+    public static final int REVOKED = 8;
+    public static final int REVIVED = 9;
+    public static final int COMMENT_UNHIDDEN = 10;
+    public static final int THREAD_UNHIDDEN = 11;
+    public static final int COMMENT_HIDDEN = 12;
+    public static final int THREAD_HIDDEN = 13;
+    public static final int PROMOTED = 14;
+    public static final int DEMOTED = 15;
 
     public static final List<SplashNotification> notifications = new ArrayList<>();
     public static final SparseArray<LongSparseArray<Integer>> notification_indices = new SparseArray<>();
@@ -118,7 +132,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         int serverIndex = intent.getIntExtra("serverIndex", -2);
 
         if (serverIndex == -1) {
-            for(int i = 0; i < GlobalFunctions.servers.size(); ++i) {
+            for (int i = 0; i < GlobalFunctions.servers.size(); ++i) {
                 checkNotifications(i);
             }
         } else {
@@ -130,7 +144,7 @@ public class NotificationReceiver extends BroadcastReceiver {
 
     private void checkNotifications(int serverIndex) {
         if (GlobalFunctions.preferences.getInt("notificationInterval", 60) > 0
-                &&GlobalFunctions.servers.get(serverIndex) != null
+                && GlobalFunctions.servers.get(serverIndex) != null
                 && GlobalFunctions.servers.get(serverIndex).isEnabled()
                 && GlobalFunctions.servers.get(serverIndex).identity != null) {
             new AsyncArrayHelper(serverIndex, "notifications/unread", "sessionid=" + GlobalFunctions.servers.get(serverIndex).identity.getSessionid()) {
@@ -141,7 +155,12 @@ public class NotificationReceiver extends BroadcastReceiver {
                         for (int i = 0; i < jsonArray.length(); ++i) {
                             try {
                                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                                if (notification_indices.get(serverIndex).get(jsonObject.getInt("notifyid")) != null) continue;
+                                LongSparseArray<Integer> indices = notification_indices.get(serverIndex);
+                                if (indices == null) {
+                                    indices = new LongSparseArray<>();
+                                    notification_indices.append(serverIndex, indices);
+                                }
+                                if (indices.get(jsonObject.getInt("notifyid")) != null) continue;
                                 if (jsonObject.getLong("uid") != my_uid) continue;
                                 final SplashNotification notification = new SplashNotification(jsonObject.getInt("notifyid"), serverIndex, jsonObject.getInt("code"), jsonObject.getBoolean("done"));
                                 if (jsonObject.has("actionuid"))
@@ -150,17 +169,13 @@ public class NotificationReceiver extends BroadcastReceiver {
                                     notification.threadid = jsonObject.getLong("threadid");
                                 if (jsonObject.has("commentid"))
                                     notification.commentid = jsonObject.getLong("commentid");
-                                if (notification.code == OTHERS) {
-                                    notification.setMessage(jsonObject.getString("custom"));
+                                if (jsonObject.has("custom")) {
+                                    notification.title = jsonObject.getString("custom");
                                 }
                                 notifications.add(notification);
                                 notification_indices.get(serverIndex).append(notification.notifyid, notifications.size() - 1);
                                 if (!notification.isDone()) {
-                                    if (notification.actionuid > 0) {
-                                        getMessageAndIntent(notification);
-                                    } else {
-                                        showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid), null);
-                                    }
+                                    getMessageAndIntent(notification);
                                 }
                                 if (listener != null) {
                                     listener.onNotificationAdded();
@@ -178,56 +193,83 @@ public class NotificationReceiver extends BroadcastReceiver {
     }
 
     private void getMessageAndIntent(final SplashNotification notification) {
-        SplashCache.UsersCache.getUser(notification.serverIndex, notification.actionuid, new SplashCache.UsersCache.OnGetUserListener() {
-            @Override
-            public void onGetUser(final UserIdentity user) {
-                if (user != null) {
-                    SplashCache.ThreadCache.getThread(notification.serverIndex, notification.threadid, new SplashCache.ThreadCache.OnGetThreadListener() {
-                        @Override
-                        public void onGetThread(Thread thread) {
-                            String username = user.getUsername();
+        if (notification.threadid > 0) {
+            SplashCache.ThreadCache.getThread(notification.serverIndex, notification.threadid, new SplashCache.ThreadCache.OnGetThreadListener() {
+                @Override
+                public void onGetThread(final Thread thread) {
+                    if (thread != null) {
+                        notification.setIntent(new Intent(context, ViewThreadActivity.class).putExtra("serverIndex", notification.serverIndex).putExtra("threadId", notification.threadid));
+                        if (notification.commentid > 0) {
+                            thread.loadComments(new Thread.LoadCommentsListener() {
+                                @Override
+                                public void onCommentsLoaded(boolean result) {
+                                    if (notification.actionuid > 0) {
+                                        SplashCache.UsersCache.getUser(notification.serverIndex, notification.actionuid, new SplashCache.UsersCache.OnGetUserListener() {
+                                            @Override
+                                            public void onGetUser(UserIdentity user) {
+                                                if (user != null) {
+                                                    String username = user.getUsername();
+                                                    switch (notification.code) {
+                                                        case COMMENT_TO_THREAD:
+                                                            notification.title = context.getString(R.string.strCommentThread, username, thread.getTitle());
+                                                            break;
+                                                        case COMMENT_TO_COMMENT:
+                                                            notification.title = context.getString(R.string.strComentComent, username, thread.getTitle());
+                                                            break;
+                                                    }
+                                                    showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid));
+                                                }
+                                            }
+                                        });
+                                    } else {
+                                        switch (notification.code) {
+                                            case COMMENT_LOCKED:
+                                                notification.title = context.getString(R.string.strCommentLocked, thread.getTitle());
+                                                break;
+                                            case COMMENT_UNLOCKED:
+                                                notification.title = context.getString(R.string.strCommentUnlocked, thread.getTitle());
+                                                break;
+                                        }
+                                    }
+                                    notification.msg = thread.getComment(notification.commentid).getText();
+                                    showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid));
+                                }
+                            });
+                        } else {
                             switch (notification.code) {
-                                case COMMENT_TO_THREAD:
-                                    notification.title = context.getString(R.string.strCommentThread, username, thread.getTitle());
-                                    showCommentNotification(notification);
+                                case THREAD_LOCKED:
+                                    notification.title = context.getString(R.string.strThreadLocked, thread.getTitle());
                                     break;
-                                case COMMENT_TO_COMMENT:
-                                    notification.title = context.getString(R.string.strComentComent, username, thread.getTitle());
-                                    showCommentNotification(notification);
+                                case THREAD_UNLOCKED:
+                                    notification.title = context.getString(R.string.strThreadUnlocked, thread.getTitle());
                                     break;
-
                             }
+                            showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid));
+
                         }
-                    });
-                }
-            }
-        });
-    }
-
-    private void showCommentNotification(final SplashNotification notification) {
-        final Thread thread = SplashCache.ThreadCache.getThread(notification.serverIndex, notification.threadid, null);
-        thread.getCommentAsync(notification.commentid, new Thread.LoadCommentsListener() {
-            @Override
-            public void onCommentsLoaded(boolean result) {
-                if (result && thread.getComment(notification.commentid) != null) {
-                    notification.msg = thread.getComment(notification.commentid).getText();
-                    notification.setIntent(new Intent(context, ViewThreadActivity.class).putExtra("serverIndex", notification.serverIndex).putExtra("threadId", notification.threadid));
-                    notification.attachid = SplashCache.UsersCache.getUser(notification.serverIndex, notification.actionuid, null).getProfpic();
-                    UserIdentity user = SplashCache.UsersCache.getUser(notification.serverIndex, notification.actionuid, null);
-                    if (notification.attachid > 0) {
-                        SplashCache.AttachmentCache.get(notification.serverIndex, notification.attachid, new SplashCache.AttachmentCache.OnGetAttachmentListener() {
-                            @Override
-                            public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
-                                showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid), getThumbnail(attachment));
-                            }
-                        });
-                    } else {
-                        showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid), null);
                     }
                 }
+            });
+        } else {
+            switch (notification.code) {
+                case UNBANNED:
+                    notification.title = "You were unbanned";
+                    break;
+                case REVOKED:
+                    notification.title = "Your posting or commenting right(s) were revoked";
+                    break;
+                case REVIVED:
+                    notification.title = "Your posting or commenting right(s) were restored";
+                    break;
+                case PROMOTED:
+                    notification.title = "You are now a moderator";
+                    break;
+                case DEMOTED:
+                    notification.title = "You have lost moderation rights";
+                    break;
             }
-        });
-
+            showNotification(notification_indices.get(notification.serverIndex).get(notification.notifyid));
+        }
     }
 
     private Bitmap getThumbnail(SplashCache.AttachmentCache.SplashAttachment attachment) {
@@ -239,15 +281,36 @@ public class NotificationReceiver extends BroadcastReceiver {
         return null;
     }
 
+    private void showNotification(final int notificationIndex) {
+        SplashNotification notification = notifications.get(notificationIndex);
+        if (notification.attachid > 0) {
+            SplashCache.AttachmentCache.get(notification.serverIndex, notification.attachid, new SplashCache.AttachmentCache.OnGetAttachmentListener() {
+                @Override
+                public void onGetAttachment(SplashCache.AttachmentCache.SplashAttachment attachment) {
+                    showNotification(notificationIndex, getThumbnail(attachment));
+                }
+            });
+        } else {
+            showNotification(notificationIndex, null);
+        }
+    }
+
     private void showNotification(int notificationIndex, Bitmap userImage) {
         SplashNotification notification = notifications.get(notificationIndex);
+        if (notification.isDone()) {
+            return;
+        }
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
                 .setSmallIcon(R.mipmap.ic_news)
                 .setContentTitle(notification.title)
-                .setContentText(notification.getMessage())
                 .setAutoCancel(true);
         if (userImage != null) {
             builder.setLargeIcon(userImage);
+        }
+        if (notification.msg.length() > 0) {
+            builder.setContentText(notification.getMessage());
+        } else {
+            builder.setContentText(GlobalFunctions.servers.get(notification.serverIndex).getName());
         }
 
         if (notification.getIntent() != null) {

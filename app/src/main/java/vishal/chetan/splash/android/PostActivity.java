@@ -22,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import org.sufficientlysecure.htmltextview.HtmlTextView;
 
@@ -48,13 +49,19 @@ public class PostActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!GlobalFunctions.servers.get(serverIndex).identity.canPost()) {
+            Toast.makeText(this, R.string.errCannotPost, Toast.LENGTH_LONG).show();
+            setResult(RESULT_CANCELED);
+            return;
+        }
         if (getIntent().getLongExtra("threadId", -1) != -1) {
             if (SplashCache.ThreadCache.getThread(serverIndex, getIntent().getLongExtra("threadId", -1), null).isBlocked()) {
+                Toast.makeText(this, R.string.errCannotPost, Toast.LENGTH_LONG).show();
                 setResult(RESULT_CANCELED);
                 return;
             }
         }
-        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post);
         serverIndex = getIntent().getIntExtra("serverIndex", -1);
         previewPost = (HtmlTextView) findViewById(R.id.previewPost);
@@ -151,26 +158,32 @@ public class PostActivity extends BaseActivity {
                                             }
                                         });
                                     } else {
-                                        thread.setAttachId(attachId);
+                                        thread.setAttachId(attachId, attach.getMimeType());
                                         SplashCache.ThreadCache.set(thread);
                                     }
                                 }
                             });
                         } else {
-                            thread.setAttachId(attachid);
+                            thread.setAttachId(attachid, attach.getMimeType());
                             SplashCache.ThreadCache.set(thread);
                         }
                     } else {
                         thread = new Thread(serverIndex, editPostTitle.getText().toString(), editPost.getText().toString(), (int) spinTopic.getSelectedItemId());
                         if (attach != null) {
+                            thread.setAttachName(attach.name);
                             SplashCache.AttachmentCache.upload(serverIndex, attach, new SplashCache.AttachmentCache.OnUploadCompleteListener() {
                                 @Override
                                 public void onUpload(long attachId) {
                                     if (attachId < 0) {
-                                        v.setEnabled(true);
-                                        Snackbar.make(btnSubmit, R.string.errAttach, Snackbar.LENGTH_LONG).show();
+                                        runOnUiThread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                v.setEnabled(true);
+                                                Snackbar.make(btnSubmit, R.string.errAttach, Snackbar.LENGTH_LONG).show();
+                                            }
+                                        });
                                     } else {
-                                        thread.setAttachId(attachId);
+                                        thread.setAttachId(attachId, attach.getMimeType());
                                         SplashCache.ThreadCache.create(thread);
                                     }
                                 }
@@ -213,7 +226,7 @@ public class PostActivity extends BaseActivity {
             } else {
                 attach = null;
                 attachid = -1;
-                btnImage.setText(R.string.strAttachImage);
+                btnImage.setText(R.string.strAttach);
             }
         }
     }

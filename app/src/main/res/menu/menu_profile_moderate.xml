@@ -16,4 +16,12 @@
         android:id="@+id/unban"
         android:title="Unban"
         android:visible="false"/>
+    <item
+        android:id="@+id/promote"
+        android:title="Promote"
+        android:visible="false"/>
+    <item
+        android:id="@+id/demote"
+        android:title="Demote"
+        android:visible="false"/>
 </menu>

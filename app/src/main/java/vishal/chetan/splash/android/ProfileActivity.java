@@ -52,6 +52,19 @@ public class ProfileActivity extends BaseActivity {
     private TextView Email;
     private EditText editPass, editPass2;
 
+    private final ModerationManager.OnTaskCompleteListener modListener = new ModerationManager.OnTaskCompleteListener() {
+        @Override
+        public void onCompleted(int serverIndex, long id) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    updateModerated();
+                    invalidateOptionsMenu();
+                }
+            });
+        }
+    };
+
     private void setError(@StringRes int resId) {
         View view = findViewById(android.R.id.content);
         assert view != null;
@@ -98,19 +111,14 @@ public class ProfileActivity extends BaseActivity {
                 }
             });
         }
-        FName.setText(identity.getFirstname());
-        LName.setText(identity.getLastname());
-        Email.setText(identity.getEmail());
-
-        Email.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean focus) {
-                String email = Email.getText().toString().trim();
-                if (!identity.getEmail().equals(email)) {
-                    fieldValidator.validateEmail(email);
-                }
+        if (identity.getFirstname().length() > 0 || identity.getLastname().length() > 0) {
+            FName.setText(identity.getFirstname());
+            LName.setText(identity.getLastname());
+            if (uid != -1) {
+                findViewById(R.id.layoutNames).setVisibility(View.VISIBLE);
             }
-        });
+        }
+        Email.setText(identity.getEmail());
 
         if (uid == -1) {
             editPass = (EditText) findViewById(R.id.editPass);
@@ -125,6 +133,47 @@ public class ProfileActivity extends BaseActivity {
                     startActivityForResult(intent, requestCode);
                 }
             });
+
+            Email.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View view, boolean focus) {
+                    String email = Email.getText().toString().trim();
+                    if (!identity.getEmail().equals(email)) {
+                        fieldValidator.validateEmail(email);
+                    }
+                }
+            });
+        }
+
+        updateModerated();
+    }
+
+    private void updateModerated() {
+        if (identity.isRevoked()) {
+            findViewById(R.id.txtRevoked).setVisibility(View.VISIBLE);
+        } else {
+            findViewById(R.id.txtRevoked).setVisibility(View.GONE);
+        }
+
+        if (uid != -1) {
+            if (identity.isBanned()) {
+                findViewById(R.id.txtBanned).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.txtBanned).setVisibility(View.GONE);
+            }
+        }
+
+        TextView memberType = (TextView) findViewById(R.id.memberType);
+        switch (identity.getMod()) {
+            case UserIdentity.MODERATOR_NORMAL:
+                memberType.setText(R.string.strModerator);
+                break;
+            case UserIdentity.MODERATOR_ABSOLUTE:
+                memberType.setText(R.string.strAdministrator);
+                break;
+            default:
+                memberType.setText(R.string.strMember);
+                break;
         }
     }
 
@@ -147,7 +196,7 @@ public class ProfileActivity extends BaseActivity {
         if (uid == -1) {
             getMenuInflater().inflate(R.menu.menu_profile, menu);
         } else {
-            if (GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > 0) {
+            if (GlobalFunctions.servers.get(serverIndex).identity != null && GlobalFunctions.servers.get(serverIndex).identity.getMod() > identity.getMod()) {
                 getMenuInflater().inflate(R.menu.menu_profile_moderate, menu);
                 if (identity.isBanned()) {
                     menu.findItem(R.id.unban).setVisible(true);
@@ -155,9 +204,14 @@ public class ProfileActivity extends BaseActivity {
                     menu.findItem(R.id.ban).setVisible(true);
                 }
                 if (identity.isRevoked()) {
-                    menu.findItem(R.id.revokePower).setVisible(true);
-                } else {
                     menu.findItem(R.id.revivePower).setVisible(true);
+                } else {
+                    menu.findItem(R.id.revokePower).setVisible(true);
+                }
+                if (identity.getMod() == UserIdentity.MODERATOR_NORMAL) {
+                    menu.findItem(R.id.demote).setVisible(true);
+                } else if (identity.getMod() == UserIdentity.MODERATOR_NONE) {
+                    menu.findItem(R.id.promote).setVisible(true);
                 }
             }
         }
@@ -221,33 +275,41 @@ public class ProfileActivity extends BaseActivity {
                 new AlertDialog.Builder(this).setTitle("Action message (Optional)").setView(msgModerate).setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int j) {
+                        identity.setRevoked(true);
+                        ModerationManager.extraListener = modListener;
                         ModerationManager.revokeUser(serverIndex, uid, msgModerate.getText().toString());
                     }
                 }).show();
-                identity.setRevoked(true);
-                invalidateOptionsMenu();
                 break;
             case R.id.ban:
                 final EditText msgBan = new EditText(this);
                 new AlertDialog.Builder(this).setTitle("Action message (Optional)").setView(msgBan).setPositiveButton("Save", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int j) {
+                        identity.setBanned(true);
+                        ModerationManager.extraListener = modListener;
                         ModerationManager.banUser(serverIndex, uid, msgBan.getText().toString());
                     }
                 }).show();
-                identity.setBanned(true);
-                invalidateOptionsMenu();
                 break;
             case R.id.revivePower:
-                ModerationManager.reviveUser(serverIndex, uid);
                 identity.setRevoked(false);
-                invalidateOptionsMenu();
+                ModerationManager.extraListener = modListener;
+                ModerationManager.reviveUser(serverIndex, uid);
                 break;
             case R.id.unban:
-                ModerationManager.unbanUser(serverIndex, uid);
                 identity.setBanned(false);
-                invalidateOptionsMenu();
+                ModerationManager.extraListener = modListener;
+                ModerationManager.unbanUser(serverIndex, uid);
                 break;
+            case R.id.promote:
+                identity.setMod(UserIdentity.MODERATOR_NORMAL);
+                ModerationManager.extraListener = modListener;
+                ModerationManager.promote(serverIndex, uid);
+            case R.id.demote:
+                identity.setMod(UserIdentity.MODERATOR_NONE);
+                ModerationManager.extraListener = modListener;
+                ModerationManager.demote(serverIndex, uid);
         }
         return true;
     }

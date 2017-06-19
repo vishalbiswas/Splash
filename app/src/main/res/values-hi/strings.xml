@@ -70,7 +70,7 @@
     <string name="errPost">पोस्ट करते समय त्रुटि हुई है</string>
     <string name="errUserData">उपयोगकर्ता डेटा पुनर्प्राप्त करने में असमर्थ!</string>
     <string name="strAlreadyRunning">पहले से ही प्रगति में है …</string>
-    <string name="strAttachImage">चित्र संलग्न करें</string>
+    <string name="strAttach">संलग्न करें</string>
     <string name="strAuthor">रचयिता</string>
     <string name="strChangeAttach">चित्र बदलें</string>
     <string name="strCommentFetchFailed">टिप्पणियाँ लाने में असमर्थ</string>

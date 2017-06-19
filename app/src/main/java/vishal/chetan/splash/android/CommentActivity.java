@@ -8,6 +8,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,8 +49,10 @@ public class CommentActivity extends BaseActivity {
 
         if (commentId != -1) {
             Thread.Comment comment = SplashCache.ThreadCache.getThread(serverIndex, threadId, null).getComment(commentId);
-            if (SplashCache.ThreadCache.getThread(serverIndex, threadId, null).isBlocked() || comment.isBlocked()) {
+            if (SplashCache.ThreadCache.getThread(serverIndex, threadId, null).isBlocked() || comment.isBlocked()
+                    || !GlobalFunctions.servers.get(serverIndex).identity.canComment()) {
                 // cannot edit or reply to blocked comments
+                Toast.makeText(this, R.string.errCannotComment, Toast.LENGTH_LONG).show();
                 setResult(RESULT_CANCELED);
                 finish();
                 return;

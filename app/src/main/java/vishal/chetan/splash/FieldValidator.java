@@ -40,6 +40,12 @@ public class FieldValidator {
                 return;
             }
 
+            final Pattern alphaNumericOnly = Pattern.compile("[^a-z0-9]", Pattern.CASE_INSENSITIVE);
+            if (alphaNumericOnly.matcher(username).find()) {
+                errorProvider.setErrorUsername(R.string.errAlphaNumOnly);
+                return;
+            }
+
             GlobalFunctions.setRegNameStatus(GlobalFunctions.HTTP_CODE.BUSY);
             new CheckAvailable(serverIndex, username).execute();
             this.username = username;

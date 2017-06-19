@@ -31,6 +31,23 @@
             android:layout_height="wrap_content"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" />
 
+        <TextView
+            android:id="@+id/memberType"
+            android:text="@string/strMember"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/txtRevoked"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:text="@string/strUserRevoked"
+            android:textColor="#9e9d24"
+            android:visibility="gone" />
+
         <EditText
             android:id="@+id/FName"
             android:layout_width="match_parent"

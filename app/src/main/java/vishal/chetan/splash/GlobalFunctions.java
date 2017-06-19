@@ -80,8 +80,8 @@ public class GlobalFunctions extends Application {
             AndDown.HOEDOWN_EXT_FOOTNOTES | AndDown.HOEDOWN_EXT_HIGHLIGHT |
             AndDown.HOEDOWN_EXT_NO_INTRA_EMPHASIS;
 
-    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors(),
-            Runtime.getRuntime().availableProcessors(), 1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+    public static final ThreadPoolExecutor executor = new ThreadPoolExecutor(Runtime.getRuntime().availableProcessors() * 2,
+            Runtime.getRuntime().availableProcessors() * 2, 1, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
 
     public static HTTP_CODE getRegNameStatus() {
@@ -184,9 +184,9 @@ public class GlobalFunctions extends Application {
         if (BuildConfig.BUILD_TYPE.equals("debug")) {
             if (GlobalFunctions.servers.size() == 0) {
                 if (Build.PRODUCT.startsWith("sdk") && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://10.0.2.1:5000"));
+                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "https://10.0.2.1:5000"));
                 } else {
-                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "http://192.168.1.2:5000"));
+                    GlobalFunctions.servers.add(new ServerList.SplashSource("TESTING", "https://192.168.1.2:5000"));
                 }
             }
             try {
@@ -282,6 +282,7 @@ public class GlobalFunctions extends Application {
                     if (urlConn.getResponseCode() == 200) {
                         source.banner = BitmapFactory.decodeStream(urlConn.getInputStream());
                     }
+                    urlConn.disconnect();
                 } catch (Exception ignored) {
                 }
 
@@ -309,6 +310,7 @@ public class GlobalFunctions extends Application {
                         }
                         result = true;
                     }
+                    urlConn.disconnect();
                 } catch (Exception e) {
                     result = false;
                 }

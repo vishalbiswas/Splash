@@ -121,40 +121,42 @@ public class ThreadsAdapter extends RecyclerView.Adapter<ThreadsAdapter.ThreadVi
             holder.setIsRecyclable(false);
             holder.itemView.setBackgroundColor(context.getResources().getColor(R.color.locked));
         }
-        if (thread.getAttachType() != SplashCache.AttachmentCache.SplashAttachment.NONE) {
-            SplashCache.AttachmentCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
-                        @Override
-                        public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
-                            if (attachment != null) {
-                                context.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        switch (holder.getItemViewType()) {
-                                            case IMAGE:
-                                                ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap((Bitmap)attachment.data);
-                                                break;
-                                            case GENERIC:
-                                                Drawable icon;
-                                                switch (attachment.type) {
-                                                    case SplashCache.AttachmentCache.SplashAttachment.VIDEO:
-                                                        icon = context.getResources().getDrawable(R.drawable.ic_video);
-                                                        break;
-                                                    case SplashCache.AttachmentCache.SplashAttachment.AUDIO:
-                                                        icon = context.getResources().getDrawable(R.drawable.ic_audio);
-                                                        break;
-                                                    default:
-                                                        icon = context.getResources().getDrawable(R.drawable.ic_file);
-                                                        break;
-                                                }
-                                                ((ThreadGenericViewHolder)holder).threadAttachIcon.setImageDrawable(icon);
-                                                ((ThreadGenericViewHolder)holder).threadDummy.setText(attachment.name);
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    });
+        if (thread.getAttachId() > 0) {
+            if (thread.getAttachType() == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
+                ((ThreadWithImageViewHolder) holder).imgAttach.setVisibility(View.INVISIBLE);
+            } else {
+                Drawable icon;
+                switch (thread.getAttachType()) {
+                    case SplashCache.AttachmentCache.SplashAttachment.VIDEO:
+                        icon = context.getResources().getDrawable(R.drawable.ic_video);
+                        break;
+                    case SplashCache.AttachmentCache.SplashAttachment.AUDIO:
+                        icon = context.getResources().getDrawable(R.drawable.ic_audio);
+                        break;
+                    default:
+                        icon = context.getResources().getDrawable(R.drawable.ic_file);
+                        break;
+                }
+                ((ThreadGenericViewHolder) holder).threadAttachIcon.setImageDrawable(icon);
+                ((ThreadGenericViewHolder) holder).threadDummy.setText(thread.getAttachName());
+            }
 
+            if (thread.getAttachType() == SplashCache.AttachmentCache.SplashAttachment.IMAGE) {
+                SplashCache.AttachmentCache.get(thread.getServerIndex(), thread.getAttachId(), new SplashCache.AttachmentCache.OnGetAttachmentListener() {
+                    @Override
+                    public void onGetAttachment(final SplashCache.AttachmentCache.SplashAttachment attachment) {
+                        if (attachment != null && attachment.attachid == thread.getAttachId()) {
+                            context.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    ((ThreadWithImageViewHolder) holder).imgAttach.setImageBitmap((Bitmap) attachment.data);
+                                    ((ThreadWithImageViewHolder) holder).imgAttach.setVisibility(View.VISIBLE);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
         }
         holder.title.setText(thread.getTitle());
         holder.content.setHtml(thread.getContent());

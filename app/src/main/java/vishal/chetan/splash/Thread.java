@@ -108,8 +108,9 @@ public class Thread {
         return attachId;
     }
 
-    public void setAttachId(long attachId) {
+    public void setAttachId(long attachId, String mimeType) {
         this.attachId = attachId;
+        this.setAttachType(mimeType);
     }
 
     private long attachId = -1;
@@ -134,6 +135,16 @@ public class Thread {
 
     private int attachType = SplashCache.AttachmentCache.SplashAttachment.NONE;
 
+    public String getAttachName() {
+        return attachName;
+    }
+
+    public void setAttachName(String attachName) {
+        this.attachName = attachName;
+    }
+
+    private String attachName = "";
+
     public Thread(int serverIndex, String title, String content, int topicId) {
         this.serverIndex = serverIndex;
         this.title = title;
@@ -151,10 +162,11 @@ public class Thread {
         setAttachType(attachType);
     }
 
-    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, int attachType) {
+    public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId, long attachId, int attachType, String attachName) {
         this(threadId, serverIndex, title, content, creator_id, ctime, mtime, topicId);
         this.attachId = attachId;
         this.attachType = attachType;
+        this.attachName = attachName;
     }
 
     public Thread(long threadId, int serverIndex, String title, String content, long creator_id, long ctime, long mtime, int topicId) {
@@ -196,7 +208,11 @@ public class Thread {
 
     public void loadComments(final LoadCommentsListener listener) {
         this.clearComments();
-        new AsyncArrayHelper(serverIndex, "comments/" + threadId) {
+        String postMessage = null;
+        if (GlobalFunctions.servers.get(serverIndex).identity != null) {
+            postMessage = "sessionid=" + GlobalFunctions.servers.get(serverIndex).identity.getSessionid();
+        }
+        new AsyncArrayHelper(serverIndex, "comments/" + threadId, postMessage) {
             @Override
             protected void workInBackground(@Nullable JSONArray jsonArray) {
                 boolean result = true;

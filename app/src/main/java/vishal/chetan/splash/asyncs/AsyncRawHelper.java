@@ -68,6 +68,7 @@ abstract class AsyncRawHelper extends AsyncTask<Void, Void, JSONObject> {
                     webservice.disconnect();
                     return returnObject;
                 } else {
+                    webservice.disconnect();
                     return new JSONObject("{status:5,msg:\"Internal error");
                 }
 
