@@ -37,7 +37,7 @@ import vishal.chetan.splash.SplashCache;
 import vishal.chetan.splash.Thread;
 
 public class PostActivity extends BaseActivity {
-    private int serverIndex;
+    private int serverIndex = -1;
     private static final int attachRequesCode = 1;
     private static final int permissionRequestCode = 2;
     private HtmlTextView previewPost;
@@ -50,6 +50,7 @@ public class PostActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        serverIndex = getIntent().getIntExtra("serverIndex", -1);
         if (!GlobalFunctions.servers.get(serverIndex).identity.canPost()) {
             Toast.makeText(this, R.string.errCannotPost, Toast.LENGTH_LONG).show();
             setResult(RESULT_CANCELED);
@@ -65,7 +66,6 @@ public class PostActivity extends BaseActivity {
             }
         }
         setContentView(R.layout.activity_post);
-        serverIndex = getIntent().getIntExtra("serverIndex", -1);
         previewPost = (HtmlTextView) findViewById(R.id.previewPost);
         editPost = (EditText) findViewById(R.id.editPost);
         editPost.setOnKeyListener(new View.OnKeyListener() {

@@ -532,6 +532,7 @@ public class SplashCache {
                     if (jsonObject != null) {
                         try {
                             attachId = jsonObject.getLong("attachid");
+                            attachment.attachid = attachId;
                             setAttachment(serverIndex, attachId, attachment);
                         } catch (JSONException e) {
                             e.printStackTrace();

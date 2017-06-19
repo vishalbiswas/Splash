@@ -95,7 +95,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
             @Override
             public void onClick(View v) {
                 if (previousItemId >= 0) {
-                    startActivityForResult(new Intent(NewsFeed.this, PostActivity.class).putExtra("serverIndex", previousItemId), create_thread_result_id);
+                    startActivityForResult(new Intent(NewsFeed.this, PostActivity.class).putExtra("serverIndex", serverIndex), create_thread_result_id);
                 }
             }
         });
@@ -628,7 +628,7 @@ public class NewsFeed extends BaseActivity implements NavigationView.OnNavigatio
                             feed.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    feed.threadsListView.swapAdapter(new ThreadsAdapter(feed, serverIndex), false);
+                                    feed.threadsListView.swapAdapter(new ThreadsAdapter(feed, feed.previousItemId), false);
                                 }
                             });
                         } else if (feed.previousItemId == -3 && forModeration) {
